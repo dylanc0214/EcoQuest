@@ -1,88 +1,123 @@
-/* Hero Section */
+/* --- Global Styles for Modern Look --- */
+body {
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Use a modern font-family stack */
+    background-color: #FAFAF0; /* Light Cream background */
+    color: #2C3E50; /* Darker text */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* --- Hero Section: More Impactful & Clean --- */
 .hero {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 60px 100px;
-    background: #E8E9E0; /* Light gray background */
-    gap: 40px;
+    /* Use less padding on sides for full width feel, but keep vertical spacing */
+    padding: 80px 8%;
+    background: linear-gradient(135deg, #FAFAF0 0%, #E0EAE3 100%); /* Subtle gradient for depth */
+    gap: 60px;
+    min-height: 70vh; /* Make it more prominent on the page */
 }
 
 .hero-left {
     flex: 1;
-    max-width: 50%;
+    max-width: 55%; /* Give more space to the text */
 }
 
 .hero-slogan {
-    font-size: 2.5rem;
-    color: #45553D;
-    margin-bottom: 20px;
+    font-size: 3.2rem; /* Bigger, more impactful font */
+    color: #1D4C43; /* Primary Forest Green */
+    margin-bottom: 15px;
+    line-height: 1.1;
+    font-weight: 800; /* Extra bold for punch */
+}
+
+.hero-slogan span {
+    color: #71B48D; /* Use Mint Green for an accent word */
 }
 
 .hero-description {
-    font-size: 1.2rem;
-    color: #0D120E;
-    margin-bottom: 30px;
-    line-height: 1.6;
+    font-size: 1.3rem;
+    color: #2C3E50;
+    margin-bottom: 40px;
+    line-height: 1.5;
+    opacity: 0.85;
 }
 
 .btn-signup {
     display: inline-block;
-    background: #45553D;
-    color: #E8E9E0;
-    padding: 12px 28px;
-    font-size: 1rem;
-    border-radius: 8px;
+    background: #71B48D; /* Secondary Mint Green */
+    color: #1D4C43; /* Text color contrasts with button */
+    padding: 14px 32px;
+    font-size: 1.1rem;
+    border-radius: 50px; /* Pill shape is modern */
     text-decoration: none;
-    font-weight: bold;
-    transition: background 0.3s;
+    font-weight: 700;
+    transition: all 0.3s ease-in-out;
+    border: 2px solid #71B48D;
+    box-shadow: 0 4px 15px rgba(113, 180, 141, 0.4); /* Subtle glow */
 }
 
 .btn-signup:hover {
-    background: #6D7E5F;
+    background: #1D4C43; /* Darker on hover */
+    color: #FAFAF0;
+    border-color: #1D4C43;
+    transform: translateY(-2px); /* Lift effect */
+    box-shadow: 0 6px 20px rgba(29, 76, 67, 0.3);
 }
 
 .login-link {
-    margin-top: 12px;
-    font-size: 0.95rem;
-    color: #0D120E;
+    margin-top: 20px;
+    font-size: 1rem;
+    color: #2C3E50;
+    opacity: 0.7;
 }
 
 .login-link a {
-    color: #92A079;
-    font-weight: bold;
+    color: #1D4C43;
+    font-weight: 600;
     text-decoration: none;
+    border-bottom: 2px solid transparent; /* Prepare for hover effect */
+    transition: border-bottom 0.2s;
 }
 
 .login-link a:hover {
-    text-decoration: underline;
-    color: #6D7E5F;
+    border-bottom: 2px solid #71B48D; /* Underline effect using border */
+    color: #1D4C43;
 }
 
 .hero-right {
     flex: 1;
-    text-align: right;
+    text-align: center;
+    /* Use a fixed height/width ratio for the image container */
 }
 
 .hero-right img {
-    max-width: 90%;
+    max-width: 100%;
     height: auto;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    border-radius: 16px;
+    object-fit: cover;
+    /* More pronounced, but softer shadow */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease-in-out;
 }
 
-/* -------------------
-   Responsive Layout
-------------------- */
+.hero-right img:hover {
+    transform: scale(1.02); /* Make the image pop a bit on hover */
+}
+
+/* --- Responsive Layout (Updated) --- */
 @media (max-width: 1024px) {
     .hero {
-        padding: 40px 50px;
+        padding: 60px 5%;
+        gap: 30px;
     }
     .hero-slogan {
-        font-size: 2rem;
+        font-size: 2.5rem;
     }
     .hero-description {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
     }
 }
 
@@ -90,33 +125,142 @@
     .hero {
         flex-direction: column;
         text-align: center;
-        padding: 40px 20px;
+        padding: 50px 5%;
+        min-height: unset; /* Don't force height on small screens */
     }
     .hero-left {
         max-width: 100%;
     }
+    .hero-slogan {
+        font-size: 2.2rem;
+    }
     .hero-right {
-        text-align: center;
         margin-top: 30px;
     }
-    .hero-right img {
-        max-width: 100%;
-    }
     .btn-signup {
-        width: 100%;
-        text-align: center;
+        width: auto; /* Revert to auto width, unless you want it full screen */
+        min-width: 250px; /* Set a minimum width instead */
     }
 }
 
 @media (max-width: 480px) {
     .hero-slogan {
-        font-size: 1.6rem;
+        font-size: 1.8rem;
     }
     .hero-description {
         font-size: 1rem;
     }
     .btn-signup {
-        padding: 10px 20px;
-        font-size: 0.9rem;
+        padding: 12px 25px;
+        font-size: 1rem;
+        min-width: 100%; /* Full width button on smallest screens */
     }
+}
+
+/* --- Navigation Bar (Desktop View: PC Menu) --- */
+
+.main-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 8%; /* Matches the padding of the hero section for alignment */
+    background-color: #FAFAF0; /* Light Cream background */
+    border-bottom: 1px solid rgba(29, 76, 67, 0.1); /* Subtle bottom border */
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Ensure it stays on top */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Nav Brand (Logo + Title) */
+.nav-brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.nav-brand a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo {
+    height: 35px; /* Adjust size */
+    margin-right: 10px;
+}
+
+.app-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1D4C43; /* Forest Green */
+}
+
+/* Main Navigation Links */
+.nav-links {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links li {
+    margin: 0 15px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #2C3E50; /* Darker text */
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 5px 0;
+    border-bottom: 3px solid transparent; /* Prepare for hover effect */
+    transition: all 0.3s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #1D4C43; /* Forest Green on hover */
+    border-bottom: 3px solid #71B48D; /* Mint Green highlight */
+}
+
+/* Auth Buttons */
+.nav-auth {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-btn-login {
+    text-decoration: none;
+    color: #1D4C43; /* Forest Green text */
+    font-weight: 600;
+    padding: 8px 15px;
+    transition: color 0.3s;
+}
+
+.nav-btn-login:hover {
+    color: #71B48D;
+}
+
+.nav-btn-signup {
+    /* Reuse the btn-signup style from the Hero section for consistency */
+    display: inline-block;
+    background: #71B48D;
+    color: #1D4C43;
+    padding: 8px 20px;
+    font-size: 1rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s ease-in-out;
+}
+
+.nav-btn-signup:hover {
+    background: #1D4C43;
+    color: #FAFAF0;
+}
+
+/* Hide the mobile toggle button on PC */
+.nav-toggle {
+    display: none;
 }
