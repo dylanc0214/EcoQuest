@@ -1,1 +1,122 @@
-/* Main stylesheet */
+/* Hero Section */
+.hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 60px 100px;
+    background: #E8E9E0; /* Light gray background */
+    gap: 40px;
+}
+
+.hero-left {
+    flex: 1;
+    max-width: 50%;
+}
+
+.hero-slogan {
+    font-size: 2.5rem;
+    color: #45553D;
+    margin-bottom: 20px;
+}
+
+.hero-description {
+    font-size: 1.2rem;
+    color: #0D120E;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.btn-signup {
+    display: inline-block;
+    background: #45553D;
+    color: #E8E9E0;
+    padding: 12px 28px;
+    font-size: 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-signup:hover {
+    background: #6D7E5F;
+}
+
+.login-link {
+    margin-top: 12px;
+    font-size: 0.95rem;
+    color: #0D120E;
+}
+
+.login-link a {
+    color: #92A079;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+    color: #6D7E5F;
+}
+
+.hero-right {
+    flex: 1;
+    text-align: right;
+}
+
+.hero-right img {
+    max-width: 90%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* -------------------
+   Responsive Layout
+------------------- */
+@media (max-width: 1024px) {
+    .hero {
+        padding: 40px 50px;
+    }
+    .hero-slogan {
+        font-size: 2rem;
+    }
+    .hero-description {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 40px 20px;
+    }
+    .hero-left {
+        max-width: 100%;
+    }
+    .hero-right {
+        text-align: center;
+        margin-top: 30px;
+    }
+    .hero-right img {
+        max-width: 100%;
+    }
+    .btn-signup {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-slogan {
+        font-size: 1.6rem;
+    }
+    .hero-description {
+        font-size: 1rem;
+    }
+    .btn-signup {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
