@@ -30,6 +30,7 @@ $app_title = "EcoQuest";
     <ul class="nav-links" id="navLinks">
         <?php if ($user_role == 'guest'): ?>
             <!-- Guest Links -->
+            <li><a href="about.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'about.php' ? 'active' : ''; ?>">About</a></li>
             <li><a href="quests.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'quests.php' ? 'active' : ''; ?>">Quests</a></li>
             <li><a href="leaderboard.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'leaderboard.php' ? 'active' : ''; ?>">Leaderboard</a></li>
             <li><a href="rewards.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'rewards.php' ? 'active' : ''; ?>">Rewards</a></li>
