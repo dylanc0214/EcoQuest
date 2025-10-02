@@ -1070,6 +1070,23 @@ body {
     padding: 40px 8%;
 }
 
+/* --- NEW GRID FOR GOAL/HOW-TO SECTIONS --- */
+@media (min-width: 768px) {
+    .about-columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Two equal columns */
+        gap: 50px; /* Space between the two columns */
+    }
+
+    .about-columns .about-section {
+        /* Remove the dashed border for sections inside the grid */
+        border-bottom: none;
+        padding: 0;
+        margin-bottom: 0;
+    }
+}
+/* ------------------------------------------- */
+
 .about-section {
     margin-bottom: 50px;
     padding: 20px 0;
