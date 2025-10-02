@@ -1,11 +1,19 @@
-<?php
-// Start session for handling login logic (PHP functionality)
-session_start();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <?php
+        // Start session for handling login logic (PHP functionality)
+        session_start();
 
-// Include the necessary components
-include("../includes/header.php");
-include("../includes/navigation.php");
-?>
+        // Include the necessary components
+        include("../includes/header.php");
+        include("../includes/navigation.php");
+    ?>
 
     <main class="auth-page">
         <div class="login-container">
@@ -41,4 +49,6 @@ include("../includes/navigation.php");
         </div>
     </main>
 
-<?php include("../includes/footer.php"); ?>
+    <?php include("../includes/footer.php"); ?>
+</body>
+</html>
