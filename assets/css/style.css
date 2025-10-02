@@ -900,3 +900,164 @@ body {
         width: 100%;
     }
 }
+
+/* ====================================
+   LEADERBOARD PAGE STYLES
+   ==================================== */
+
+.leaderboard-page {
+    padding: 40px 8%;
+}
+
+.leaderboard-controls {
+    display: flex;
+    justify-content: flex-start;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.leaderboard-table-container {
+    overflow-x: auto; /* Allows horizontal scrolling on small screens */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    background-color: #FFFFFF;
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #F0F0F0;
+}
+
+.leaderboard-table th {
+    background-color: #1D4C43; /* Forest Green Header */
+    color: #FAFAF0;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    /* Rounded corners for the header */
+    position: sticky;
+    top: 0;
+}
+
+.leaderboard-table thead tr:first-child th:first-child {
+    border-top-left-radius: 12px;
+}
+.leaderboard-table thead tr:first-child th:last-child {
+    border-top-right-radius: 12px;
+}
+
+.leaderboard-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Row Hover Effect */
+.leaderboard-table tbody tr:hover {
+    background-color: #F8F8F8;
+    transition: background-color 0.2s;
+}
+
+/* Points Styling */
+.total-points {
+    font-weight: 700;
+    color: #FF9900; /* Yellow/Orange */
+    font-size: 1.1rem;
+}
+
+/* Rank Styling (Medals) */
+.medal {
+    font-size: 1.5rem;
+    vertical-align: middle;
+}
+.rank-cell {
+    width: 10%;
+    font-weight: 600;
+}
+
+/* Highlight Current User */
+.leaderboard-table .current-user {
+    background-color: #E0EAE3; /* Light Mint Green */
+    font-weight: 700;
+    border-left: 5px solid #71B48D;
+}
+.leaderboard-table .current-user:hover {
+    background-color: #D3EADD;
+}
+
+/* Role Tags */
+.role-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.role-student {
+    background-color: #71B48D;
+    color: #1D4C43;
+}
+.role-moderator {
+    background-color: #FF9900;
+    color: #2C3E50;
+}
+.role-admin {
+    background-color: #2C3E50;
+    color: #FAFAF0;
+}
+
+/* --- Responsive Table (Mobile View) --- */
+@media (max-width: 600px) {
+    .leaderboard-table thead {
+        display: none; /* Hide table headers (table header is not needed for mobile) */
+    }
+
+    .leaderboard-table,
+    .leaderboard-table tbody,
+    .leaderboard-table tr,
+    .leaderboard-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .leaderboard-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #DCDCDC;
+        border-radius: 8px;
+        background-color: #FFFFFF;
+    }
+
+    .leaderboard-table td {
+        text-align: right;
+        padding: 10px 15px;
+        position: relative;
+        padding-left: 50%; /* Space for the data label */
+        border-bottom: none;
+    }
+
+    .leaderboard-table td::before {
+        /* Mobile data labels */
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: calc(50% - 20px);
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 600;
+        color: #1D4C43;
+    }
+
+    .leaderboard-table .current-user {
+        border: 2px solid #71B48D;
+        border-left: 5px solid #71B48D;
+    }
+}
