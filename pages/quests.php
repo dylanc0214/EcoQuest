@@ -56,14 +56,16 @@
             if ($stmt->execute()) {
                 $result = $stmt->get_result();
                 while ($quest = $result->fetch_assoc()) {
-                    // Map database status to display status
+                    // --- UPDATED STATUS MAPPING LOGIC ---
                     if ($quest['status'] === 'completed') {
                         $quest['display_status'] = 'Completed';
                     } elseif ($quest['status'] === 'pending') {
                         $quest['display_status'] = 'Pending Review';
+                    } elseif ($quest['status'] === 'active') { // Status when quest is STARTED but not submitted
+                        $quest['display_status'] = 'In Progress';
                     } else {
-                        // Includes 'active' and 'Available' (from COALESCE)
-                        $quest['display_status'] = 'Active'; 
+                        // This catches 'Available' (from COALESCE)
+                        $quest['display_status'] = 'Available'; 
                     }
                     $quests[] = $quest;
                 }
@@ -126,9 +128,12 @@
                         <div class="quest-footer">
                             <span class="quest-difficulty"><?php echo $difficulty; ?></span>
 
-                            <?php if ($quest['display_status'] == 'Active'): ?>
+                            <?php if ($quest['display_status'] == 'Available'): ?>
                                 <span class="quest-status"><?php echo $quest['display_status']; ?></span>
                                 <a href="quest_detail.php?id=<?php echo $quest['quest_id']; ?>" class="btn-submit">Start Quest</a>
+                            <?php elseif ($quest['display_status'] == 'In Progress'): ?>
+                                <span class="quest-status in-progress"><?php echo $quest['display_status']; ?></span>
+                                <a href="quest_detail.php?id=<?php echo $quest['quest_id']; ?>" class="btn-submit btn-continue">Submit Proof</a>
                             <?php elseif ($quest['display_status'] == 'Pending Review'): ?>
                                 <span class="quest-status"><?php echo $quest['display_status']; ?></span>
                                 <span class="btn-pending">Waiting...</span>
