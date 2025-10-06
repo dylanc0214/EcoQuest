@@ -65,7 +65,7 @@ $app_title = "EcoQuest";
         <?php if ($is_logged_in): ?>
             <!-- Logout Button for all logged-in roles -->
             <span class="user-info">Hello, <?php echo htmlspecialchars($_SESSION['username'] ?? 'User'); ?>!</span>
-            <a href="logout.php" class="nav-btn-signup">Logout</a>
+            <a href="index.php" class="nav-btn-signup">Logout</a>
         <?php else: ?>
             <!-- Login/Register for Guests -->
             <a href="login.php" class="nav-btn-login">Login</a>

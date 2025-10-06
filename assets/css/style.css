@@ -244,118 +244,128 @@ body {
 
 
 /* ====================================
-   LOGIN & REGISTER PAGE STYLES (Auth Pages)
+   AUTHENTICATION PAGES (Login/Register)
    ==================================== */
 
 .auth-page {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 85vh;
-    padding: 40px 20px;
-    background-color: #FAFAF0;
-}
-
-.login-container {
-    max-width: 420px;
-    width: 100%;
+    min-height: calc(100vh - 80px); /* Full viewport height minus header/footer */
+    padding: 20px 8%;
+    background-color: var(--color-background-medium); /* Light background for contrast */
 }
 
 .auth-card {
-    background: #FFFFFF;
+    background-color: #FFFFFF;
     padding: 40px;
     border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 420px; /* Max width for readability */
+    border-top: 5px solid var(--color-primary);
 }
 
 .auth-title {
-    font-size: 1.8rem;
-    color: #1D4C43;
+    font-size: 2rem;
+    color: var(--color-primary);
     margin-bottom: 10px;
+    text-align: center;
 }
 
 .auth-subtitle {
-    font-size: 1rem;
-    color: #2C3E50;
+    text-align: center;
+    color: var(--color-text-dark);
     margin-bottom: 30px;
     opacity: 0.8;
 }
 
-/* Form Styles */
-.auth-form {
-    text-align: left;
-}
-
-.form-group {
+.auth-form .form-group {
     margin-bottom: 20px;
 }
 
-.form-group label {
+.auth-form label {
     display: block;
     font-weight: 600;
     margin-bottom: 8px;
-    color: #2C3E50;
-    font-size: 0.95rem;
+    color: var(--color-text-dark);
 }
 
-.form-group input {
+.auth-form input[type="text"],
+.auth-form input[type="password"],
+.auth-form input[type="email"] {
     width: 100%;
     padding: 12px;
     border: 1px solid #DCDCDC;
     border-radius: 8px;
     font-size: 1rem;
+    box-sizing: border-box; /* Include padding in width */
     transition: border-color 0.3s;
 }
 
-.form-group input:focus {
-    border-color: #71B48D;
+.auth-form input:focus {
+    border-color: var(--color-secondary);
     outline: none;
-    box-shadow: 0 0 5px rgba(113, 180, 141, 0.5);
+    box-shadow: 0 0 0 3px rgba(113, 180, 141, 0.2);
 }
 
-/* Primary Button for Auth */
-.btn-primary-auth {
+.btn-submit {
     width: 100%;
-    background: #1D4C43;
-    color: #FAFAF0;
-    padding: 12px 20px;
-    font-size: 1.1rem;
-    font-weight: 700;
+    background-color: var(--color-secondary); /* Mint Green */
+    color: var(--color-primary);
+    padding: 15px;
     border: none;
     border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: background 0.3s;
-    margin-top: 10px;
+    margin-top: 15px;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-.btn-primary-auth:hover {
-    background: #71B48D;
-    color: #1D4C43;
+.btn-submit:hover {
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
 }
 
-/* Footer Links */
 .auth-footer {
+    text-align: center;
     margin-top: 30px;
     font-size: 0.95rem;
-    color: #2C3E50;
 }
 
-.auth-footer a, .auth-footer-small a {
-    color: #71B48D;
-    text-decoration: none;
+.auth-footer p {
+    margin: 0 0 5px 0;
+    color: var(--color-text-dark);
+}
+
+.auth-link {
+    color: var(--color-accent); /* Orange accent */
     font-weight: 600;
-    transition: color 0.3s;
+    text-decoration: none;
 }
-
-.auth-footer a:hover, .auth-footer-small a:hover {
-    color: #1D4C43;
+.auth-link:hover {
     text-decoration: underline;
 }
 
-.auth-footer-small {
-    margin-top: 10px;
-    font-size: 0.85rem;
+/* Auth Status Messages */
+.message {
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.error-message {
+    background-color: #F8D7DA; /* Light red/pink */
+    color: #721C24; /* Dark red text */
+    border: 1px solid #F5C6CB;
+}
+
+.success-message {
+    background-color: #D4EDDA; /* Light green */
+    color: #155724; /* Dark green text */
+    border: 1px solid #C3E6CB;
 }
 
 
@@ -1200,5 +1210,270 @@ body {
     .team-card {
         flex: 1 1 100%;
         max-width: 100%;
+    }
+}
+
+/* ====================================
+   STUDENT DASHBOARD STYLES
+   ==================================== */
+
+.dashboard-page {
+    padding: 40px 8%;
+}
+
+/* --- Welcome Card (Large Banner) --- */
+.welcome-card {
+    background: linear-gradient(135deg, #71B48D, #1D4C43); /* Mint to Forest Green Gradient */
+    color: #FAFAF0;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+}
+
+.welcome-card h1 {
+    font-size: 2.2rem;
+    margin: 0 0 10px 0;
+    font-weight: 800;
+}
+
+.welcome-card .welcome-text {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 25px;
+}
+
+.current-rank {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.rank-label {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-right: 10px;
+}
+
+.rank-number {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #FF9900; /* Yellow/Orange accent for points/rank */
+    line-height: 1;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.btn-leaderboard {
+    background: #E0EAE3; /* Lightest shade */
+    color: #1D4C43;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.3s;
+}
+
+.btn-leaderboard:hover {
+    background: #FAFAF0;
+}
+
+/* --- Metric Grid (Stats Boxes) --- */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.metric-card {
+    background: #FFFFFF;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border-top: 5px solid #71B48D; /* Default Accent */
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-card h3 {
+    font-size: 1.1rem;
+    color: #2C3E50;
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
+
+.metric-card .icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin: 0 0 10px 0;
+}
+
+.metric-link {
+    display: inline-block;
+    font-size: 0.9rem;
+    color: #1D4C43;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: auto; /* Push link to the bottom */
+}
+
+/* Custom colors for metric cards */
+.points-card { border-top-color: #FF9900; } /* Orange for Points */
+.points-card .metric-value { color: #FF9900; }
+
+.completed-card { border-top-color: #1D4C43; } /* Forest Green for Completed */
+.completed-card .metric-value { color: #1D4C43; }
+
+.rewards-card { border-top-color: #71B48D; } /* Mint Green for Rewards */
+.rewards-card .metric-value { color: #71B48D; }
+
+
+/* --- Action & Activity Grid (Two-Column) --- */
+.action-activity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two columns for desktop */
+    gap: 30px;
+}
+
+.action-card {
+    background: #FFFFFF;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.action-card h2 {
+    font-size: 1.8rem;
+    color: #1D4C43;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* Status Messages */
+.action-status {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.warning-status {
+    background-color: #FFF3CD; /* Light yellow */
+    color: #856404; /* Dark yellow text */
+    border: 1px solid #FFEEDB;
+}
+.warning-status .count {
+    font-weight: 700;
+    color: #FF9900;
+}
+
+.success-status {
+    background-color: #D4EDDA; /* Light green */
+    color: #155724; /* Dark green text */
+    border: 1px solid #C3E6CB;
+}
+
+/* Activity List */
+.activity-list {
+    list-style: none;
+    padding: 0;
+}
+
+.activity-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px dashed #F0F0F0;
+    font-size: 1rem;
+}
+
+.activity-list li:last-child {
+    border-bottom: none;
+}
+
+.activity-quest {
+    font-weight: 600;
+    color: #1D4C43;
+    flex-grow: 1;
+}
+
+.activity-points {
+    color: #FF9900;
+    font-weight: 800;
+    margin: 0 15px;
+}
+
+.activity-date {
+    font-size: 0.85rem;
+    color: #999999;
+}
+
+.no-activity {
+    text-align: center;
+    color: #999999;
+    padding: 20px 0;
+}
+
+
+/* --- Buttons (for action cards) --- */
+.action-card .btn-primary,
+.action-card .btn-secondary {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.3s;
+}
+
+.btn-primary {
+    background: #71B48D; /* Mint Green */
+    color: #1D4C43;
+}
+.btn-primary:hover {
+    background: #1D4C43;
+    color: #FAFAF0;
+}
+
+.btn-secondary {
+    background: #F0F0F0;
+    color: #2C3E50;
+    border: 1px solid #DCDCDC;
+}
+.btn-secondary:hover {
+    background: #DCDCDC;
+}
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 992px) {
+    .action-activity-grid {
+        grid-template-columns: 1fr; /* Stack action/activity cards on smaller tablets/mobile */
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard-page {
+        padding: 20px 4%;
+    }
+    .welcome-card h1 {
+        font-size: 1.8rem;
+    }
+    .current-rank {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .rank-number {
+        font-size: 2.5rem;
     }
 }
