@@ -16,34 +16,22 @@
         exit();
     }
 
+    // --- DB Connection and Dependencies ---
+    // This file should create the $conn (MySQLi connection object).
+    include("../config/db.php");
     include("../includes/header.php");
     include("../includes/navigation.php");
 
-    // --- DATABASE SIMULATION SETUP ---
-    // In a real application, you would include your actual DB connection file here.
-    // For the assignment, we will simulate the database interaction and error handling.
     $db_error = '';
     $login_error = '';
+    
+    // Check if connection object exists and is successful based on db.php logic
+    // Since db.php uses die() on critical failure, we check if $conn is set and not an error object.
+    $is_db_connected = isset($conn) && !$conn->connect_error;
 
-    // SIMULATED DATABASE CREDENTIALS (for demonstration)
-    // In a real app, this should be in a separate, secure config file.
-    $simulated_db = [
-        // This is the user we will check against for a successful login
-        'AliBinStudent' => [
-            'user_id' => 3,
-            'email' => 'ali@apu.my',
-            // In real life, use password_hash(), e.g., password_hash('password123', PASSWORD_BCRYPT)
-            // For this simulation, we'll use a hardcoded hash that matches 'password123'
-            'password_hash' => '$2y$10$w09u7v.g.SjB/K0gG4m25u1N8X6Qx5L8P6E7F8G9H0J1K2L3M4N5O6P7Q8R9S0',
-            'user_role' => 'student',
-        ],
-        'ModBoss' => [
-            'user_id' => 5,
-            'email' => 'mod@apu.my',
-            'password_hash' => '$2y$10$w09u7v.g.SjB/K0gG4m25u1N8X6Qx5L8P6E7F8G9H0J1K2L3M4N5O6P7Q8R9S0',
-            'user_role' => 'moderator',
-        ],
-    ];
+    if (!$is_db_connected) {
+        $db_error = 'Critical: Database connection failed. Cannot proceed with login.';
+    }
 
     // PHP Logic for Login Form Submission
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -52,48 +40,64 @@
 
         if (empty($identifier) || empty($password)) {
             $login_error = 'Please enter both username/email and password.';
+        } elseif (!$is_db_connected) { 
+             $login_error = 'Cannot log in right now due to a critical database connection failure.';
         } else {
+            // --- 1. DATABASE LOOKUP using MySQLi Prepared Statement ---
+            // We try to find a user matching either the username OR the email
+            $sql = "SELECT user_id, username, email, password_hash, user_role 
+                    FROM users 
+                    WHERE username = ? OR email = ?";
+            
+            // Prepare statement
+            if ($stmt = $conn->prepare($sql)) {
+                
+                // Bind parameters (s = string, used twice for username and email)
+                $stmt->bind_param("ss", $identifier, $identifier);
+                
+                if ($stmt->execute()) {
+                    $result = $stmt->get_result();
+                    $found_user = $result->fetch_assoc();
+                    $stmt->close(); // Close the statement after getting result
 
-            // --- 1. SIMULATE DATABASE LOOKUP ---
-            $found_user = null;
-            foreach ($simulated_db as $username => $userData) {
-                // Check if identifier matches username OR email
-                if (strtolower($username) === strtolower($identifier) || strtolower($userData['email']) === strtolower($identifier)) {
-                    $found_user = $userData;
-                    $found_user['username'] = $username; // Add username back for session
-                    break;
-                }
-            }
+                    // --- 2. VERIFY PASSWORD AND AUTHENTICATE ---
+                    if ($found_user) {
+                        // CRUCIAL: Use password_verify() to securely check the entered password
+                        if (password_verify($password, $found_user['password_hash'])) {
+                            
+                            // --- 3. SUCCESSFUL LOGIN: Start Session ---
+                            $_SESSION['user_id'] = $found_user['user_id'];
+                            $_SESSION['username'] = $found_user['username'];
+                            $_SESSION['user_role'] = $found_user['user_role'];
 
-            // --- 2. VERIFY PASSWORD AND AUTHENTICATE ---
-            if ($found_user) {
-                // In a real application:
-                // if (password_verify($password, $found_user['password_hash'])) { ... }
-
-                // SIMULATED password_verify (for demonstration, 'password123' works)
-                $is_password_valid = ($password === 'password123'); // Replace this line with password_verify
-
-                if ($is_password_valid) {
-                    // --- 3. SUCCESSFUL LOGIN: Start Session ---
-                    $_SESSION['user_id'] = $found_user['user_id'];
-                    $_SESSION['username'] = $found_user['username'];
-                    $_SESSION['user_role'] = $found_user['user_role'];
-
-                    // Redirect based on role (important for your assignment requirement)
-                    if ($found_user['user_role'] === 'admin' || $found_user['user_role'] === 'moderator') {
-                        header("Location: dashboard.php"); // Or admin_panel.php/mod_review.php directly
+                            // Redirect based on role
+                            header("Location: dashboard.php");
+                            exit();
+                        } else {
+                            // Password incorrect
+                            $login_error = 'Invalid username/email or password.';
+                        }
                     } else {
-                        header("Location: dashboard.php");
+                        // User not found
+                        $login_error = 'Invalid username/email or password.';
                     }
-                    exit();
                 } else {
-                    $login_error = 'Invalid username/email or password.';
+                    // Execution failed
+                    $db_error = 'Query execution failed: ' . $stmt->error;
                 }
+                
             } else {
-                $login_error = 'Invalid username/email or password.';
+                // Preparation failed
+                $db_error = 'Database query preparation failed: ' . $conn->error;
             }
         }
     }
+    
+    // Close the connection explicitly if it was successfully established
+    if ($is_db_connected) {
+        // $conn->close(); // PHP will usually close this automatically at the end of the script
+    }
+    
     ?>
 
     <main class="auth-page">
@@ -105,7 +109,7 @@
                 <div class="message error-message"><?php echo $login_error; ?></div>
             <?php endif; ?>
             <?php if ($db_error): ?>
-                <div class="message error-message">Database error occurred. Please try again later.</div>
+                <div class="message error-message">Database error occurred. Please try again later. (Error: <?php echo $db_error; ?>)</div>
             <?php endif; ?>
 
             <form action="login.php" method="POST" class="auth-form">
@@ -113,22 +117,22 @@
                 <div class="form-group">
                     <label for="identifier">Username or Email</label>
                     <input type="text" id="identifier" name="identifier"
-                           value="<?php echo htmlspecialchars($_POST['identifier'] ?? ''); ?>" required
-                           placeholder="e.g., ali@apu.my or AliBinStudent">
+                            value="<?php echo htmlspecialchars($_POST['identifier'] ?? ''); ?>" required
+                            placeholder="e.g., TP123456@mail.apu.edu.my or TP123456">
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required
-                           placeholder="Your secret eco-password">
+                            placeholder="Your secret eco-password">
                 </div>
 
-                <button type="submit" class="btn-submit">Login & Go Green</button>
+                <button type="submit" class="btn-submit">Login</button>
             </form>
 
             <div class="auth-footer">
                 <p>Don't have an account?</p>
-                <a href="register.php" class="auth-link">Register New Student Account</a>
+                <a href="register.php" class="auth-link">Register New Account</a>
             </div>
         </div>
     </main>
