@@ -5,7 +5,6 @@ session_start();
 // --- DB Connection and Dependencies ---
 include("../config/db.php"); // Assumes this file establishes $conn
 include("../includes/header.php");
-include("../includes/navigation.php");
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {

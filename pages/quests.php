@@ -19,7 +19,6 @@
     // --- DB Connection and Dependencies ---
     include("../config/db.php"); // Provides $conn (MySQLi object)
     include("../includes/header.php");
-    include("../includes/navigation.php");
 
     $user_id = $_SESSION['user_id'];
     $db_error = '';

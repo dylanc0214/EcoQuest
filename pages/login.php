@@ -21,7 +21,6 @@
     // This file should create the $conn (MySQLi connection object).
     include("../config/db.php");
     include("../includes/header.php");
-    include("../includes/navigation.php");
 
     $db_error = '';
     $login_error = '';

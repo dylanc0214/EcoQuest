@@ -13,7 +13,6 @@
     // --- DB Connection and Dependencies ---
     include("../config/db.php"); // Assuming this file establishes $conn
     include("../includes/header.php");
-    include("../includes/navigation.php");
 
     // Get the current logged-in user ID
     $current_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;

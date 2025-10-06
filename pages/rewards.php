@@ -3,121 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Rewards Marketplace</title>
 </head>
 <body>
     <?php
-    // pages/profile.php
+    // pages/rewards.php
     session_start();
 
     // --- DB Connection and Dependencies ---
-    include("../config/db.php"); // Assuming this file establishes $conn
+    // Ensure you have a working connection in db.php
+    include("../config/db.php"); 
     include("../includes/header.php");
-    include("../includes/navigation.php");
 
-    // Check if user is logged in
-    if (!isset($_SESSION['user_id'])) {
-        // Redirect to login page if not logged in
-        header("Location: login.php");
-        exit();
-    }
-
-    $current_user_id = $_SESSION['user_id'];
     $db_error = '';
-    $user_data = null;
+    $user_points = 0;
+    $rewards = [];
     $is_db_connected = isset($conn) && !$conn->connect_error;
 
+    // Determine if the user is a logged-in student (only students can redeem)
+    $is_student = (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'student' && isset($_SESSION['user_id']));
+    $current_user_id = $_SESSION['user_id'] ?? null;
+
     if (!$is_db_connected) {
-        $db_error = 'Error: Database connection failed. Cannot load profile data.';
+        $db_error = 'Error: Database connection failed. Cannot load data.';
     } else {
-        // Fetch user details from the database
-        $sql = "SELECT user_id, username, email, user_role, total_points 
-                FROM users 
-                WHERE user_id = ?";
         
-        if ($stmt = $conn->prepare($sql)) {
-            $stmt->bind_param("i", $current_user_id);
-            if ($stmt->execute()) {
-                $result = $stmt->get_result();
-                if ($result->num_rows === 1) {
-                    $user_data = $result->fetch_assoc();
+        // 1. FETCH USER POINTS (if logged in as student)
+        if ($is_student) {
+            // Using prepared statement for security
+            $stmt = $conn->prepare("SELECT total_points FROM users WHERE user_id = ?");
+            if ($stmt) {
+                $stmt->bind_param("i", $current_user_id);
+                if ($stmt->execute()) {
+                    $result = $stmt->get_result();
+                    if ($user_data = $result->fetch_assoc()) {
+                        $user_points = (int) $user_data['total_points'];
+                    }
                 } else {
-                    $db_error = 'User data not found. Please try logging in again.';
-                    session_unset();
-                    session_destroy();
+                    $db_error = 'Could not fetch user points: ' . $stmt->error;
                 }
+                $stmt->close();
             } else {
-                $db_error = 'Query execution failed: ' . $stmt->error;
+                $db_error = 'User points query preparation failed: ' . $conn->error;
             }
-            $stmt->close();
+        }
+        
+        // 2. FETCH ALL REWARDS
+        // FIX: Assumes 'reward_id', 'image_url', and 'description' columns now exist in the rewards table.
+        $sql = "SELECT reward_id AS id, name, points_cost, category, stock, image_url, description 
+                FROM rewards 
+                ORDER BY points_cost ASC"; // Default sort low to high
+        
+        if ($result = $conn->query($sql)) {
+            while ($row = $result->fetch_assoc()) {
+                // Rename 'description' to 'desc' for compatibility with existing HTML loop
+                $row['desc'] = $row['description'];
+                $rewards[] = $row;
+            }
+            $result->free();
         } else {
-            $db_error = 'Database query preparation failed: ' . $conn->error;
+            $db_error = 'Could not fetch rewards: ' . $conn->error;
         }
     }
     ?>
 
-    <main class="profile-page">
+    <main class="rewards-page">
         <div class="container">
-            <h1 class="page-title">My EcoQuest Profile 👤</h1>
-            <p class="page-subtitle">Check your stats and see how you're helping the planet!</p>
+            <h1 class="page-title">Rewards Marketplace! 🎁</h1>
+            <p class="page-subtitle">Spend your hard-earned points on these cool rewards. Better be fast, limited stock only!</p>
 
             <?php if ($db_error): ?>
-                <div class="message error-message"><?php echo $db_error; ?></div>
+                <div class="message error-error"><?php echo $db_error; ?></div>
             <?php endif; ?>
 
-            <?php if ($user_data): ?>
-                <div class="profile-card-simple">
-                    
-                    <div class="profile-header-simple">
-                        <div class="profile-avatar-simple">
-                            <i class="fas fa-user-circle"></i>
-                        </div>
-                        <h2 class="profile-username-simple"><?php echo htmlspecialchars($user_data['username']); ?></h2>
-                        <span class="profile-role-simple role-<?php echo strtolower($user_data['user_role']); ?>">
-                            <i class="fas fa-leaf"></i> <?php echo ucfirst($user_data['user_role']); ?>
-                        </span>
-                    </div>
-
-                    <div class="points-highlight">
-                        <h4><i class="fas fa-star"></i> Total EcoPoints Earned</h4>
-                        <p class="points-value-large"><?php echo number_format($user_data['total_points']); ?></p>
-                        <p class="points-label">PTS</p>
-                    </div>
-
-                    <div class="profile-details-list">
-                        
-                        <div class="detail-item-simple">
-                            <i class="fas fa-envelope"></i>
-                            <h4>Email Address:</h4>
-                            <p><?php echo htmlspecialchars($user_data['email']); ?></p>
-                        </div>
-                        
-                        <div class="detail-item-simple">
-                            <i class="fas fa-calendar-alt"></i>
-                            <h4>Member Since:</h4>
-                            <p>Not implemented yet 🚧</p>
-                        </div>
-
-                        <div class="detail-item-simple">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <h4>Location:</h4>
-                            <p>Kuala Lumpur</p>
-                        </div>
-
-                    </div>
-
-                    <div class="profile-actions-footer-simple">
-                        <a href="edit_profile.php" class="btn-primary"><i class="fas fa-edit"></i> Edit Profile</a>
-                        <a href="logout.php" class="btn-secondary"><i class="fas fa-sign-out-alt"></i> Log Out</a>
-                    </div>
+            <?php if ($is_student): ?>
+                <div class="user-points-summary">
+                    <p>Your current balance: <span class="points-balance"><?php echo number_format($user_points); ?> PTS</span></p>
+                    <?php if ($user_points < 500): ?>
+                        <p class="points-tip">A bit low, right? Go complete more <a href="quests.php">quests</a> to earn points!</p>
+                    <?php endif; ?>
                 </div>
-            <?php elseif (!$db_error): ?>
-                <div class="message error-message">Cannot display profile. User session may be invalid.</div>
+            <?php else: ?>
+                <div class="user-points-summary">
+                    <p class="points-tip">Want to redeem? <a href="login.php">Log in</a> as a Student to see your points and redeem rewards!</p>
+                </div>
             <?php endif; ?>
+
+            <!-- Filter Bar -->
+            <div class="quest-controls reward-controls">
+                <div class="filter-dropdown form-group">
+                    <select id="reward-filter">
+                        <option value="all">Filter by Category: All</option>
+                        <option value="food">Food & Drink</option>
+                        <option value="merch">Merchandise</option>
+                        <option value="experience">Experience</option>
+                        <option value="tech">Tech</option>
+                    </select>
+                </div>
+                <div class="sort-dropdown form-group">
+                    <select id="reward-sort">
+                        <option value="low">Sort by Points (Low to High)</option>
+                        <option value="high">Sort by Points (High to Low)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Rewards Grid -->
+            <div class="reward-grid">
+                <?php foreach ($rewards as $reward): ?>
+                    <?php
+                    $can_redeem = $is_student && ($user_points >= $reward['points_cost']) && ($reward['stock'] > 0);
+                    $is_out_of_stock = $reward['stock'] == 0;
+                    
+                    // Fallback URL if image_url is empty
+                    $image_url = !empty($reward['image_url']) ? htmlspecialchars($reward['image_url']) : 'https://placehold.co/400x250/2C3E50/FAFAF0?text=Reward';
+                    ?>
+                    <div class="reward-card <?php echo $is_out_of_stock ? 'out-of-stock' : ''; ?>">
+                        <div class="reward-image-container">
+                            <img src="<?php echo $image_url; ?>" alt="<?php echo htmlspecialchars($reward['name']); ?>"
+                                onerror="this.onerror=null;this.src='https://placehold.co/400x250/2C3E50/FAFAF0?text=Reward';" class="reward-image">
+                            <?php if ($is_out_of_stock): ?>
+                                <span class="stock-overlay">SOLD OUT</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="reward-content">
+                            <h3 class="reward-title"><?php echo htmlspecialchars($reward['name']); ?></h3>
+                            <p class="reward-desc"><?php echo htmlspecialchars($reward['desc']); ?></p>
+                            <div class="reward-footer">
+                                <span class="reward-cost"><?php echo number_format($reward['points_cost']); ?> PTS</span>
+
+                                <?php if ($is_student): ?>
+                                    <?php if ($is_out_of_stock): ?>
+                                        <button class="btn-redeem btn-disabled" disabled>Out of Stock</button>
+                                    <?php elseif ($can_redeem): ?>
+                                        <!-- Link to redemption processing page (future file) -->
+                                        <a href="redeem.php?id=<?php echo $reward['id']; ?>" class="btn-redeem btn-submit">Redeem Now</a>
+                                    <?php else: ?>
+                                        <button class="btn-redeem btn-disabled" disabled>Need <?php echo number_format($reward['points_cost'] - $user_points); ?> PTS More</button>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <a href="login.php" class="btn-redeem btn-submit">Login to Redeem</a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+
+                <?php if (empty($rewards) && !$db_error): ?>
+                    <p class="no-rewards">Aiyo, no rewards available right now. Tell the admin to add some!</p>
+                <?php endif; ?>
+            </div>
+
         </div>
     </main>
 
-    <?php include("../includes/footer.php"); ?>
-</body>
-</html>
+<?php include("../includes/footer.php"); ?>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <?php
@@ -13,7 +14,6 @@
     // --- DB Connection and Dependencies ---
     include("../config/db.php"); // Assuming this file establishes $conn
     include("../includes/header.php");
-    include("../includes/navigation.php");
 
     // Check if user is logged in
     if (!isset($_SESSION['user_id'])) {
@@ -42,8 +42,7 @@
                 if ($result->num_rows === 1) {
                     $user_data = $result->fetch_assoc();
                 } else {
-                    // This should ideally not happen if session is managed properly
-                    $db_error = 'Aiyo! User data not found. Please try logging in again.';
+                    $db_error = 'User data not found. Please try logging in again.';
                     session_unset();
                     session_destroy();
                 }
@@ -54,8 +53,6 @@
         } else {
             $db_error = 'Database query preparation failed: ' . $conn->error;
         }
-
-        // $conn->close(); // Optional
     }
     ?>
 
@@ -69,40 +66,49 @@
             <?php endif; ?>
 
             <?php if ($user_data): ?>
-                <div class="container">
-                    <div class="profile-header">
-                        <div class="profile-avatar">
-                            <!-- Placeholder for an avatar or user icon -->
-                            <span class="avatar-icon">♻️</span>
+                <div class="profile-card-simple">
+                    
+                    <div class="profile-header-simple">
+                        <div class="profile-avatar-simple">
+                            <i class="fas fa-user-circle"></i>
                         </div>
-                        <h2 class="profile-username"><?php echo htmlspecialchars($user_data['username']); ?></h2>
-                        <span class="profile-role role-<?php echo strtolower($user_data['user_role']); ?>">
-                            <?php echo ucfirst($user_data['user_role']); ?>
+                        <h2 class="profile-username-simple"><?php echo htmlspecialchars($user_data['username']); ?></h2>
+                        <span class="profile-role-simple role-<?php echo strtolower($user_data['user_role']); ?>">
+                            <i class="fas fa-leaf"></i> <?php echo ucfirst($user_data['user_role']); ?>
                         </span>
                     </div>
 
-                    <div class="profile-details">
-                        <div class="detail-item total-points-display">
-                            <h3>Total Points Earned:</h3>
-                            <p class="points-value"><?php echo number_format($user_data['total_points']); ?> PTS</p>
-                        </div>
+                    <div class="points-highlight">
+                        <h4><i class="fas fa-star"></i> Total EcoPoints Earned</h4>
+                        <p class="points-value-large"><?php echo number_format($user_data['total_points']); ?></p>
+                        <p class="points-label">PTS</p>
+                    </div>
 
-                        <div class="detail-item">
-                            <h3>Email Address:</h3>
+                    <div class="profile-details-list">
+                        
+                        <div class="detail-item-simple">
+                            <i class="fas fa-envelope"></i>
+                            <h4>Email Address:</h4>
                             <p><?php echo htmlspecialchars($user_data['email']); ?></p>
                         </div>
                         
-                        <div class="detail-item">
-                            <h3>Member Since:</h3>
-                            <!-- NOTE: You will need to fetch and format a 'registration_date' column from the DB -->
+                        <div class="detail-item-simple">
+                            <i class="fas fa-calendar-alt"></i>
+                            <h4>Member Since:</h4>
                             <p>Not implemented yet 🚧</p>
                         </div>
+
+                        <div class="detail-item-simple">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h4>Location:</h4>
+                            <p>Kuala Lumpur</p>
+                        </div>
+
                     </div>
 
-                    <div class="profile-actions">
-                        <!-- Placeholder for action buttons -->
-                        <a href="edit_profile.php" class="btn-primary">Edit Profile</a>
-                        <a href="logout.php" class="btn-secondary">Log Out</a>
+                    <div class="profile-actions-footer-simple">
+                        <a href="edit_profile.php" class="btn-primary"><i class="fas fa-edit"></i> Edit Profile</a>
+                        <a href="logout.php" class="btn-secondary"><i class="fas fa-sign-out-alt"></i> Log Out</a>
                     </div>
                 </div>
             <?php elseif (!$db_error): ?>

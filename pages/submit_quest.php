@@ -1,1 +1,0 @@
-# Form to upload image proof

@@ -3,7 +3,6 @@
 session_start();
 
 include("../includes/header.php");
-include("../includes/navigation.php");
 
 // Array of team members (for the card layout)
 $team_members = [
