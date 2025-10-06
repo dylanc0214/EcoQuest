@@ -1,55 +1,94 @@
-<?php
-// pages/quests.php
-session_start();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available EcoQuests</title>
+</head>
+<body>
+    <?php
+    // pages/quests.php
+    session_start();
 
-include("../includes/header.php");
-include("../includes/navigation.php");
+    // Check if user is logged in
+    if (!isset($_SESSION['user_id'])) {
+        header("Location: login.php");
+        exit();
+    }
 
-// --- DATABASE SIMULATION: Placeholder Quest Data ---
-$quests = [
-        [
-                'id' => 1,
-                'title' => 'Say No To Plastic Bottle 🙅',
-                'points' => 150,
-                'theme' => 'Plastic Reduction',
-                'difficulty' => 'Easy',
-                'status' => 'Active',
-                'desc' => 'Walao eh, use a reusable bottle for every drink for one week. Snap a pic daily!'
-        ],
-        [
-                'id' => 2,
-                'title' => 'The Carpool Crew 🚗',
-                'points' => 300,
-                'theme' => 'Sustainable Transport',
-                'difficulty' => 'Medium',
-                'status' => 'Completed',
-                'desc' => 'Carpool with 3+ friends to campus for 5 days straight. Less emissions, more points, confirm!'
-        ],
-        [
-                'id' => 3,
-                'title' => 'Power Down King/Queen 💡',
-                'points' => 200,
-                'theme' => 'Energy Saving',
-                'difficulty' => 'Medium',
-                'status' => 'Pending Review',
-                'desc' => 'Track and log your room/house electricity usage reduction by 10% this month.'
-        ],
-        [
-                'id' => 4,
-                'title' => 'Recycle Champion ♻️',
-                'points' => 100,
-                'theme' => 'Waste Management',
-                'difficulty' => 'Easy',
-                'status' => 'Active',
-                'desc' => 'Find and correctly sort 5 items from different recycling categories. Get it right, can?'
-        ]
-];
-?>
+    // --- DB Connection and Dependencies ---
+    include("../config/db.php"); // Provides $conn (MySQLi object)
+    include("../includes/header.php");
+    include("../includes/navigation.php");
+
+    $user_id = $_SESSION['user_id'];
+    $db_error = '';
+    $quests = [];
+    
+    // Check if connection object exists and is successful
+    $is_db_connected = isset($conn) && !$conn->connect_error;
+
+    if (!$is_db_connected) {
+        $db_error = 'Warning: Database connection failed. Cannot load quest list.';
+    } else {
+        // --- FETCH ACTIVE QUESTS AND USER STATUS ---
+        
+        // FIX: The query now consistently uses the table alias 'q' for quests columns.
+        $sql = "
+            SELECT 
+                q.quest_id, 
+                q.title, 
+                q.description, 
+                q.points_award, 
+                q.category, 
+                q.proof_type,
+                COALESCE(uq.status, 'Available') AS status 
+            FROM quests q
+            LEFT JOIN user_quests uq 
+                ON q.quest_id = uq.quest_id AND uq.user_id = ?
+            WHERE 
+                q.is_active = 1
+            ORDER BY 
+                q.points_award DESC, q.title ASC";
+
+        if ($stmt = $conn->prepare($sql)) {
+            $stmt->bind_param("i", $user_id); // Bind user_id for the LEFT JOIN filter
+            
+            if ($stmt->execute()) {
+                $result = $stmt->get_result();
+                while ($quest = $result->fetch_assoc()) {
+                    // Map database status to display status
+                    if ($quest['status'] === 'completed') {
+                        $quest['display_status'] = 'Completed';
+                    } elseif ($quest['status'] === 'pending') {
+                        $quest['display_status'] = 'Pending Review';
+                    } else {
+                        // Includes 'active' and 'Available' (from COALESCE)
+                        $quest['display_status'] = 'Active'; 
+                    }
+                    $quests[] = $quest;
+                }
+            } else {
+                $db_error = 'Query execution failed: ' . $stmt->error;
+            }
+            $stmt->close();
+        } else {
+            $db_error = 'Database query preparation failed: ' . $conn->error;
+        }
+    }
+
+    // Determine the user's role to adjust difficulty display (simulated, needs actual DB column)
+    $user_role = $_SESSION['user_role'] ?? 'student'; // Fallback to 'student'
+    ?>
 
     <main class="quests-page">
         <div class="container">
             <h1 class="page-title">Ready for the Next Challenge? 🚀</h1>
             <p class="page-subtitle">Pick a quest, submit your proof, and start earning points for real impact. Cepat, don't miss out!</p>
+            
+            <?php if ($db_error): ?>
+                <div class="message error-message"><?php echo htmlspecialchars($db_error); ?></div>
+            <?php endif; ?>
 
             <div class="quest-controls">
                 <div class="search-bar form-group">
@@ -68,38 +107,41 @@ $quests = [
             <div class="quest-grid">
                 <?php foreach ($quests as $quest): ?>
                     <?php
-                    // Simple formatting for the status class name (e.g., 'Pending Review' becomes 'pending-review')
-                    $status_class = strtolower(str_replace(' ', '-', $quest['status']));
+                    // Simple formatting for the status class name
+                    $status_class = strtolower(str_replace(' ', '-', $quest['display_status']));
+                    
+                    // Simple simulation of difficulty based on points (you need a real 'difficulty' column)
+                    $difficulty = $quest['points_award'] > 300 ? 'Hard' : ($quest['points_award'] > 150 ? 'Medium' : 'Easy');
                     ?>
 
                     <div class="quest-card status-<?php echo $status_class; ?>">
 
                         <div class="quest-header">
-                            <span class="quest-theme"><?php echo $quest['theme']; ?></span>
-                            <span class="quest-points">+<?php echo $quest['points']; ?> PTS</span>
+                            <span class="quest-theme"><?php echo htmlspecialchars($quest['category']); ?></span>
+                            <span class="quest-points">+<?php echo number_format($quest['points_award']); ?> PTS</span>
                         </div>
 
-                        <h3 class="quest-title"><?php echo $quest['title']; ?></h3>
-                        <p class="quest-desc"><?php echo $quest['desc']; ?></p>
+                        <h3 class="quest-title"><?php echo htmlspecialchars($quest['title']); ?></h3>
+                        <p class="quest-desc"><?php echo htmlspecialchars($quest['description']); ?></p>
 
                         <div class="quest-footer">
-                            <span class="quest-difficulty"><?php echo $quest['difficulty']; ?></span>
+                            <span class="quest-difficulty"><?php echo $difficulty; ?></span>
 
-                            <?php if ($quest['status'] == 'Active'): ?>
-                                <span class="quest-status"><?php echo $quest['status']; ?></span>
-                                <a href="quest_detail.php?id=<?php echo $quest['id']; ?>" class="btn-submit">Start Quest</a>
-                            <?php elseif ($quest['status'] == 'Pending Review'): ?>
-                                <span class="quest-status"><?php echo $quest['status']; ?></span>
+                            <?php if ($quest['display_status'] == 'Active'): ?>
+                                <span class="quest-status"><?php echo $quest['display_status']; ?></span>
+                                <a href="quest_detail.php?id=<?php echo $quest['quest_id']; ?>" class="btn-submit">Start Quest</a>
+                            <?php elseif ($quest['display_status'] == 'Pending Review'): ?>
+                                <span class="quest-status"><?php echo $quest['display_status']; ?></span>
                                 <span class="btn-pending">Waiting...</span>
                             <?php else: /* Completed */ ?>
-                                <span class="quest-status"><?php echo $quest['status']; ?></span>
+                                <span class="quest-status"><?php echo $quest['display_status']; ?></span>
                                 <span class="btn-completed">Done! 🎉</span>
                             <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
 
-                <?php if (empty($quests)): ?>
+                <?php if (empty($quests) && !$db_error): ?>
                     <p class="no-quests">Aiyo, looks like no active quests right now! Check back soon or contact your admin.</p>
                 <?php endif; ?>
             </div>
