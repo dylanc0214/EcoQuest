@@ -1,129 +1,170 @@
 <?php
 // pages/validate.php
+// Handles form submission, file upload, inserts activity proof, and updates quest status to 'pending'.
+
 session_start();
 
 // --- DB Connection and Dependencies ---
-// Includes session_start(), DB connection ($conn is now available if successful), and navigation
-require_once "../includes/header.php"; 
+include("../config/db.php"); 
+include("../includes/header.php");
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    // If not logged in, redirect to the login page
     header("Location: login.php");
     exit();
 }
 
-$current_user_id = $_SESSION['user_id'];
-$message = [];
-$quests = []; // Array to hold the list of available quests
+$user_id = $_SESSION['user_id'];
+$db_error = '';
+$message = []; // Array to store success or error messages
+$active_quests = [];
+$is_db_connected = isset($conn) && !$conn->connect_error;
 
-// --- DATABASE CONNECTION CHECK ---
-// IMPORTANT: Check if the connection variable $conn is set and valid before running any queries.
-$is_db_connected = isset($conn) && $conn instanceof mysqli && $conn->ping();
+if (!$is_db_connected) {
+    $db_error = 'Error: Database connection failed. Submission cannot proceed.';
+}
 
+// =========================================================================
+// 1. POST Request Handler (Submission Logic)
+// =========================================================================
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && $is_db_connected) {
+    
+    $quest_id = filter_input(INPUT_POST, 'quest_id', FILTER_VALIDATE_INT);
+    $proof_text = trim($_POST['proof_text'] ?? '');
+    $file_destination = null;
+    $has_error = false;
+    
+    // Basic validation
+    if (!$quest_id || empty($proof_text)) {
+        $message = ['type' => 'error', 'text' => 'Aiyo! Please select a quest and provide a description/notes.'];
+        $has_error = true;
+    }
+
+    // --- File Upload Logic ---
+    if (!$has_error && isset($_FILES['proof_media']) && $_FILES['proof_media']['error'] == 0) {
+        $target_dir = "../uploads/activities/";
+        // Ensure the directory exists
+        if (!is_dir($target_dir)) {
+            mkdir($target_dir, 0777, true);
+        }
+
+        $file_name = uniqid('proof_', true) . '_' . basename($_FILES["proof_media"]["name"]);
+        $target_file = $target_dir . $file_name;
+        $file_type = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+        // Allow certain file formats (simple check)
+        if (!in_array($file_type, ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov'])) {
+            $message = ['type' => 'error', 'text' => 'Only JPG, JPEG, PNG, GIF, MP4, and MOV files are allowed.'];
+            $has_error = true;
+        }
+
+        // Check file size (e.g., limit to 10MB)
+        if ($_FILES["proof_media"]["size"] > 10 * 1024 * 1024) {
+            $message = ['type' => 'error', 'text' => 'File is too large (max 10MB). Please resize it!'];
+            $has_error = true;
+        }
+
+        // Attempt to move file
+        if (!$has_error && move_uploaded_file($_FILES["proof_media"]["tmp_name"], $target_file)) {
+            // Path saved to DB is relative to the project root
+            $file_destination = 'uploads/activities/' . $file_name;
+        } elseif (!$has_error) {
+            $message = ['type' => 'error', 'text' => 'Aiyo! Failed to upload file. Check folder permissions.'];
+            $has_error = true;
+        }
+    }
+
+    // --- Database Insertion (Atomic Transaction) ---
+    if (!$has_error) {
+        $conn->begin_transaction();
+        $status = 'pending'; // The default status for a new submission
+
+        try {
+            // 1. INSERT proof into the 'activities' table
+            // FIX: Using correct columns (proof_text, proof_media_url) and type specifier 'iisss'
+            $sql_insert_activity = "INSERT INTO activities (user_id, quest_id, proof_text, proof_media_url, status) VALUES (?, ?, ?, ?, ?)";
+
+            if ($stmt_insert = $conn->prepare($sql_insert_activity)) {
+                // The correct type string is 'iisss': (i)user_id, (i)quest_id, (s)proof_text, (s)proof_media_url, (s)status
+                $stmt_insert->bind_param("iisss", $user_id, $quest_id, $proof_text, $file_destination, $status);
+                
+                if (!$stmt_insert->execute()) {
+                    throw new Exception("Error inserting activity: " . $stmt_insert->error);
+                }
+                $stmt_insert->close();
+            } else {
+                throw new Exception("Error preparing activity insert: " . $conn->error);
+            }
+
+            // 2. UPDATE the status in 'user_quests' to 'pending'
+            $sql_update_user_quest = "UPDATE user_quests SET status = ? WHERE user_id = ? AND quest_id = ?";
+            
+            if ($stmt_update = $conn->prepare($sql_update_user_quest)) {
+                $stmt_update->bind_param("sii", $status, $user_id, $quest_id);
+                
+                if (!$stmt_update->execute()) {
+                    throw new Exception("Error updating user quest status: " . $stmt_update->error);
+                }
+                $stmt_update->close();
+            } else {
+                throw new Exception("Error preparing user quest update: " . $conn->error);
+            }
+
+            // Commit transaction on success
+            $conn->commit();
+            $message = ['type' => 'success', 'text' => 'Proof submitted successfully! Your submission is now pending review. Check the <a href="quests.php">Quests Page</a> for status updates.'];
+
+        } catch (Exception $e) {
+            $conn->rollback();
+            $message = ['type' => 'error', 'text' => 'A critical database error occurred during submission: ' . $e->getMessage()];
+        }
+    }
+}
+
+
+// =========================================================================
+// 2. Fetch Active Quests (for Form Dropdown)
+// =========================================================================
 
 if ($is_db_connected) {
-    // --- 1. Fetch Live Quests AVAILABLE TO THIS USER for Submission ---
-    // NEW LOGIC: Only show quests that are active (q.is_active=1) AND
-    // the user has explicitly started (INNER JOIN user_quests with status='active') AND
-    // the user has NOT yet submitted proof for (not in activities table with pending/approved status).
-    
-    $sql_quests = "
+    // Fetch all quests the user has started but not yet submitted ('active' in user_quests)
+    $sql_fetch_active = "
         SELECT 
             q.quest_id, 
-            q.title, 
-            q.points_award 
+            q.title 
         FROM quests q
-        INNER JOIN user_quests uq 
-            ON q.quest_id = uq.quest_id AND uq.user_id = ? /* BIND 1: For the join condition */
-        WHERE q.is_active = 1
-        AND uq.status = 'active' -- Must be a quest the user clicked 'Start Quest' for
-        AND NOT EXISTS (
-            SELECT 1 
-            FROM activities a 
-            WHERE a.quest_id = q.quest_id 
-            AND a.user_id = ? /* BIND 2: For the NOT EXISTS subquery */
-            AND a.status IN ('pending', 'approved')
-        )
-        ORDER BY q.points_award DESC";
-        
-    // Using Prepared Statements for security (since we use user input/session data in the query)
-    if ($stmt = $conn->prepare($sql_quests)) {
-        // Bind the user_id twice for the two placeholders (?)
-        $stmt->bind_param("ii", $current_user_id, $current_user_id);
-        $stmt->execute();
-        $result_quests = $stmt->get_result();
+        JOIN user_quests uq ON q.quest_id = uq.quest_id
+        WHERE 
+            uq.user_id = ? AND uq.status = 'active'
+        ORDER BY q.title ASC";
 
-        if ($result_quests && $result_quests->num_rows > 0) {
-            while ($row = $result_quests->fetch_assoc()) {
-                $quests[] = [
-                    'id' => $row['quest_id'], 
-                    // Using points_award from the database query
-                    'title' => htmlspecialchars($row['title']) . " ({$row['points_award']} Points)"
-                ];
+    if ($stmt_fetch = $conn->prepare($sql_fetch_active)) {
+        $stmt_fetch->bind_param("i", $user_id);
+        
+        if ($stmt_fetch->execute()) {
+            $result = $stmt_fetch->get_result();
+            while ($quest = $result->fetch_assoc()) {
+                $active_quests[] = $quest;
             }
         } else {
-            // Message when no available quests for submission are found
-            $message = ['type' => 'info', 'text' => 'Aiyo, you currently have no new quests available for proof submission! You must click "Start Quest" on the Quests page first.'];
+            $db_error = 'Could not load active quests: ' . $stmt_fetch->error;
         }
-        $stmt->close();
-
+        $stmt_fetch->close();
     } else {
-        $message = ['type' => 'error', 'text' => 'SQL Prepare Error. Please check the database connection and schema.'];
-    }
-
-} else {
-    // If connection check failed, show a critical error message
-    $message = ['type' => 'error', 'text' => 'CRITICAL ERROR: The EcoQuest database is down. Cannot load quests. Please ensure your database settings in config/db.php are correct!'];
-}
-
-// --- 2. Handle Proof Submission (POST Request) ---
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && $is_db_connected) {
-    // NOTE: We only allow submission if the database is connected
-    $selected_quest_id = $_POST['quest_id'] ?? null;
-    $upload_file = $_FILES['proof_photo'] ?? null;
-    $description = $_POST['description'] ?? '';
-
-    // Basic Validation Checks
-    if (empty($selected_quest_id) || !is_numeric($selected_quest_id)) {
-        $message = ['type' => 'error', 'text' => 'Aiyo! Must select a Quest first!'];
-    } elseif ($upload_file['error'] === UPLOAD_ERR_NO_FILE) {
-        $message = ['type' => 'error', 'text' => 'Must upload a photo to prove your action. No cheating!'];
-    } elseif ($upload_file['error'] !== UPLOAD_ERR_OK) {
-        $message = ['type' => 'error', 'text' => 'File upload error. Try a different photo.'];
-    } else {
-        // --- Photo Upload Logic Placeholder (To be replaced with real activity record) ---
-        
-        $uploaded_filename = $upload_file['name'];
-
-        // --- SUCCESS MESSAGE (Dummy Submission) ---
-        $message = [
-            'type' => 'success', 
-            'text' => "Wah! Proof for Quest ID #{$selected_quest_id} submitted! File: {$uploaded_filename}. It is now waiting for a Moderator to review and approve your points. Thanks for saving the environment!",
-        ];
-        
-        // You would typically redirect after a successful POST
-        // header("Location: dashboard.php?submission=success"); exit();
-    }
-}
-
-// Find the title of the selected quest if a POST request failed, to keep the form data
-$current_quest_title = 'Select a Quest';
-if (isset($selected_quest_id)) {
-    // We check the $quests array (which is now populated from the DB)
-    foreach ($quests as $quest) {
-        if ($quest['id'] == $selected_quest_id) {
-            $current_quest_title = $quest['title'];
-            break;
-        }
+        $db_error = 'Database query preparation failed: ' . $conn->error;
     }
 }
 ?>
 
 <main class="validate-page">
     <div class="container">
-        <h1 class="page-title">Quest Proof Submission 📸</h1>
-        <p class="page-subtitle">Select the quest you completed and upload a photo as evidence for verification.</p>
+        <h1 class="page-title">Submit Proof for Quest 📸</h1>
+        <p class="page-subtitle">Time to show off your eco-action! Upload your photo/video and add a short story.</p>
+
+        <?php if ($db_error): ?>
+            <div class="message error-message"><?php echo htmlspecialchars($db_error); ?></div>
+        <?php endif; ?>
 
         <?php if (!empty($message)): ?>
             <div class="message <?php echo $message['type']; ?>-message">
@@ -131,51 +172,48 @@ if (isset($selected_quest_id)) {
             </div>
         <?php endif; ?>
 
-        <div class="auth-card validation-card">
-            <form action="validate.php" method="POST" enctype="multipart/form-data" class="auth-form">
-                
-                <h3><i class="fas fa-bullseye"></i> Quest Details</h3>
+        <div class="auth-card">
+            <?php if (empty($active_quests) && empty($message)): ?>
+                <div class="message info-message" style="margin-top: 20px;">
+                    Aiyo, you don't have any quests "In Progress" right now! <br> 
+                    Go to the <a href="quests.php">Quests Page</a> to start one first.
+                </div>
+            <?php else: ?>
+                <form action="validate.php" method="POST" enctype="multipart/form-data" class="auth-form">
+                    
+                    <h3><i class="fas fa-tasks"></i> Select Quest to Complete</h3>
+                    <div class="form-group">
+                        <label for="quest_id">Quest In Progress</label>
+                        <select id="quest_id" name="quest_id" required>
+                            <option value="">-- Choose one of your active quests --</option>
+                            <?php foreach ($active_quests as $quest): ?>
+                                <option value="<?php echo $quest['quest_id']; ?>">
+                                    <?php echo htmlspecialchars($quest['title']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-                <!-- Quest Selection Dropdown -->
-                <div class="form-group">
-                    <label for="quest_id">Which Quest Did You Complete?</label>
-                    <!-- IMPORTANT: Disable the select if the DB connection failed or NO quests are available -->
-                    <select id="quest_id" name="quest_id" required 
-                        <?php echo (!$is_db_connected || empty($quests)) ? 'disabled' : ''; ?>>
-                        
-                        <option value="">
-                            <?php echo empty($quests) ? '-- No Quests Available (Must Start First) --' : '-- Select a Quest --'; ?>
-                        </option>
-                        
-                        <?php foreach ($quests as $quest): ?>
-                            <option value="<?php echo $quest['id']; ?>"
-                                <?php echo (isset($selected_quest_id) && $selected_quest_id == $quest['id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($quest['title']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                    <h3><i class="fas fa-camera"></i> Proof of Action (Photo/Video)</h3>
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">Max file size 10MB. Accepted formats: JPG, PNG, GIF, MP4, MOV.</p>
+                    <div class="form-group">
+                        <label for="proof_media">Upload File</label>
+                        <input type="file" id="proof_media" name="proof_media" accept="image/*,video/*" required>
+                    </div>
 
-                <!-- Proof Photo Upload -->
-                <div class="form-group">
-                    <label for="proof_photo">Upload Proof Photo (Max 5MB)</label>
-                    <!-- IMPORTANT: The 'accept' attribute helps the user select the right file type -->
-                    <input type="file" id="proof_photo" name="proof_photo" accept="image/*" required <?php echo (!$is_db_connected || empty($quests)) ? 'disabled' : ''; ?>>
-                    <p class="input-hint">Image should clearly show your action (e.g., reusable cup, recycling bin).</p>
-                </div>
-                
-                <!-- Description/Notes -->
-                <div class="form-group">
-                    <label for="description">Add Notes / Description (Optional)</label>
-                    <textarea id="description" name="description" rows="3" placeholder="E.g., Took this photo at the APU Starbucks at 1 PM today." <?php echo (!$is_db_connected || empty($quests)) ? 'disabled' : ''; ?>><?php echo htmlspecialchars($description ?? ''); ?></textarea>
-                </div>
+                    <h3><i class="fas fa-pencil-alt"></i> Notes & Description</h3>
+                    <div class="form-group">
+                        <label for="proof_text">Tell us about your action (min 10 words)</label>
+                        <textarea id="proof_text" name="proof_text" rows="5" placeholder="e.g., I successfully recycled 10 plastic bottles from my college canteen..." required></textarea>
+                    </div>
 
-                <div class="form-submit">
-                    <!-- The primary button uses the shared style `.btn-submit` -->
-                    <button type="submit" class="btn-submit" <?php echo (!$is_db_connected || empty($quests)) ? 'disabled' : ''; ?>>Submit Proof & Earn Points</button>
-                </div>
-            </form>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">Submit Proof!</button>
+                    </div>
+                </form>
+            <?php endif; ?>
         </div>
+
     </div>
 </main>
 

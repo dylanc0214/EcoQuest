@@ -93,16 +93,16 @@ body {
     gap: 10px; /* Reduced gap slightly to fit the new button */
 }
 
-/* --- New Profile Button (When logged in) --- */
+/* --- Profile Button (When logged in) --- */
 .nav-btn-profile {
     display: inline-flex;
     align-items: center;
     text-decoration: none;
-    color: #1D4C43; /* Forest Green text */
+    color: var(--color-primary); /* Forest Green text */
     font-weight: 600;
     padding: 8px 12px;
     border-radius: 50px; /* Match the signup button's roundness */
-    background-color: #FAFAF0; /* Light background */
+    background-color: var(--color-background); /* Light background */
     border: 1px solid #71B48D; /* Mint Green border */
     transition: all 0.3s ease-in-out;
 }
@@ -115,8 +115,8 @@ body {
 
 .nav-btn-profile:hover {
     background-color: #71B48D; /* Mint Green hover background */
-    color: #1D4C43; /* Text stays Forest Green */
-    border-color: #1D4C43;
+    color: var(--color-primary); /* Text stays Forest Green */
+    border-color: var(--color-primary);
 }
 
 

@@ -17,6 +17,7 @@
     }
 
     // --- DB Connection and Dependencies ---
+    // Make sure these paths are correct relative to this file
     include("../config/db.php"); // Provides $conn (MySQLi object)
     include("../includes/header.php");
 
@@ -25,14 +26,13 @@
     $quests = [];
     
     // Check if connection object exists and is successful
-    $is_db_connected = isset($conn) && !$conn->connect_error;
+    $is_db_connected = isset($conn) && $conn instanceof mysqli && !$conn->connect_error;
 
     if (!$is_db_connected) {
         $db_error = 'Warning: Database connection failed. Cannot load quest list.';
     } else {
         // --- FETCH ACTIVE QUESTS AND USER STATUS ---
         
-        // FIX: The query now consistently uses the table alias 'q' for quests columns.
         $sql = "
             SELECT 
                 q.quest_id, 
@@ -60,8 +60,10 @@
                     if ($quest['status'] === 'completed') {
                         $quest['display_status'] = 'Completed';
                     } elseif ($quest['status'] === 'pending') {
+                        // This status is set by validate.php after submission
                         $quest['display_status'] = 'Pending Review';
-                    } elseif ($quest['status'] === 'active') { // Status when quest is STARTED but not submitted
+                    } elseif ($quest['status'] === 'active') { 
+                        // Status when quest is STARTED but not submitted
                         $quest['display_status'] = 'In Progress';
                     } else {
                         // This catches 'Available' (from COALESCE)
@@ -133,12 +135,14 @@
                                 <a href="quest_detail.php?id=<?php echo $quest['quest_id']; ?>" class="btn-submit">Start Quest</a>
                             <?php elseif ($quest['display_status'] == 'In Progress'): ?>
                                 <span class="quest-status in-progress"><?php echo $quest['display_status']; ?></span>
-                                <a href="quest_detail.php?id=<?php echo $quest['quest_id']; ?>" class="btn-submit btn-continue">Submit Proof</a>
+                                <!-- Link to the validation page to submit proof -->
+                                <a href="validate.php" class="btn-submit btn-continue">Submit Proof</a>
                             <?php elseif ($quest['display_status'] == 'Pending Review'): ?>
-                                <span class="quest-status"><?php echo $quest['display_status']; ?></span>
+                                <!-- This is the key update: Display pending and disable action -->
+                                <span class="quest-status pending-review"><?php echo $quest['display_status']; ?></span>
                                 <span class="btn-pending">Waiting...</span>
                             <?php else: /* Completed */ ?>
-                                <span class="quest-status"><?php echo $quest['display_status']; ?></span>
+                                <span class="quest-status completed"><?php echo $quest['display_status']; ?></span>
                                 <span class="btn-completed">Done! 🎉</span>
                             <?php endif; ?>
                         </div>
