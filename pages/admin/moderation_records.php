@@ -174,11 +174,81 @@ if (!$conn) {
 </main>
 
 <style>
+    /* NOTE: Many of these styles rely on classes defined in your main style.css.
+       These rules primarily focus on the mobile transformation of the table. */
+
     .pagination { display: flex; justify-content: center; align-items: center; margin-top: 30px; gap: 10px; }
     .page-link { padding: 8px 16px; border: 1px solid #71B48D; border-radius: 4px; color: #1D4C43; text-decoration: none; }
     .page-link:hover { background-color: #71B48D; color: white; }
     .page-link.active { background-color: #1D4C43; color: white; border-color: #1D4C43; }
-    @media (max-width: 768px) { .pagination { flex-wrap: wrap; } }
+
+    /* --- Mobile Table Responsiveness --- */
+    @media (max-width: 768px) {
+        .pagination { flex-wrap: wrap; }
+
+        .admin-data-table thead {
+            display: none; /* Hide desktop headers */
+        }
+
+        .admin-data-table, .admin-data-table tbody, .admin-data-table tr, .admin-data-table td {
+            display: block; /* Make all elements flow vertically */
+            width: 100%;
+        }
+
+        .admin-data-table tr {
+            margin-bottom: 15px;
+            border: 1px solid #DCDCDC; /* Border around the "card" */
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+        }
+
+        .admin-data-table td {
+            /* Right align the data value */
+            text-align: right;
+            padding: 10px 15px; /* Add padding to cell */
+            padding-left: 50%; /* Make space for the data label */
+            position: relative;
+            border-bottom: 1px dashed #f0f0f0;
+        }
+
+        .admin-data-table td:last-child {
+            border-bottom: none;
+        }
+
+        .admin-data-table td::before {
+            /* Create the data label from the data-label attribute */
+            content: attr(data-label);
+            position: absolute;
+            left: 15px;
+            width: calc(50% - 30px);
+            text-align: left;
+            font-weight: 600;
+            color: #1D4C43; /* Forest Green label */
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        /* Specific styling for reviewer cell to improve stacking */
+        .reviewer-cell strong, .reviewer-cell span {
+            display: block;
+            text-align: right;
+            line-height: 1.2;
+        }
+
+        .reviewer-cell span {
+            font-size: 0.7rem;
+            margin-top: 3px;
+        }
+
+        /* Ensure comments are fully visible and wrap */
+        .comment-cell {
+            white-space: normal !important;
+            max-width: 100% !important;
+            text-overflow: unset !important;
+            word-break: break-word;
+            padding-bottom: 15px;
+        }
+    }
 </style>
 
 <?php require_once '../../includes/footer.php'; ?>
