@@ -141,4 +141,128 @@ if (!$conn) {
     </div>
 </main>
 
+<style>
+    /* ---------------------------------------------------- */
+    /* Filter Navigation Stacking (Re-confirming vertical flow) */
+    /* ---------------------------------------------------- */
+    .user-filter-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+        align-items: center;
+    }
+    .user-filter-nav .btn-filter, .user-filter-nav .btn-create-user {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .user-filter-nav .btn-create-user {
+        background-color: #10b981; /* Emerald 500 */
+        color: white;
+        margin-left: auto;
+    }
+
+
+    /* ---------------------------------------------------- */
+    /* Mobile Table Transformation (< 768px) - Highly Specific Override */
+    /* ---------------------------------------------------- */
+    @media (max-width: 768px) {
+        /* 1. Filter Bar Stacking (Ensure full width) */
+        .user-filter-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .user-filter-nav a, .user-filter-nav button {
+            width: 100%;
+            margin-left: 0 !important; /* Override desktop margin-left: auto */
+        }
+        .user-filter-nav .btn-create-user {
+            margin-top: 10px;
+        }
+
+        /* 2. Table Transformation (Targeting the user list table) */
+        .admin-data-table {
+            border-collapse: collapse;
+            margin: 0;
+            padding: 0;
+        }
+        .admin-data-table thead {
+            display: none; /* Hide headers */
+        }
+
+        /* Force table elements to stack */
+        .admin-data-table,
+        .admin-data-table tbody,
+        .admin-data-table tr,
+        .admin-data-table td {
+            display: block;
+            width: 100% !important; /* CRITICAL: Force full width override */
+            box-sizing: border-box;
+        }
+
+        /* Style each row as a card */
+        .admin-data-table tr {
+            margin-bottom: 20px;
+            border: 1px solid #DCDCDC;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 10px 0; /* Vertical padding around content */
+        }
+
+        /* Style individual cells */
+        .admin-data-table td {
+            text-align: right;
+            padding: 8px 15px;
+            padding-left: 100px; /* Space for the data label */
+            position: relative;
+            border-bottom: 1px dashed #f0f0f0;
+            line-height: 1.4;
+        }
+        .admin-data-table td:last-child {
+            border-bottom: none;
+            /* Center the action buttons horizontally */
+            text-align: center;
+            padding-top: 15px;
+        }
+
+        /* 3. Mobile Data Labels */
+        .admin-data-table td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 15px;
+            width: 80px; /* Fixed width for alignment */
+            text-align: left;
+            font-weight: 700;
+            color: #4A5568;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        /* Action Group formatting */
+        .action-group {
+            display: flex;
+            justify-content: center; /* Center the icons */
+            gap: 15px;
+            width: 100%;
+        }
+
+        /* Specific adjustment for Username/Email cell alignment */
+        .admin-data-table td[data-label="USERNAME"],
+        .admin-data-table td[data-label="EMAIL"],
+        .admin-data-table td[data-label="ROLE"] {
+            /* Align values to the right for clear separation */
+            text-align: right;
+        }
+    }
+</style>
+
 <?php require_once '../../includes/footer.php'; ?>
