@@ -8,7 +8,7 @@ include("../includes/header.php");
 $user_id = $_SESSION['user_id'] ?? null;
 $user_role = $_SESSION['user_role'] ?? 'guest';
 if (!in_array($user_role, ['student', 'moderator', 'admin'])) {
-    header("Location: login.php");
+    header("Location: sign_up.php");
     exit();
 }
 

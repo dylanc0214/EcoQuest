@@ -9,7 +9,7 @@ include("../includes/header.php");
 // Check if user is logged in and is a student
 // We now check for student_id, which is set during login
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'student' || !isset($_SESSION['student_id'])) {
-    header("Location: login.php");
+    header("Location: sign_up.php");
     exit();
 }
 

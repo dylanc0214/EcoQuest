@@ -8,7 +8,7 @@ include("../includes/header.php");
 
 // Check if user is logged in and is a student
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['student_id'])) {
-    header("Location: login.php");
+    header("Location: sign_up.php");
     exit();
 }
 

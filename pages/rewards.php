@@ -72,7 +72,7 @@ if (!$is_db_connected) {
             </div>
         <?php else: ?>
             <div class="user-points-summary">
-                <p class="points-tip">Want to redeem? <a href="login.php">Log in</a> as a Student to see your points and redeem rewards!</p>
+                <p class="points-tip">Want to redeem? <a href="sign_up.php">Log in</a> as a Student to see your points and redeem rewards!</p>
             </div>
         <?php endif; ?>
 
@@ -104,7 +104,7 @@ if (!$is_db_connected) {
                                     <button class="btn-redeem btn-disabled" disabled>Need <?php echo number_format($reward['Points_cost'] - $user_points); ?> PTS More</button>
                                 <?php endif; ?>
                             <?php else: ?>
-                                <a href="login.php" class="btn-redeem btn-submit">Login to Redeem</a>
+                                <a href="sign_up.php" class="btn-redeem btn-submit">Login to Redeem</a>
                             <?php endif; ?>
                         </div>
                     </div>

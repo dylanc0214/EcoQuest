@@ -5,7 +5,7 @@ include("../config/db.php");
 
 // 1. Authorization: Make sure the user is a logged-in student.
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'student' || !isset($_SESSION['student_id'])) {
-    header("Location: login.php?error=unauthorized");
+    header("Location: sign_up.php?error=unauthorized");
     exit();
 }
 

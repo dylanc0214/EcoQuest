@@ -23,7 +23,7 @@ ini_set('display_errors', 1);
                     through TREE PLANTING, rewards, and recognition. Be part of the APU Green Campus movement!
                 </p>
                 <a href="register.php" class="btn-signup">Sign Up Today!</a>
-                <p class="login-link">Already have an account? <a href="login.php">Login</a></p>
+                <p class="login-link">Already have an account? <a href="sign_up.php">Login</a></p>
             </div>
 
             <div class="hero-right">

@@ -7,7 +7,7 @@ include("../includes/header.php");
 
 // Only students can view this page
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'student' || !isset($_SESSION['student_id'])) {
-    header("Location: login.php");
+    header("Location: sign_up.php");
     exit();
 }
 
