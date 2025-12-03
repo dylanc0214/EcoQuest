@@ -34,6 +34,7 @@ $base_path = '/Group7_EcoQuest/'; // Update this if your project folder is diffe
             <li><a href="<?php echo $base_path; ?>pages/achievements.php">Achievements</a></li>
             <li><a href="<?php echo $base_path; ?>pages/validate.php">Submissions</a></li>
             <li><a href="<?php echo $base_path; ?>pages/forum.php">Forum</a></li>
+            <li><a href="<?php echo $base_path; ?>pages/feedback.php">Feedback</a></li>
 
         <?php elseif ($user_role == 'moderator'): ?>
             <li><a href="<?php echo $base_path; ?>pages/moderator/dashboard.php">Dashboard</a></li>
@@ -51,6 +52,7 @@ $base_path = '/Group7_EcoQuest/'; // Update this if your project folder is diffe
             <li><a href="<?php echo $base_path; ?>pages/admin/manage_quests.php">Quests</a></li>
             <li><a href="<?php echo $base_path; ?>pages/admin/manage_rewards.php">Rewards</a></li>
             <li><a href="<?php echo $base_path; ?>pages/forum.php">Forum</a></li>
+            <li><a href="<?php echo $base_path; ?>pages/admin/view_feedback.php">Feedback</a></li>
         <?php endif; ?>
     </div>
 
