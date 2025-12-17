@@ -185,26 +185,16 @@ function togglePassword(inputId) {
 // We define these variables inside functions or check if they exist 
 // to prevents errors on pages where 'login' div doesn't exist.
 
+var x = document.getElementById('login');
+var y = document.getElementById('register');
+var z = document.getElementById('btn');       
 function login(){
-    var x = document.getElementById('login');
-    var y = document.getElementById('register');
-    var z = document.getElementById('btn'); 
-    
-    if(x && y && z) {
-        x.style.left = "27px";
-        y.style.right = "-550px";
-        z.style.left = "0px";
-    }
+    x.style.left = "27px";
+    y.style.right = "-550px";
+    z.style.left = "0px";
 }
-
 function register(){
-    var x = document.getElementById('login');
-    var y = document.getElementById('register');
-    var z = document.getElementById('btn'); 
-    
-    if(x && y && z) {
-        x.style.left = "-550px";
-        y.style.right = "25px";
-        z.style.left = "210px";
-    }
-}
+    x.style.left = "-550px";
+    y.style.right = "25px";
+    z.style.left = "210px";
+} 
