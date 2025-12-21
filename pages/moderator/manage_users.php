@@ -68,6 +68,19 @@ if (!$conn) {
                 <h2>All Students (<?php echo count($students); ?>)</h2>
             </header>
 
+            <style>
+            /* Small dropdown styles for the three-dot actions */
+            .action-dropdown{position:relative;display:inline-block}
+            .action-btn{background:transparent;border:0;padding:6px 8px;border-radius:6px;color:var(--color-text, #123);cursor:pointer}
+            .action-btn i{font-size:14px}
+            .action-menu{position:absolute;right:0;top:28px;min-width:140px;background:#fff;border:1px solid #e6e6e6;border-radius:6px;box-shadow:0 6px 18px rgba(17,24,39,0.06);display:none;z-index:40}
+            .action-menu a{display:block;padding:8px 12px;color:#1f2937;text-decoration:none;border-bottom:1px solid #f2f2f2}
+            .action-menu a:hover{background:#f6f9f6}
+            .action-dropdown.show .action-menu{display:block}
+            .actions-cell{width:80px;text-align:right}
+            @media(max-width:720px){.actions-cell{text-align:left}}
+            </style>
+
             <?php if (!empty($students)): ?>
                 <div class="table-responsive">
                     <table class="admin-data-table">
@@ -78,6 +91,7 @@ if (!$conn) {
                                 <th>Email</th>
                                 <th>Points</th>
                                 <th>Joined On</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -91,6 +105,16 @@ if (!$conn) {
                                     <td data-label="Email"><?php echo htmlspecialchars($student['Email']); ?></td>
                                     <td data-label="Points"><?php echo number_format($student['Total_point']); ?> Pts</td>
                                     <td data-label="Joined On"><?php echo date('d M Y', strtotime($student['Created_at'])); ?></td>
+                                    <td class="actions-cell" data-label="Actions">
+                                        <div class="action-dropdown">
+                                            <button class="action-btn" aria-expanded="false" aria-haspopup="true" title="Actions">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="action-menu" role="menu">
+                                                <a class="action-item" role="menuitem" href="view_student.php?student_id=<?php echo urlencode($student['Student_id']); ?>">View Profile</a>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -102,5 +126,22 @@ if (!$conn) {
         </section>
     </div>
 </main>
+
+<script>
+// Toggle action dropdowns (three-dot menu)
+document.addEventListener('click', function(e){
+    const btn = e.target.closest('.action-btn');
+    // close all first
+    document.querySelectorAll('.action-dropdown.show').forEach(function(dd){ if(!dd.contains(e.target)) dd.classList.remove('show'); });
+    if(btn){
+        const wrapper = btn.closest('.action-dropdown');
+        const expanded = wrapper.classList.toggle('show');
+        btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    }
+});
+
+// Close dropdowns on Escape
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ document.querySelectorAll('.action-dropdown.show').forEach(dd=>dd.classList.remove('show')); } });
+</script>
 
 <?php require_once '../../includes/footer.php'; ?>
