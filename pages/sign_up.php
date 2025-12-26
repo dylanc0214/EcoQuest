@@ -168,10 +168,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -316,5 +312,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <?php include("../includes/footer.php"); ?>
     <script src="../assets/js/main.js"></script>
+
+
+    <script>
+        // Check if the URL has ?action=register
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const action = urlParams.get('action');
+
+            if (action === 'register') {
+                // Call the function defined in main.js
+                register();
+            }
+        });
+    </script>
 </body>
 </html>
