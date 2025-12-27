@@ -313,7 +313,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include("../includes/footer.php"); ?>
     <script src="../assets/js/main.js"></script>
 
-
+    <!--FOR BTN SWITCH TAB ON HOMEPAGE-->
     <script>
         // Check if the URL has ?action=register
         window.addEventListener('DOMContentLoaded', (event) => {
@@ -321,8 +321,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const action = urlParams.get('action');
 
             if (action === 'register') {
-                // Call the function defined in main.js
-                register();
+            // Trigger the Register view
+            register();
+            } else if (action === 'login') {
+                // Trigger the Login view
+                login();
             }
         });
     </script>
