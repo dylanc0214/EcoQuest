@@ -38,8 +38,7 @@
             <button class="chat-close-btn" id="faq-close-btn">&times;</button>
         </div>
         
-        <div class="chat-messages" id="faq-list">
-            </div>
+        <div class="chat-messages" id="faq-list"></div>
     </div>
     <?php
     endif; // End check for student or guest
