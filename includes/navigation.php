@@ -51,6 +51,7 @@ $base_path = '/Group7_EcoQuest/'; // Update this if your project folder is diffe
             <li><a href="<?php echo $base_path; ?>pages/admin/manage_users.php">Users</a></li>
             <li><a href="<?php echo $base_path; ?>pages/admin/moderation_records.php">Moderation Log</a></li>
             <li><a href="<?php echo $base_path; ?>pages/admin/manage_quests.php">Quests</a></li>
+            <li><a href="<?php echo $base_path; ?>pages/admin/manage_badges.php">Badges</a></li>
             <li><a href="<?php echo $base_path; ?>pages/admin/manage_rewards.php">Rewards</a></li>
             <li><a href="<?php echo $base_path; ?>pages/forum.php">Forum</a></li>
             <li><a href="<?php echo $base_path; ?>pages/admin/view_feedback.php">Feedback</a></li>

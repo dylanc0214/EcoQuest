@@ -56,6 +56,7 @@
                     echo "<a href='{$bp}pages/admin/manage_users.php' style='$s'>Users</a>";
                     echo "<a href='{$bp}pages/admin/moderation_records.php' style='$s'>Mod Log</a>";
                     echo "<a href='{$bp}pages/admin/manage_quests.php' style='$s'>Quests</a>";
+                    echo "<a href='{$bp}pages/admin/manage_badges.php' style='$s'>Badges</a>";
                     echo "<a href='{$bp}pages/admin/manage_rewards.php' style='$s'>Rewards</a>";
                     echo "<a href='{$bp}pages/forum.php' style='$s'>Forum</a>";
                     echo "<a href='{$bp}pages/admin/view_feedback.php' style='$s'>Feedback</a>";
