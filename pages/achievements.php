@@ -14,23 +14,10 @@ $student_id = $_SESSION['student_id'];
 $newly_unlocked = [];
 
 // ==========================================
-// 1. THE "BRAIN" (Configuration) 🧠
+// 1. GET STUDENT STATS 📊
 // ==========================================
-// Map database Titles to Logic/Icons here since DB columns are missing.
-// Types: 'quest_count', 'post_count'
-$achievement_rules = [
-    'Green Beginner'   => ['icon' => '🌱', 'type' => 'quest_count', 'val' => 1],
-    'Eco Warrior'      => ['icon' => '⚔️', 'type' => 'quest_count', 'val' => 5],
-    'Planet Savior'    => ['icon' => '🌍', 'type' => 'quest_count', 'val' => 10],
-    'Voice of Change'  => ['icon' => '📢', 'type' => 'post_count',  'val' => 1],
-    'Community Leader' => ['icon' => '🤝', 'type' => 'post_count',  'val' => 5]
-];
-
-// ==========================================
-// 2. GAMIFICATION ENGINE (Auto-Check) ⚙️
-// ==========================================
+// We still need to know how many quests/posts you have!
 if ($conn) {
-    // --- A. GET STUDENT STATS ---
     $sql_stats = "
         SELECT 
             s.Total_Exp_Point,
@@ -49,56 +36,80 @@ if ($conn) {
     $quests = $stats['quest_count'] ?? 0;
     $posts = $stats['post_count'] ?? 0;
 
-    // --- B. CHECK EXP BADGES (Using Database Logic) ---
+    // ==========================================
+    // 2. CHECK BADGES (XP Based)
+    // ==========================================
+    // This logic was fine, just keeping it simple
     $db_badges = $conn->query("SELECT * FROM badge")->fetch_all(MYSQLI_ASSOC);
     foreach ($db_badges as $b) {
         if ($xp >= $b['Require_Exp_Points']) {
-            // Check if owned
-            $check = $conn->query("SELECT 1 FROM student_badge WHERE Student_id = $student_id AND Badge_id = {$b['Badge_id']}");
-            if ($check->num_rows == 0) {
-                $conn->query("INSERT INTO student_badge (Student_id, Badge_id, Earned_Date) VALUES ($student_id, {$b['Badge_id']}, NOW())");
-                $newly_unlocked[] = $b['Badge_Name'];
-            }
+            unlock_item($conn, $student_id, 'badge', $b['Badge_id'], $b['Badge_Name'], $newly_unlocked);
         }
     }
 
-    // --- C. CHECK ACHIEVEMENTS (Using PHP "Brain" Logic) ---
-    $db_achievements = $conn->query("SELECT * FROM achievement")->fetch_all(MYSQLI_ASSOC);
-    foreach ($db_achievements as $ach) {
-        $title = $ach['Title'];
-        
-        // Only process if we defined a rule for it
-        if (isset($achievement_rules[$title])) {
-            $rule = $achievement_rules[$title];
-            $earned = false;
+    // ==========================================
+    // 3. CHECK ACHIEVEMENTS (The Simple Way) 👇
+    // ==========================================
+    // No more "Brain" array. Just straight logic.
+    // IDs match your ecoquest.sql
 
-            if ($rule['type'] === 'quest_count' && $quests >= $rule['val']) $earned = true;
-            if ($rule['type'] === 'post_count' && $posts >= $rule['val']) $earned = true;
+    // Quest Milestone 1: Green Beginner (1 Quest)
+    if ($quests >= 1) {
+        unlock_item($conn, $student_id, 'achievement', 1, 'Green Beginner', $newly_unlocked);
+    }
 
-            if ($earned) {
-                // Check if owned
-                $check = $conn->query("SELECT 1 FROM student_achievement WHERE Student_id = $student_id AND Achievement_id = {$ach['Achievement_id']}");
-                if ($check->num_rows == 0) {
-                    $conn->query("INSERT INTO student_achievement (Student_id, Achievement_id, Status) VALUES ($student_id, {$ach['Achievement_id']}, 'Unlocked')");
-                    $newly_unlocked[] = $title;
-                }
-            }
+    // Quest Milestone 2: Eco Warrior (5 Quests)
+    if ($quests >= 5) {
+        unlock_item($conn, $student_id, 'achievement', 2, 'Eco Warrior', $newly_unlocked);
+    }
+
+    // Quest Milestone 3: Planet Savior (10 Quests)
+    if ($quests >= 10) {
+        unlock_item($conn, $student_id, 'achievement', 3, 'Planet Savior', $newly_unlocked);
+    }
+
+    // Post Milestone 1: Voice of Change (1 Post)
+    if ($posts >= 1) {
+        unlock_item($conn, $student_id, 'achievement', 4, 'Voice of Change', $newly_unlocked);
+    }
+
+    // Post Milestone 2: Community Leader (5 Posts)
+    if ($posts >= 5) {
+        unlock_item($conn, $student_id, 'achievement', 5, 'Community Leader', $newly_unlocked);
+    }
+}
+
+// ==========================================
+// HELPER FUNCTION (To avoid repeating code)
+// ==========================================
+function unlock_item($conn, $sid, $type, $item_id, $name, &$unlocked_list) {
+    if ($type == 'badge') {
+        $check = $conn->query("SELECT 1 FROM student_badge WHERE Student_id = $sid AND Badge_id = $item_id");
+        if ($check->num_rows == 0) {
+            $conn->query("INSERT INTO student_badge (Student_id, Badge_id, Earned_Date) VALUES ($sid, $item_id, NOW())");
+            $unlocked_list[] = $name;
+        }
+    } else {
+        $check = $conn->query("SELECT 1 FROM student_achievement WHERE Student_id = $sid AND Achievement_id = $item_id");
+        if ($check->num_rows == 0) {
+            $conn->query("INSERT INTO student_achievement (Student_id, Achievement_id, Status) VALUES ($sid, $item_id, 'Unlocked')");
+            $unlocked_list[] = $name;
         }
     }
 }
 
 // ==========================================
-// 3. FETCH DATA FOR DISPLAY
+// 4. FETCH DATA FOR DISPLAY
 // ==========================================
 $my_badges = [];
 $my_achievements = [];
 
 if ($conn) {
-    // Fetch Badges (Rank)
+    // Fetch Badges
     $sql_b = "SELECT b.*, sb.Earned_Date FROM badge b LEFT JOIN student_badge sb ON b.Badge_id = sb.Badge_id AND sb.Student_id = $student_id ORDER BY b.Require_Exp_Points ASC";
     $my_badges = $conn->query($sql_b)->fetch_all(MYSQLI_ASSOC);
 
-    // Fetch Achievements (Milestones)
+    // Fetch Achievements
     $sql_a = "SELECT a.*, sa.Status FROM achievement a LEFT JOIN student_achievement sa ON a.Achievement_id = sa.Achievement_id AND sa.Student_id = $student_id";
     $my_achievements = $conn->query($sql_a)->fetch_all(MYSQLI_ASSOC);
 }
@@ -148,14 +159,22 @@ if ($conn) {
             <?php foreach ($my_achievements as $ach): ?>
                 <?php 
                     $is_unlocked = !empty($ach['Status']);
-                    $title = $ach['Title'];
-                    // Get Icon/Rule from PHP config, fallback to generic
-                    $config = $achievement_rules[$title] ?? ['icon' => '🏅', 'val' => 0];
+                    $id = $ach['Achievement_id'];
+                    
+                    // Simple Icon Switch - Hardcoded visual logic
+                    $icon = '🏅'; // Default
+                    switch($id) {
+                        case 1: $icon = '🌱'; break; // Green Beginner
+                        case 2: $icon = '⚔️'; break; // Eco Warrior
+                        case 3: $icon = '🌍'; break; // Planet Savior
+                        case 4: $icon = '📢'; break; // Voice of Change
+                        case 5: $icon = '🤝'; break; // Community Leader
+                    }
                 ?>
                 <div class="achievement-card <?php echo $is_unlocked ? 'unlocked' : 'locked'; ?>">
-                    <div class="badge-icon"><?php echo $config['icon']; ?></div>
+                    <div class="badge-icon"><?php echo $icon; ?></div>
                     <div class="badge-info">
-                        <h3 class="badge-title"><?php echo htmlspecialchars($title); ?></h3>
+                        <h3 class="badge-title"><?php echo htmlspecialchars($ach['Title']); ?></h3>
                         <p class="badge-desc"><?php echo htmlspecialchars($ach['Description']); ?></p>
                         <?php if ($is_unlocked): ?>
                             <span class="badge-date">Completed!</span>
