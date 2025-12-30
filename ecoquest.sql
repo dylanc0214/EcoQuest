@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Dec 03, 2025 at 05:49 PM
+-- Generation Time: Dec 28, 2025 at 05:41 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.3.14
 
@@ -34,7 +34,18 @@ CREATE TABLE IF NOT EXISTS `achievement` (
   `Description` text,
   `Exp_point` int DEFAULT NULL,
   PRIMARY KEY (`Achievement_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `achievement`
+--
+
+INSERT INTO `achievement` (`Achievement_id`, `Title`, `Description`, `Exp_point`) VALUES
+(1, 'Green Beginner', 'Complete your first quest.', NULL),
+(2, 'Eco Warrior', 'Complete 5 quests.', NULL),
+(3, 'Planet Savior', 'Complete 10 quests.', NULL),
+(4, 'Voice of Change', 'Create your first forum post.', NULL),
+(5, 'Community Leader', 'Create 5 forum posts.', NULL);
 
 -- --------------------------------------------------------
 
@@ -70,7 +81,18 @@ CREATE TABLE IF NOT EXISTS `badge` (
   `Badge_image` varchar(255) DEFAULT NULL,
   `Require_Exp_Points` int DEFAULT NULL,
   PRIMARY KEY (`Badge_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `badge`
+--
+
+INSERT INTO `badge` (`Badge_id`, `Badge_Name`, `Badge_image`, `Require_Exp_Points`) VALUES
+(1, 'Bronze Scavenger', '🥉', 100),
+(2, 'Silver Guardian', '🥈', 500),
+(3, 'Gold Hero', '🥇', 1000),
+(4, 'Platinum Legend', '💎', 2500),
+(5, 'Diamond Master', '👑', 5000);
 
 -- --------------------------------------------------------
 
@@ -88,7 +110,14 @@ CREATE TABLE IF NOT EXISTS `comment` (
   PRIMARY KEY (`Comment_id`),
   KEY `Comment_fk_Student_id` (`Student_id`),
   KEY `Comment_fk_Post_id` (`Post_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `comment`
+--
+
+INSERT INTO `comment` (`Comment_id`, `Student_id`, `Post_id`, `Comment`, `Created_at`) VALUES
+(1, 1, 2, 'Hope everyone will like it.', '2025-12-11 06:42:39');
 
 -- --------------------------------------------------------
 
@@ -100,14 +129,13 @@ DROP TABLE IF EXISTS `comment_report`;
 CREATE TABLE IF NOT EXISTS `comment_report` (
   `Comment_report_id` int NOT NULL AUTO_INCREMENT,
   `Comment_id` int NOT NULL,
-  `Title` varchar(255) DEFAULT NULL,
-  `Description` text,
+  `Reason` text,
   `Report_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `Status` varchar(50) DEFAULT NULL,
-  `View_by_admin` int DEFAULT NULL,
-  `Review_time` datetime DEFAULT NULL,
+  `Reported_by` int NOT NULL,
   PRIMARY KEY (`Comment_report_id`),
-  KEY `CommentReport_fk_Comment_id` (`Comment_id`)
+  KEY `CommentReport_fk_Comment_id` (`Comment_id`),
+  KEY `CommentReport_fk_Reported_by` (`Reported_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -214,15 +242,21 @@ DROP TABLE IF EXISTS `post_report`;
 CREATE TABLE IF NOT EXISTS `post_report` (
   `Post_report_id` int NOT NULL AUTO_INCREMENT,
   `Post_id` int NOT NULL,
-  `Title` varchar(255) DEFAULT NULL,
-  `Description` text,
+  `Reason` text,
   `Report_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `Status` varchar(50) DEFAULT NULL,
-  `View_by_admin` int DEFAULT NULL,
-  `Review_time` datetime DEFAULT NULL,
+  `Reported_by` int NOT NULL,
   PRIMARY KEY (`Post_report_id`),
-  KEY `PostReport_fk_Post_id` (`Post_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `PostReport_fk_Post_id` (`Post_id`),
+  KEY `PostReport_fk_Reported_by` (`Reported_by`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `post_report`
+--
+
+INSERT INTO `post_report` (`Post_report_id`, `Post_id`, `Reason`, `Report_time`, `Status`, `Reported_by`) VALUES
+(1, 2, 'Sexual Content', '2025-12-11 06:43:24', 'Pending', 1);
 
 -- --------------------------------------------------------
 
@@ -407,7 +441,15 @@ CREATE TABLE IF NOT EXISTS `student_achievement` (
   PRIMARY KEY (`Student_Achievement_id`),
   KEY `StudentAchievement_fk_Achievement_id` (`Achievement_id`),
   KEY `StudentAchievement_fk_Student_id` (`Student_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `student_achievement`
+--
+
+INSERT INTO `student_achievement` (`Student_Achievement_id`, `Achievement_id`, `Student_id`, `Status`) VALUES
+(1, 1, 1, 'Unlocked'),
+(2, 4, 1, 'Unlocked');
 
 -- --------------------------------------------------------
 
@@ -564,7 +606,8 @@ ALTER TABLE `comment`
 -- Constraints for table `comment_report`
 --
 ALTER TABLE `comment_report`
-  ADD CONSTRAINT `CommentReport_fk_Comment_id` FOREIGN KEY (`Comment_id`) REFERENCES `comment` (`Comment_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `CommentReport_fk_Comment_id` FOREIGN KEY (`Comment_id`) REFERENCES `comment` (`Comment_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `CommentReport_fk_Reported_by` FOREIGN KEY (`Reported_by`) REFERENCES `user` (`User_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `moderator`
@@ -590,7 +633,8 @@ ALTER TABLE `post_likes`
 -- Constraints for table `post_report`
 --
 ALTER TABLE `post_report`
-  ADD CONSTRAINT `PostReport_fk_Post_id` FOREIGN KEY (`Post_id`) REFERENCES `post` (`Post_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `PostReport_fk_Post_id` FOREIGN KEY (`Post_id`) REFERENCES `post` (`Post_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `PostReport_fk_Reported_by` FOREIGN KEY (`Reported_by`) REFERENCES `user` (`User_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `quest`

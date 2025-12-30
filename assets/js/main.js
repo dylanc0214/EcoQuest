@@ -191,10 +191,10 @@ var z = document.getElementById('btn');
 function login(){
     x.style.left = "27px";
     y.style.right = "-550px";
-    z.style.left = "0px";
+    z.style.left = "0px"; // 0%
 }
 function register(){
     x.style.left = "-550px";
     y.style.right = "25px";
-    z.style.left = "210px";
-} 
+    z.style.left = "50%"; // Moves exactly halfway
+}

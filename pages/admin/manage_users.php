@@ -15,7 +15,7 @@ if (!$is_logged_in || $user_role !== 'admin' || !isset($_SESSION['admin_id'])) {
 }
 
 // =======================================================
-// 2. FILTERING & DATA FETCHING (NEW ERD)
+// 2. FILTERING & DATA FETCHING
 // =======================================================
 $error_message = null;
 $users = [];
@@ -26,17 +26,32 @@ if (!in_array($filter_role, $valid_roles)) {
     $filter_role = 'all';
 }
 
-$query = "SELECT User_id, Username, Email, Role, Created_at FROM User";
+// --- UPDATED QUERY ---
+// We LEFT JOIN with the 'student' table to get Ban info and Student_id.
+// This allows us to see ban status even when viewing "All" users.
+$query = "
+    SELECT 
+        u.User_id, 
+        u.Username, 
+        u.Email, 
+        u.Role, 
+        u.Created_at,
+        s.Student_id,
+        s.Ban_time
+    FROM User u
+    LEFT JOIN Student s ON u.User_id = s.User_id
+";
+
 $params = [];
 $types = '';
 
 if ($filter_role !== 'all') {
-    $query .= " WHERE Role = ?";
+    $query .= " WHERE u.Role = ?";
     $params[] = $filter_role;
     $types .= 's';
 }
 
-$query .= " ORDER BY Created_at DESC";
+$query .= " ORDER BY u.Created_at DESC";
 
 if (!$conn) {
     $error_message = "Database connection failed.";
@@ -44,7 +59,6 @@ if (!$conn) {
     try {
         $stmt = $conn->prepare($query);
         if ($stmt === false) {
-             // THIS IS THE FIXED LINE
              throw new Exception("SQL Prepare failed: " . $conn->error);
         }
         if (!empty($params)) {
@@ -103,13 +117,24 @@ if (!$conn) {
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
-                                <th>Joined</th>
+                                <th>Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($users as $user): ?>
-                                <tr>
+                                <?php 
+                                    // Logic to check ban status
+                                    $is_student = ($user['Role'] === 'student');
+                                    $is_banned = false;
+                                    if ($is_student && !empty($user['Ban_time'])) {
+                                        // Check if ban time is in the future
+                                        if (new DateTime($user['Ban_time']) > new DateTime()) {
+                                            $is_banned = true;
+                                        }
+                                    }
+                                ?>
+                                <tr style="<?php echo $is_banned ? 'background-color: #fff0f0;' : ''; ?>">
                                     <td data-label="ID"><?php echo htmlspecialchars($user['User_id']); ?></td>
                                     <td data-label="Username">
                                         <i class="fas fa-user-circle user-icon"></i> 
@@ -121,13 +146,42 @@ if (!$conn) {
                                             <?php echo htmlspecialchars(ucfirst($user['Role'])); ?>
                                         </span>
                                     </td>
-                                    <td data-label="Joined"><?php echo date('d M Y', strtotime($user['Created_at'])); ?></td>
+                                    <td data-label="Status">
+                                        <?php if ($is_banned): ?>
+                                            <span style="color: #dc2626; font-weight: 700; font-size: 0.9em;">
+                                                <i class="fas fa-ban"></i> Banned
+                                            </span>
+                                        <?php elseif ($is_student): ?>
+                                            <span style="color: #059669; font-weight: 600; font-size: 0.9em;">Active</span>
+                                        <?php else: ?>
+                                            <span style="color: #6b7280; font-size: 0.9em;">Staff</span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td data-label="Action">
                                         <div class="action-group">
                                             <a href="edit_user.php?id=<?php echo $user['User_id']; ?>" class="btn-action-icon btn-action-edit" title="Edit User">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            </div>
+
+                                            <?php if ($is_student): ?>
+                                                <?php if ($is_banned): ?>
+                                                    <a href="../../pages/ban_handler.php?student_id=<?php echo $user['Student_id']; ?>&action=unban" 
+                                                       class="btn-action-icon" 
+                                                       title="Unban User"
+                                                       style="color: #059669; margin-left: 10px;">
+                                                        <i class="fas fa-unlock"></i>
+                                                    </a>
+                                                <?php else: ?>
+                                                    <a href="../../pages/ban_handler.php?student_id=<?php echo $user['Student_id']; ?>&action=ban" 
+                                                       class="btn-action-icon" 
+                                                       title="Ban User"
+                                                       style="color: #dc2626; margin-left: 10px;"
+                                                       onclick="return confirm('Are you sure you want to ban this user?');">
+                                                        <i class="fas fa-ban"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -143,7 +197,7 @@ if (!$conn) {
 
 <style>
     /* ---------------------------------------------------- */
-    /* Filter Navigation Stacking (Re-confirming vertical flow) */
+    /* Reuse the styles you already had */
     /* ---------------------------------------------------- */
     .user-filter-nav {
         display: flex;
@@ -166,102 +220,24 @@ if (!$conn) {
         transition: all 0.2s;
     }
     .user-filter-nav .btn-create-user {
-        background-color: #10b981; /* Emerald 500 */
+        background-color: #10b981;
         color: white;
         margin-left: auto;
     }
 
-
-    /* ---------------------------------------------------- */
-    /* Mobile Table Transformation (< 768px) - Highly Specific Override */
-    /* ---------------------------------------------------- */
+    /* Mobile Styles */
     @media (max-width: 768px) {
-        /* 1. Filter Bar Stacking (Ensure full width) */
-        .user-filter-nav {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .user-filter-nav a, .user-filter-nav button {
-            width: 100%;
-            margin-left: 0 !important; /* Override desktop margin-left: auto */
-        }
-        .user-filter-nav .btn-create-user {
-            margin-top: 10px;
-        }
-
-        /* 2. Table Transformation (Targeting the user list table) */
-        .admin-data-table {
-            border-collapse: collapse;
-            margin: 0;
-            padding: 0;
-        }
-        .admin-data-table thead {
-            display: none; /* Hide headers */
-        }
-
-        /* Force table elements to stack */
-        .admin-data-table,
-        .admin-data-table tbody,
-        .admin-data-table tr,
-        .admin-data-table td {
-            display: block;
-            width: 100% !important; /* CRITICAL: Force full width override */
-            box-sizing: border-box;
-        }
-
-        /* Style each row as a card */
-        .admin-data-table tr {
-            margin-bottom: 20px;
-            border: 1px solid #DCDCDC;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            padding: 10px 0; /* Vertical padding around content */
-        }
-
-        /* Style individual cells */
-        .admin-data-table td {
-            text-align: right;
-            padding: 8px 15px;
-            padding-left: 100px; /* Space for the data label */
-            position: relative;
-            border-bottom: 1px dashed #f0f0f0;
-            line-height: 1.4;
-        }
-        .admin-data-table td:last-child {
-            border-bottom: none;
-            /* Center the action buttons horizontally */
-            text-align: center;
-            padding-top: 15px;
-        }
-
-        /* 3. Mobile Data Labels */
-        .admin-data-table td::before {
-            content: attr(data-label);
-            position: absolute;
-            left: 15px;
-            width: 80px; /* Fixed width for alignment */
-            text-align: left;
-            font-weight: 700;
-            color: #4A5568;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-        }
-
-        /* Action Group formatting */
-        .action-group {
-            display: flex;
-            justify-content: center; /* Center the icons */
-            gap: 15px;
-            width: 100%;
-        }
-
-        /* Specific adjustment for Username/Email cell alignment */
-        .admin-data-table td[data-label="USERNAME"],
-        .admin-data-table td[data-label="EMAIL"],
-        .admin-data-table td[data-label="ROLE"] {
-            /* Align values to the right for clear separation */
-            text-align: right;
-        }
+        .user-filter-nav { flex-direction: column; align-items: stretch; }
+        .user-filter-nav a, .user-filter-nav button { width: 100%; margin-left: 0 !important; }
+        .user-filter-nav .btn-create-user { margin-top: 10px; }
+        
+        .admin-data-table thead { display: none; }
+        .admin-data-table, .admin-data-table tbody, .admin-data-table tr, .admin-data-table td { display: block; width: 100% !important; }
+        .admin-data-table tr { margin-bottom: 20px; border: 1px solid #DCDCDC; border-radius: 8px; padding: 10px 0; }
+        .admin-data-table td { text-align: right; padding: 8px 15px; padding-left: 100px; position: relative; border-bottom: 1px dashed #f0f0f0; }
+        .admin-data-table td:last-child { border-bottom: none; text-align: center; padding-top: 15px; }
+        .admin-data-table td::before { content: attr(data-label); position: absolute; left: 15px; width: 80px; text-align: left; font-weight: 700; color: #4A5568; font-size: 0.75rem; }
+        .action-group { display: flex; justify-content: center; gap: 15px; width: 100%; }
     }
 </style>
 

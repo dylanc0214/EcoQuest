@@ -2,52 +2,26 @@
 // pages/moderator/manage_users.php
 require_once '../../includes/header.php';
 
-// =======================================================
-// 1. AUTHORIZATION CHECK
-// =======================================================
-$is_logged_in = $is_logged_in ?? false;
-$user_role = $user_role ?? 'guest';
-$conn = $conn ?? null;
-
-if (!$is_logged_in || !in_array($user_role, ['moderator', 'admin'])) {
+// Auth Check
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], ['moderator', 'admin'])) {
     header('Location: ../../index.php?error=unauthorized');
     exit;
 }
 
-// =======================================================
-// 2. DATA FETCHING (UPDATED TO JOIN User and Student)
-// =======================================================
-$error_message = null;
 $students = [];
-
-if (!$conn) {
-    $error_message = "Database connection failed.";
-} else {
-    try {
-        // This query now fetches users from the 'User' table
-        // and joins 'Student' to get student-specific data
-        $query = "
-            SELECT 
-                s.Student_id, 
-                u.Username, 
-                u.Email, 
-                s.Total_point, 
-                u.Created_at
-            FROM Student s
-            JOIN User u ON s.User_id = u.User_id
-            ORDER BY u.Created_at DESC
-        ";
-        
-        $result = $conn->query($query);
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $students[] = $row;
-            }
-        } else {
-            throw new Exception("Query failed: " . $conn->error);
+if ($conn) {
+    // Fetches Students + Ban Status
+    $query = "
+        SELECT s.Student_id, u.Username, u.Email, s.Total_point, u.Created_at, s.Ban_time
+        FROM student s
+        JOIN user u ON s.User_id = u.User_id
+        ORDER BY u.Created_at DESC
+    ";
+    $result = $conn->query($query);
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $students[] = $row;
         }
-    } catch (Exception $e) {
-        $error_message = "A database query error occurred: " . $e->getMessage();
     }
 }
 ?>
@@ -56,51 +30,80 @@ if (!$conn) {
     <div class="container">
         <header class="dashboard-header">
             <h1 class="page-title"><i class="fas fa-users"></i> View Students</h1>
-            <p class="subtitle">A list of all registered students on the EcoQuest platform.</p>
         </header>
-
-        <?php if ($error_message): ?>
-            <div class="alert alert-error"><strong>Error:</strong> <?php echo htmlspecialchars($error_message); ?></div>
-        <?php endif; ?>
         
         <section class="admin-data-section user-list">
-            <header class="section-header">
-                <h2>All Students (<?php echo count($students); ?>)</h2>
-            </header>
-
-            <?php if (!empty($students)): ?>
-                <div class="table-responsive">
-                    <table class="admin-data-table">
-                        <thead>
-                            <tr>
-                                <th>Student ID</th>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Points</th>
-                                <th>Joined On</th>
+            <div class="table-responsive">
+                <table class="admin-data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Status</th>
+                            <th>Points</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($students as $student): ?>
+                            <?php 
+                                // Check if Banned
+                                $is_banned = ($student['Ban_time'] && new DateTime($student['Ban_time']) > new DateTime());
+                            ?>
+                            <tr style="<?php echo $is_banned ? 'background-color: #fff0f0;' : ''; ?>">
+                                <td><?php echo htmlspecialchars($student['Student_id']); ?></td>
+                                <td>
+                                    <?php echo htmlspecialchars($student['Username']); ?>
+                                    <br><small><?php echo htmlspecialchars($student['Email']); ?></small>
+                                </td>
+                                <td>
+                                    <?php if ($is_banned): ?>
+                                        <span style="color:red; font-weight:bold;">🚫 Banned</span>
+                                    <?php else: ?>
+                                        <span style="color:green;">Active</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo number_format($student['Total_point']); ?></td>
+                                <td>
+                                    <div class="action-dropdown">
+                                        <button class="action-btn"><i class="fas fa-ellipsis-v"></i></button>
+                                        <div class="action-menu">
+                                            <a href="view_student.php?student_id=<?php echo $student['Student_id']; ?>">View Profile</a>
+                                            
+                                            <?php if ($is_banned): ?>
+                                                <a href="../../pages/ban_handler.php?student_id=<?php echo $student['Student_id']; ?>&action=unban" style="color:green;">
+                                                    <i class="fas fa-unlock"></i> Unban User
+                                                </a>
+                                            <?php else: ?>
+                                                <a href="../../pages/ban_handler.php?student_id=<?php echo $student['Student_id']; ?>&action=ban" style="color:red;" onclick="return confirm('Are you sure you want to ban this user?');">
+                                                    <i class="fas fa-ban"></i> Ban User
+                                                </a>
+                                            <?php endif; ?>
+                                            
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($students as $student): ?>
-                                <tr>
-                                    <td data-label="ID"><?php echo htmlspecialchars($student['Student_id']); ?></td>
-                                    <td data-label="Username">
-                                        <i class="fas fa-user-graduate user-icon"></i> 
-                                        <?php echo htmlspecialchars($student['Username']); ?>
-                                    </td>
-                                    <td data-label="Email"><?php echo htmlspecialchars($student['Email']); ?></td>
-                                    <td data-label="Points"><?php echo number_format($student['Total_point']); ?> Pts</td>
-                                    <td data-label="Joined On"><?php echo date('d M Y', strtotime($student['Created_at'])); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php else: ?>
-                <div class="empty-state"><h3>No Students Found</h3></div>
-            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </section>
     </div>
 </main>
-
+<script>
+// Simple Dropdown Script
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.action-btn');
+    document.querySelectorAll('.action-dropdown.show').forEach(d => d !== (btn?.parentElement) && d.classList.remove('show'));
+    if (btn) btn.parentElement.classList.toggle('show');
+});
+</script>
+<style>
+    .action-dropdown { position: relative; display: inline-block; }
+    .action-menu { display: none; position: absolute; right: 0; background: #fff; border: 1px solid #ccc; z-index: 10; width: 150px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .action-dropdown.show .action-menu { display: block; }
+    .action-menu a { display: block; padding: 10px; text-decoration: none; color: #333; }
+    .action-menu a:hover { background: #f0f0f0; }
+</style>
 <?php require_once '../../includes/footer.php'; ?>

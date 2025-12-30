@@ -14,6 +14,11 @@
         "id": 3,
         "question": "Where can I see my claimed rewards?",
         "answer": "You can see all your claimed rewards on the 'My Rewards' page, which is in the main navigation menu."
+      },
+      {
+        "id": 4,
+        "question": "Can Non-APU Student Register Account?",
+        "answer": "Unfortunately we only allow APU student to register as it is organized by APU."
       }
     ]
   }

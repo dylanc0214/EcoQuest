@@ -81,13 +81,13 @@ main {
    NAVIGATION BAR/HEADER/FOOTER (PC Menu)
    ==================================== */
 
-.main-nav {
+.main-nav{
     /* Layout */
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%; /* Ensures the container grabs full screen width */
-    
+
     /* Spacing & Positioning */
     padding: 15px 3%; /* Keeps content aligned with your hero section */
     position: sticky;
@@ -96,7 +96,7 @@ main {
     
     /* Styling (Light Cream Theme) */
     background-color: #FAFAF0; 
-    border-bottom: 1px solid rgba(29, 76, 67, 0.1);
+    border-bottom: 2px solid rgba(29, 76, 67, 0.1);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
@@ -154,11 +154,11 @@ main {
     padding: 0;
 }
 
-.nav-links li {
-    margin: 0 8px;
+.dropdown-wrapper{
+    position: static;
 }
 
-.nav-links a {
+.dropdown-wrapper a{
     text-decoration: none;
     color: #2C3E50; /* Darker text */
     font-weight: 500;
@@ -166,13 +166,87 @@ main {
     padding: 5px 0;
     border-bottom: 3px solid transparent;
     transition: all 0.3s ease;
+    margin: 0 8px;
 }
 
-.nav-links a:hover,
-.nav-links a:active {
+.dropdown-title:hover,
+.dropdown-title:active {
     color: #1D4C43; /* Forest Green on hover */
     border-bottom: 3px solid #71B48D; /* Mint Green highlight */
 }
+
+.dropdown-content{
+/* Layout */
+    position: absolute;
+    top: 80%;
+    left: 0;
+    width: 100%;
+    background-color: #FFFFFF;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    padding: 40px 0;
+    display: flex; /* Always flex, but hidden via opacity */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+
+    /* Transition Logic */
+    opacity: 0;            /* Make it invisible */
+    visibility: hidden;    /* Prevent clicking when hidden */
+    transform: translateY(10px); /* Start slightly lower for a slide effect */
+    transition: all 0.3s ease-in-out;
+
+}
+
+/* Style individual items in the grid */
+.dropdown-content li {
+    list-style: none;
+    flex: 1; /* Each item takes equal width */
+    max-width: 250px;
+    text-align: center;
+    border-right: 1px solid #EEEEEE;
+}
+
+.dropdown-content li:last-child {
+    border-right: none;
+}
+
+.dropdown-content li a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    padding: 20px;
+}
+
+/* Image/Icon Styling */
+.dropdown-img {
+    width: 70%; /* Larger icons like the image */
+    margin-bottom: 10px;
+}
+
+.dropdown-content li a:hover,p.dropdown-title:hover{
+    background-color: #f3f3f3;
+    color: #1D4C43; /* Forest Green on hover */
+    border-bottom: 3px solid #71B48D; /* Mint Green highlight */
+}
+
+
+.dropdown-wrapper:hover .dropdown-content{
+    display: flex;
+    opacity: 1;            /* Fade in */
+    visibility: visible;   /* Make it interactive */
+    transform: translateY(0); /* Slide up to its natural position */
+}
+
+.dropdown-title p {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
 
 /* ====================================
    Auth Buttons (Updated for Profile Link)
@@ -254,7 +328,8 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 80px 8%;
+    padding: 2% 2%;
+    margin: 0 4% 0 4%;
     background-color: #FAFAF0; /* Light Cream background */
     gap: 60px;
     min-height: 70vh;
@@ -271,7 +346,6 @@ main {
     width: 60%;
     height: 100%;
     /* Gradient from transparent (left) to light cream (right) */
-    background: linear-gradient(to right, rgba(250, 250, 240, 0) 0%, rgba(250, 250, 240, 0.8) 20%, #FAFAF0 80%);
     z-index: 1;
 }
 
@@ -345,29 +419,295 @@ main {
     color: #1D4C43;
 }
 
-.hero-right {
-    flex: 1;
-    text-align: right;
-    z-index: 2;
-    position: relative;
-    margin-right: 0; /* Ensures the curve is right */
-
-    /* The magic for the curved shape! */
-    clip-path: ellipse(110% 80% at 90% 50%);
-    /* Removed background-color: #71B48D; */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 550px; /* Bigger image size */
+/*Statistics*/
+.homepage-content {
+    position: relative; 
+    width: 100%;
 }
 
-.hero-right img {
+.homepage-content h2{
+    text-align: center;
+    font-size: 2.5rem;
+    color: #1D4C43; /* Matches your green theme */
+    font-weight: 700;
+}
+
+.img-tree {
+    display: flex;
+    justify-content: center;
+}
+
+.stat-1, .stat-2, .stat-3 {
+    position: absolute;
+    text-align: center;
+    color: #28a745; /* Green color */
+    font-family: sans-serif;
+    background: transparent;
+    border: none;
+    width: auto; 
+    white-space: nowrap;
+}
+
+.stat-1 label, .stat-2 label, .stat-3 label {
+    font-size: 2.5rem;
+    font-weight: 800;
+    display: block;
+}
+
+.stat-1 p, .stat-2 p, .stat-3 p {
+    font-size: 1rem;
+    color: #6c757d; 
+    margin: 0;
+    font-weight: 500;
+}
+
+.stat-1 {
+    top: 25%;
+    left: 22%;
+}
+
+.stat-2 {
+    top: 50%;
+    right: 22%;
+    
+}
+
+.stat-3 {
+    bottom: 15%;
+    left: 25%;
+}
+/*mobile view*/
+@media screen and (max-width: 768px) {
+
+.homepage-content h2{
+    font-size: 2rem;
+    font-weight: 700;
+}
+.img-tree img{
+    width: 50%;
+    height: 50%;
+}
+
+.stat-1 {
+    top: 25%;
+    left: 15%;
+}
+
+.stat-2 {
+    top: 50%;
+    right: 16%;
+    
+}
+
+.stat-3 {
+    bottom: 15%;
+    left: 23%;
+}
+}
+
+/*feature*/
+.features-container {
+    overflow: hidden;
+}
+
+.features-section {
+    padding: 2rem 2rem;
+    background: #D3EADD;
+}
+.feature-section-header{
+    text-align: center;
+    margin-bottom: 4rem;
+}
+.feature-section-header h2{
+    font-size: 2.5rem;
+}
+
+.feature-section-header p{
+    font-size: 1.5rem;
+}
+
+.features-scroll {
+    display: flex;
+    gap: 2rem;
+    animation: scrollFeatures 30s linear infinite;
+    width: fit-content;
+}
+
+.features-scroll:hover {
+    animation-play-state: paused;
+}
+
+@keyframes scrollFeatures {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.feature-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    min-width: 320px;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon-index {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon-index {
+    transform: scale(1.2) rotate(5deg);
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.feature-card p {
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/*how it works*/
+.HIW-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.HIW-header h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.HIW-header p {
+    font-size: 1.2rem;
+}
+
+.how-it-works {
+    padding: 6rem 2rem;
+}
+
+.steps-container {
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.step-card {
+    flex: 1;
+    min-width: 250px;
+    text-align: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8f9fa, white);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.step-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+}
+
+.step-number label{
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 50px;
+    background: #2d8659;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(45, 134, 89, 0.3);
+}
+
+.step-icon {
+    font-size: 4rem;
+    margin: 2rem 0 1rem;
+}
+
+.step-card h3 {
+    color: #2d8659;
+    margin-bottom: 1rem;
+}
+
+.step-connector .arrow-right, .arrow-down{
+    font-size: 2.5em;
+}
+
+.step-connector .arrow-down{
+    display: none;
+}
+
+/*mobile view need to change the steps to up to bottom instead of left to right*/
+@media screen and (max-width: 768px){
+
+.step-connector .arrow-right{
+    display: none;
+}
+}
+
+/*CTA-Section*/
+.cta-section{
+    margin: 0 5rem 5rem 4rem;
+}
+
+.cta-container{
+    display: inline-flex;
+    background-color: #D3EADD;
+    padding: 5rem 5rem 5rem 5rem;
+}
+
+.cta-content{
+    font-size: 1.5rem;
+}
+
+.cta-img-content{
+    display: inline-flex;
+    justify-content: center;
+}
+
+.cta-img-content img{
     max-width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 0;
-    box-shadow: none;
-    transition: none;
+    height: auto;
+    border-radius: 3rem;
+}
+
+.cta-btn{
+    background-color: #00A63E;
+    color: white;
+    font-size: 1.1rem;
+    border-radius: 1rem;
+    padding: 14px 32px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.cta-btn:hover {
+    transform: translateY(-20px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
 }
 
 
