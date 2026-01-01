@@ -30,24 +30,24 @@ $base_path = '/Group7_EcoQuest/'; // Update this if your project folder is diffe
             <li class="dropdown-wrapper">
                 <a href="" class="dropdown-title">Activity</a>
                 <ul class="dropdown-content">
-                    <li><a href=""><img src="../assets/images/quest.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Quests</strong></p></a></li>
-                    <li><a href=""><img src="../assets/images/leaderboard.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Leaderboard</strong></p></a></li>
-                    <li><a href=""><img src="../assets/images/submission.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Submissions</strong></p></a></li>
+                    <li><a href=""><img src="../assets/images/icons/quest.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Quests</strong></p></a></li>
+                    <li><a href=""><img src="../assets/images/icons/leaderboard.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Leaderboard</strong></p></a></li>
+                    <li><a href=""><img src="../assets/images/icons/submission.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Submissions</strong></p></a></li>
                 </ul>
             </li>
             <li class="dropdown-wrapper">
                 <a href="" class="dropdown-title">Rewards</a>
                 <ul class="dropdown-content">
-                    <li><a href=""><img src="../assets/images/reward.png" alt="reward image" class="dropdown-img"><p><strong class="dropdown-title-text">Rewards</strong></p></a></li>
-                    <li><a href=""><img src="../assets/images/claim.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Claimed</strong></p></a></li>
-                    <li><a href=""><img src="../assets/images/achievement.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Achievements</strong></p></a></li>
+                    <li><a href=""><img src="../assets/images/icons/reward.png" alt="reward image" class="dropdown-img"><p><strong class="dropdown-title-text">Rewards</strong></p></a></li>
+                    <li><a href=""><img src="../assets/images/icons/claim.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Claimed</strong></p></a></li>
+                    <li><a href=""><img src="../assets/images/icons/achievement.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Achievements</strong></p></a></li>
                 </ul>
             </li>
             <li class="dropdown-wrapper">
                 <a href="" class="dropdown-title">Community</a>
                 <ul class="dropdown-content">
-                    <li><a href=""><img src="../assets/images/forum.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Forum</strong></p></a></li>
-                    <li><a href=""><img src="../assets/images/feedback.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Feedback</strong></p></a></li>
+                    <li><a href=""><img src="../assets/images/icons/forum.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Forum</strong></p></a></li>
+                    <li><a href=""><img src="../assets/images/icons/feedback.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Feedback</strong></p></a></li>
                 </ul>
             </li>
         
