@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title></title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-<body>
+    <body>
     <footer>
         <div class="footer-content" style="text-align: center;padding: 25px; background-color: #1D4C43; color: #FAFAF0; font-size: 0.9rem;">
             <img src="<?php echo isset($base_path) ? $base_path : '../'; ?>assets/images/logo.PNG" alt="EcoQuest Logo" class="logo">
@@ -19,7 +18,7 @@
                 $bp = isset($base_path) ? $base_path : '/Group7_EcoQuest/';
                 
                 // Ensure user_role is set
-                $role = isset($user_role) ? $user_role : 'guest';
+                $role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : 'guest';
 
                 // --- GUEST ---
                 if ($role == 'guest') {
@@ -56,6 +55,7 @@
                     echo "<a href='{$bp}pages/admin/manage_users.php' style='$s'>Users</a>";
                     echo "<a href='{$bp}pages/admin/moderation_records.php' style='$s'>Mod Log</a>";
                     echo "<a href='{$bp}pages/admin/manage_quests.php' style='$s'>Quests</a>";
+                    echo "<a href='{$bp}pages/admin/manage_badges.php' style='$s'>Badges</a>";
                     echo "<a href='{$bp}pages/admin/manage_rewards.php' style='$s'>Rewards</a>";
                     echo "<a href='{$bp}pages/forum.php' style='$s'>Forum</a>";
                     echo "<a href='{$bp}pages/admin/view_feedback.php' style='$s'>Feedback</a>";
@@ -71,7 +71,7 @@
 
     <?php
     // Chat Toggle Logic
-    if (isset($user_role) && ($user_role === 'student' || $user_role === 'guest')):
+    if (isset($role) && ($role === 'student' || $role === 'guest')):
     ?>
 
     <button class="chat-toggle-button" id="faq-toggle-button">
@@ -91,6 +91,6 @@
     endif; 
     ?>
 
-    <script src="../assets/js/main.js"></script>
+    <script src="<?php echo isset($base_path) ? $base_path : '../'; ?>assets/js/main.js"></script>
 </body>
 </html>
