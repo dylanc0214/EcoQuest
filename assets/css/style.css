@@ -77,9 +77,9 @@ main {
     margin: 0 auto;
 }
 
-/* ====================================
-   NAVIGATION BAR/HEADER/FOOTER (PC Menu)
-   ==================================== */
+/* =======================================================
+   NAVIGATION BAR/HEADER/FOOTER/FAQ/Notification (PC Menu)
+   =======================================================*/
 
 .main-nav{
     /* Layout */
@@ -321,6 +321,331 @@ main {
 }
 
 /* ====================================
+   NEW FAQ POPUP STYLES (Chatbot Style - CORRECTED)
+   ==================================== */
+
+/* --- 1. The main floating '?' button --- */
+.chat-toggle-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.8rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+.chat-toggle-button:hover {
+    transform: scale(1.1);
+    background-color: var(--color-accent);
+}
+.chat-toggle-button i {
+    transition: transform 0.3s ease;
+}
+.chat-toggle-button:hover i {
+    transform: scale(1.1) rotate(10deg);
+}
+
+/* --- 2. The main popup window --- */
+.chat-popup {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 350px;
+    max-width: 90%;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    overflow: hidden;
+    display: none; /* Hidden by default */
+    flex-direction: column;
+}
+.chat-popup.show {
+    display: flex; /* This is the class JS adds to show it */
+}
+
+/* --- 3. The popup header --- */
+.chat-header {
+    background-color: var(--color-primary);
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+.chat-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* --- 4. The content area --- */
+#faq-list {
+    padding: 15px;
+    height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Gap between messages/buttons */
+    background-color: #f9f9f9;
+}
+
+/* --- 5. The Question buttons --- */
+.faq-question-btn {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--color-secondary);
+    background-color: #fff;
+    color: var(--color-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    line-height: 1.4;
+}
+.faq-question-btn:hover {
+    background-color: var(--color-background);
+    border-color: var(--color-primary);
+    transform: translateX(3px);
+}
+
+/* --- 6. The "Back" button --- */
+.faq-back-btn {
+    background: none;
+    border: none;
+    color: var(--color-accent);
+    font-weight: 700;
+    cursor: pointer;
+    text-align: left;
+    padding: 5px;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    align-self: flex-start;
+}
+.faq-back-btn:hover {
+    text-decoration: underline;
+}
+
+/* --- 7. The chat bubbles --- */
+.chat-message {
+    padding: 10px 15px;
+    border-radius: 18px;
+    max-width: 85%;
+    line-height: 1.4;
+    font-size: 0.95rem;
+    word-wrap: break-word;
+}
+.chat-message.bot {
+    background-color: #f1f1f1;
+    color: #333;
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+}
+.chat-message.user {
+    background-color: var(--color-primary);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+}
+/* ====================================
+   NOTIFICATION SYSTEM STYLES (Fixed)
+   ==================================== */
+
+/* Container for Bell + Dropdown */
+.notif-dropdown-container {
+    position: relative; /* Key for absolute positioning of dropdown */
+    display: inline-block;
+    margin-right: 15px;
+}
+
+/* Bell Button */
+.notif-btn {
+    background: none;
+    border: none;
+    color: #1D4C43; /* Forest Green */
+    font-size: 1.3rem;
+    cursor: pointer;
+    position: relative;
+    padding: 8px;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notif-btn:hover {
+    transform: scale(1.1);
+    color: #71B48D;
+}
+
+/* Red Badge Counter */
+.notif-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #E53E3E; /* Red */
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #FAFAF0; /* Matches header bg */
+    transform: translate(25%, -25%);
+}
+
+/* Dropdown Menu Box */
+.notif-dropdown {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Push below the bell */
+    right: -10px; /* Align right edge slightly offset */
+    width: 320px; /* Fixed width */
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    z-index: 2000; /* High z-index to sit on top */
+    border: 1px solid #E2E8F0;
+    overflow: hidden;
+    margin-top: 10px; /* Space from bell */
+}
+
+/* Add a small arrow pointing up */
+.notif-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 18px; /* Align with bell center */
+    width: 12px;
+    height: 12px;
+    background-color: #1D4C43; /* Match header color */
+    transform: rotate(45deg);
+    z-index: -1;
+}
+
+/* Show class (added by JS) */
+.notif-dropdown.show {
+    display: block;
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Header inside Dropdown */
+.notif-header {
+    background-color: #1D4C43;
+    color: #FFFFFF;
+    padding: 12px 15px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* List Container */
+.notif-list {
+    max-height: 350px;
+    overflow-y: auto;
+    background-color: #fff;
+}
+
+/* Individual Item */
+.notif-item {
+    display: block;
+    padding: 12px 15px;
+    border-bottom: 1px solid #F0F0F0;
+    text-decoration: none;
+    color: #333;
+    transition: background 0.2s;
+}
+
+.notif-item:last-child {
+    border-bottom: none;
+}
+
+.notif-item:hover {
+    background-color: #F7FAFC;
+}
+
+/* Unread Item Style */
+.notif-item.unread {
+    background-color: #F0FFF4; /* Light Mint */
+    border-left: 4px solid #71B48D;
+}
+
+.notif-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1D4C43;
+    margin-bottom: 4px;
+}
+
+.notif-message {
+    font-size: 0.85rem;
+    color: #4A5568;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limit to 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notif-time {
+    font-size: 0.75rem;
+    color: #A0AEC0;
+    margin-top: 6px;
+    display: block;
+    text-align: right;
+}
+
+.notif-empty {
+    padding: 30px;
+    text-align: center;
+    color: #A0AEC0;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .notif-dropdown {
+        position: fixed; /* Fixed on mobile to center it */
+        top: 70px;
+        left: 5%;
+        right: 5%;
+        width: 90%;
+        max-width: none;
+    }
+    .notif-dropdown::before {
+        display: none; /* Hide arrow on mobile */
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ====================================
    HERO SECTION (Curved Design Update)
    ==================================== */
 
@@ -475,34 +800,6 @@ main {
 .stat-3 {
     bottom: 15%;
     left: 25%;
-}
-/*mobile view*/
-@media screen and (max-width: 768px) {
-
-.homepage-content h2{
-    font-size: 2rem;
-    font-weight: 700;
-}
-.img-tree img{
-    width: 50%;
-    height: 50%;
-}
-
-.stat-1 {
-    top: 25%;
-    left: 15%;
-}
-
-.stat-2 {
-    top: 50%;
-    right: 16%;
-    
-}
-
-.stat-3 {
-    bottom: 15%;
-    left: 23%;
-}
 }
 
 /*feature*/
@@ -659,13 +956,6 @@ main {
     display: none;
 }
 
-/*mobile view need to change the steps to up to bottom instead of left to right*/
-@media screen and (max-width: 768px){
-
-.step-connector .arrow-right{
-    display: none;
-}
-}
 
 /*CTA-Section*/
 .cta-section{
@@ -708,6 +998,37 @@ main {
 .cta-btn:hover {
     transform: translateY(-20px);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+}
+
+/*Hero Mobile View*/
+@media screen and (max-width: 768px){
+    .homepage-content h2{
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    .img-tree img{
+        width: 50%;
+        height: 50%;
+    }
+
+    .stat-1 {
+        top: 25%;
+        left: 15%;
+    }
+
+    .stat-2 {
+        top: 50%;
+        right: 16%;
+
+    }
+
+    .stat-3 {
+        bottom: 15%;
+        left: 23%;
+    }
+    .step-connector .arrow-right{
+        display: none;
+    }
 }
 
 
@@ -3768,327 +4089,3 @@ main {
     padding: 1rem 0.75rem;
 }
 
-/* ====================================
-   NEW FAQ POPUP STYLES (Chatbot Style - CORRECTED)
-   ==================================== */
-
-/* --- 1. The main floating '?' button --- */
-.chat-toggle-button {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    width: 60px;
-    height: 60px;
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    font-size: 1.8rem;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    transition: all 0.3s ease;
-}
-.chat-toggle-button:hover {
-    transform: scale(1.1);
-    background-color: var(--color-accent);
-}
-.chat-toggle-button i {
-    transition: transform 0.3s ease;
-}
-.chat-toggle-button:hover i {
-    transform: scale(1.1) rotate(10deg);
-}
-
-/* --- 2. The main popup window --- */
-.chat-popup {
-    position: fixed;
-    bottom: 100px;
-    right: 25px;
-    width: 350px;
-    max-width: 90%;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    z-index: 1001;
-    overflow: hidden;
-    display: none; /* Hidden by default */
-    flex-direction: column;
-}
-.chat-popup.show {
-    display: flex; /* This is the class JS adds to show it */
-}
-
-/* --- 3. The popup header --- */
-.chat-header {
-    background-color: var(--color-primary);
-    color: white;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.chat-header h3 {
-    margin: 0;
-    font-size: 1.1rem;
-}
-.chat-close-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-/* --- 4. The content area --- */
-#faq-list {
-    padding: 15px;
-    height: 300px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px; /* Gap between messages/buttons */
-    background-color: #f9f9f9;
-}
-
-/* --- 5. The Question buttons --- */
-.faq-question-btn {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid var(--color-secondary);
-    background-color: #fff;
-    color: var(--color-primary);
-    border-radius: 8px;
-    cursor: pointer;
-    text-align: left;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-    line-height: 1.4;
-}
-.faq-question-btn:hover {
-    background-color: var(--color-background);
-    border-color: var(--color-primary);
-    transform: translateX(3px);
-}
-
-/* --- 6. The "Back" button --- */
-.faq-back-btn {
-    background: none;
-    border: none;
-    color: var(--color-accent);
-    font-weight: 700;
-    cursor: pointer;
-    text-align: left;
-    padding: 5px;
-    font-size: 0.9rem;
-    margin-bottom: 5px;
-    align-self: flex-start;
-}
-.faq-back-btn:hover {
-    text-decoration: underline;
-}
-
-/* --- 7. The chat bubbles --- */
-.chat-message {
-    padding: 10px 15px;
-    border-radius: 18px;
-    max-width: 85%;
-    line-height: 1.4;
-    font-size: 0.95rem;
-    word-wrap: break-word;
-}
-.chat-message.bot {
-    background-color: #f1f1f1;
-    color: #333;
-    border-bottom-left-radius: 4px;
-    align-self: flex-start;
-}
-.chat-message.user {
-    background-color: var(--color-primary);
-    color: #fff;
-    border-bottom-right-radius: 4px;
-    align-self: flex-end;
-}
-/* ====================================
-   NOTIFICATION SYSTEM STYLES (Fixed)
-   ==================================== */
-
-/* Container for Bell + Dropdown */
-.notif-dropdown-container {
-    position: relative; /* Key for absolute positioning of dropdown */
-    display: inline-block;
-    margin-right: 15px;
-}
-
-/* Bell Button */
-.notif-btn {
-    background: none;
-    border: none;
-    color: #1D4C43; /* Forest Green */
-    font-size: 1.3rem;
-    cursor: pointer;
-    position: relative;
-    padding: 8px;
-    transition: transform 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.notif-btn:hover {
-    transform: scale(1.1);
-    color: #71B48D;
-}
-
-/* Red Badge Counter */
-.notif-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background-color: #E53E3E; /* Red */
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 2px 5px;
-    border-radius: 50%;
-    min-width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid #FAFAF0; /* Matches header bg */
-    transform: translate(25%, -25%);
-}
-
-/* Dropdown Menu Box */
-.notif-dropdown {
-    display: none; /* Hidden by default */
-    position: absolute;
-    top: 100%; /* Push below the bell */
-    right: -10px; /* Align right edge slightly offset */
-    width: 320px; /* Fixed width */
-    background-color: #FFFFFF;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    z-index: 2000; /* High z-index to sit on top */
-    border: 1px solid #E2E8F0;
-    overflow: hidden;
-    margin-top: 10px; /* Space from bell */
-}
-
-/* Add a small arrow pointing up */
-.notif-dropdown::before {
-    content: '';
-    position: absolute;
-    top: -6px;
-    right: 18px; /* Align with bell center */
-    width: 12px;
-    height: 12px;
-    background-color: #1D4C43; /* Match header color */
-    transform: rotate(45deg);
-    z-index: -1;
-}
-
-/* Show class (added by JS) */
-.notif-dropdown.show {
-    display: block;
-    animation: fadeIn 0.2s ease-out;
-}
-
-/* Header inside Dropdown */
-.notif-header {
-    background-color: #1D4C43;
-    color: #FFFFFF;
-    padding: 12px 15px;
-    font-weight: 700;
-    font-size: 0.95rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-/* List Container */
-.notif-list {
-    max-height: 350px;
-    overflow-y: auto;
-    background-color: #fff;
-}
-
-/* Individual Item */
-.notif-item {
-    display: block;
-    padding: 12px 15px;
-    border-bottom: 1px solid #F0F0F0;
-    text-decoration: none;
-    color: #333;
-    transition: background 0.2s;
-}
-
-.notif-item:last-child {
-    border-bottom: none;
-}
-
-.notif-item:hover {
-    background-color: #F7FAFC;
-}
-
-/* Unread Item Style */
-.notif-item.unread {
-    background-color: #F0FFF4; /* Light Mint */
-    border-left: 4px solid #71B48D;
-}
-
-.notif-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #1D4C43;
-    margin-bottom: 4px;
-}
-
-.notif-message {
-    font-size: 0.85rem;
-    color: #4A5568;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* Limit to 2 lines */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.notif-time {
-    font-size: 0.75rem;
-    color: #A0AEC0;
-    margin-top: 6px;
-    display: block;
-    text-align: right;
-}
-
-.notif-empty {
-    padding: 30px;
-    text-align: center;
-    color: #A0AEC0;
-    font-style: italic;
-    font-size: 0.9rem;
-}
-
-/* Mobile Responsive */
-@media (max-width: 600px) {
-    .notif-dropdown {
-        position: fixed; /* Fixed on mobile to center it */
-        top: 70px;
-        left: 5%;
-        right: 5%;
-        width: 90%;
-        max-width: none;
-    }
-    .notif-dropdown::before {
-        display: none; /* Hide arrow on mobile */
-    }
-}
-
-/* Animation */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
