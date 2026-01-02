@@ -282,7 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="switch">
                 <a href="#" class="login active" onclick="login()">Login</a>
                 <a href="#" class="register" onclick="register()">Register</a>
-                <div class="btn-active" id="btn"></div>
+                <div class="btn-active" id="switch-tab-btn"></div>
             </div>  
         </div>
         <div class="auth-side-panel">

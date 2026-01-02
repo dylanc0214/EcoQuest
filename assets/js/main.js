@@ -200,7 +200,7 @@ function togglePassword(event, inputId) {
 
 // Login / Register Slider
 var container = document.querySelector('.auth-container');
-var z = document.getElementById('btn');
+var z = document.getElementById('switch-tab-btn');
 
 function login() {
     container.classList.remove('register-mode');
