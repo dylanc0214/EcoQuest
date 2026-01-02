@@ -77,9 +77,9 @@ main {
     margin: 0 auto;
 }
 
-/* ====================================
-   NAVIGATION BAR/HEADER/FOOTER (PC Menu)
-   ==================================== */
+/* =======================================================
+   NAVIGATION BAR/HEADER/FOOTER/FAQ/Notification (PC Menu)
+   =======================================================*/
 
 .main-nav{
     /* Layout */
@@ -150,7 +150,7 @@ main {
 .nav-links {
     list-style: none;
     display: flex;
-    margin-left: 10em;
+    margin: 0;
     padding: 0;
 }
 
@@ -247,6 +247,77 @@ main {
     margin-bottom: 5px;
 }
 
+@media (max-width: 768px) {
+    /* 1. Hide the horizontal nav and stack it vertically */
+    .nav-links {
+        display: none; /* Hidden by default, toggled by JS */
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: #FAFAF0;
+        padding: 20px 0;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Show menu when "active" class is added via JS */
+    .nav-links.active {
+        display: flex;
+    }
+
+    /* 2. Reset Dropdown Behavior for Mobile */
+    .dropdown-wrapper {
+        width: 100%;
+    }
+
+    .dropdown-content {
+        position: static; /* Push content down instead of floating over */
+        display: none;    /* Hidden until clicked */
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        width: 100%;
+        padding: 10px 0;
+        flex-direction: column; /* Stack icons and text */
+        box-shadow: none;
+        background-color: #F0F0E0; /* Slightly darker to distinguish from main links */
+    }
+
+    /* Show dropdown when active */
+    .dropdown-wrapper.open .dropdown-content {
+        display: flex;
+    }
+
+    /* 3. Adjust Items inside Dropdown */
+    .dropdown-content li {
+        max-width: 100%;
+        border-right: none;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .dropdown-content li a {
+        flex-direction: row; /* Icon on the left, text on the right */
+        justify-content: flex-start;
+        padding: 15px 30px;
+    }
+
+    .dropdown-img {
+        width: 30px; /* Smaller icons for mobile */
+        margin-bottom: 0;
+        margin-right: 15px;
+    }
+
+    /* 4. Show the Hamburger Button */
+    .nav-toggle {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 2rem;
+        color: #1D4C43;
+        cursor: pointer;
+    }
+}
 
 /* ====================================
    Auth Buttons (Updated for Profile Link)
@@ -318,6 +389,331 @@ main {
 
 .nav-toggle {
     display: none;
+}
+
+/* ====================================
+   NEW FAQ POPUP STYLES (Chatbot Style - CORRECTED)
+   ==================================== */
+
+/* --- 1. The main floating '?' button --- */
+.chat-toggle-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.8rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+.chat-toggle-button:hover {
+    transform: scale(1.1);
+    background-color: var(--color-accent);
+}
+.chat-toggle-button i {
+    transition: transform 0.3s ease;
+}
+.chat-toggle-button:hover i {
+    transform: scale(1.1) rotate(10deg);
+}
+
+/* --- 2. The main popup window --- */
+.chat-popup {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 350px;
+    max-width: 90%;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    overflow: hidden;
+    display: none; /* Hidden by default */
+    flex-direction: column;
+}
+.chat-popup.show {
+    display: flex; /* This is the class JS adds to show it */
+}
+
+/* --- 3. The popup header --- */
+.chat-header {
+    background-color: var(--color-primary);
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+.chat-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* --- 4. The content area --- */
+#faq-list {
+    padding: 15px;
+    height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Gap between messages/buttons */
+    background-color: #f9f9f9;
+}
+
+/* --- 5. The Question buttons --- */
+.faq-question-btn {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--color-secondary);
+    background-color: #fff;
+    color: var(--color-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    line-height: 1.4;
+}
+.faq-question-btn:hover {
+    background-color: var(--color-background);
+    border-color: var(--color-primary);
+    transform: translateX(3px);
+}
+
+/* --- 6. The "Back" button --- */
+.faq-back-btn {
+    background: none;
+    border: none;
+    color: var(--color-accent);
+    font-weight: 700;
+    cursor: pointer;
+    text-align: left;
+    padding: 5px;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    align-self: flex-start;
+}
+.faq-back-btn:hover {
+    text-decoration: underline;
+}
+
+/* --- 7. The chat bubbles --- */
+.chat-message {
+    padding: 10px 15px;
+    border-radius: 18px;
+    max-width: 85%;
+    line-height: 1.4;
+    font-size: 0.95rem;
+    word-wrap: break-word;
+}
+.chat-message.bot {
+    background-color: #f1f1f1;
+    color: #333;
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+}
+.chat-message.user {
+    background-color: var(--color-primary);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+}
+/* ====================================
+   NOTIFICATION SYSTEM STYLES (Fixed)
+   ==================================== */
+
+/* Container for Bell + Dropdown */
+.notif-dropdown-container {
+    position: relative; /* Key for absolute positioning of dropdown */
+    display: inline-block;
+    margin-right: 15px;
+}
+
+/* Bell Button */
+.notif-btn {
+    background: none;
+    border: none;
+    color: #1D4C43; /* Forest Green */
+    font-size: 1.3rem;
+    cursor: pointer;
+    position: relative;
+    padding: 8px;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notif-btn:hover {
+    transform: scale(1.1);
+    color: #71B48D;
+}
+
+/* Red Badge Counter */
+.notif-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #E53E3E; /* Red */
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #FAFAF0; /* Matches header bg */
+    transform: translate(25%, -25%);
+}
+
+/* Dropdown Menu Box */
+.notif-dropdown {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Push below the bell */
+    right: -10px; /* Align right edge slightly offset */
+    width: 320px; /* Fixed width */
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    z-index: 2000; /* High z-index to sit on top */
+    border: 1px solid #E2E8F0;
+    overflow: hidden;
+    margin-top: 10px; /* Space from bell */
+}
+
+/* Add a small arrow pointing up */
+.notif-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 18px; /* Align with bell center */
+    width: 12px;
+    height: 12px;
+    background-color: #1D4C43; /* Match header color */
+    transform: rotate(45deg);
+    z-index: -1;
+}
+
+/* Show class (added by JS) */
+.notif-dropdown.show {
+    display: block;
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Header inside Dropdown */
+.notif-header {
+    background-color: #1D4C43;
+    color: #FFFFFF;
+    padding: 12px 15px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* List Container */
+.notif-list {
+    max-height: 350px;
+    overflow-y: auto;
+    background-color: #fff;
+}
+
+/* Individual Item */
+.notif-item {
+    display: block;
+    padding: 12px 15px;
+    border-bottom: 1px solid #F0F0F0;
+    text-decoration: none;
+    color: #333;
+    transition: background 0.2s;
+}
+
+.notif-item:last-child {
+    border-bottom: none;
+}
+
+.notif-item:hover {
+    background-color: #F7FAFC;
+}
+
+/* Unread Item Style */
+.notif-item.unread {
+    background-color: #F0FFF4; /* Light Mint */
+    border-left: 4px solid #71B48D;
+}
+
+.notif-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1D4C43;
+    margin-bottom: 4px;
+}
+
+.notif-message {
+    font-size: 0.85rem;
+    color: #4A5568;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limit to 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notif-time {
+    font-size: 0.75rem;
+    color: #A0AEC0;
+    margin-top: 6px;
+    display: block;
+    text-align: right;
+}
+
+.notif-empty {
+    padding: 30px;
+    text-align: center;
+    color: #A0AEC0;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .notif-dropdown {
+        position: fixed; /* Fixed on mobile to center it */
+        top: 70px;
+        left: 5%;
+        right: 5%;
+        width: 90%;
+        max-width: none;
+    }
+    .notif-dropdown::before {
+        display: none; /* Hide arrow on mobile */
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* ====================================
@@ -476,34 +872,6 @@ main {
     bottom: 15%;
     left: 25%;
 }
-/*mobile view*/
-@media screen and (max-width: 768px) {
-
-.homepage-content h2{
-    font-size: 2rem;
-    font-weight: 700;
-}
-.img-tree img{
-    width: 50%;
-    height: 50%;
-}
-
-.stat-1 {
-    top: 25%;
-    left: 15%;
-}
-
-.stat-2 {
-    top: 50%;
-    right: 16%;
-    
-}
-
-.stat-3 {
-    bottom: 15%;
-    left: 23%;
-}
-}
 
 /*feature*/
 .features-container {
@@ -659,13 +1027,6 @@ main {
     display: none;
 }
 
-/*mobile view need to change the steps to up to bottom instead of left to right*/
-@media screen and (max-width: 768px){
-
-.step-connector .arrow-right{
-    display: none;
-}
-}
 
 /*CTA-Section*/
 .cta-section{
@@ -710,9 +1071,40 @@ main {
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
 }
 
+/*Hero Mobile View*/
+@media screen and (max-width: 768px){
+    .homepage-content h2{
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    .img-tree img{
+        width: 50%;
+        height: 50%;
+    }
+
+    .stat-1 {
+        top: 25%;
+        left: 15%;
+    }
+
+    .stat-2 {
+        top: 50%;
+        right: 16%;
+
+    }
+
+    .stat-3 {
+        bottom: 15%;
+        left: 23%;
+    }
+    .step-connector .arrow-right{
+        display: none;
+    }
+}
+
 
 /*====================
-    LOGIN
+    LOGIN PAGE
 ======================*/
 /*--Login n Register Background--*/
 .auth-page {
@@ -723,6 +1115,10 @@ main {
     justify-content: center; /* Center Horizontally */
     align-items: center;     /* Center Vertically */
     overflow: hidden;
+}
+
+.auth-title{
+    text-align: center;
 }
 
 
@@ -981,60 +1377,95 @@ main {
     font-weight: 500;
 }
 
-/* =========================================
-   MOBILE RESPONSIVENESS (iPhone SE & Others)
-   ========================================= */
+/* Base Card Styles */
+.log-auth-card, .reg-auth-card {
+    position: absolute;
+    width: 90%; /* Use percentage for flexibility */
+    left: 5%;   /* Center the card within container */
+    transition: transform 0.5s ease-in-out, opacity 0.5s;
+}
 
-@media screen and (max-width: 900px) {
+/* Initial States */
+.log-auth-card {
+    transform: translateX(0);
+    opacity: 1;
+}
 
-    /* 1. Reset the Main Page Layout */
+.reg-auth-card {
+    transform: translateX(150%); /* Move far to the right */
+    opacity: 0;
+}
+
+/* "Register Mode" - Activated via JS class */
+.register-mode .log-auth-card {
+    transform: translateX(-150%); /* Move login to the left */
+    opacity: 0;
+}
+
+.register-mode .reg-auth-card {
+    transform: translateX(0); /* Bring register to center */
+    opacity: 1;
+}
+
+/*Login Mobile View*/
+@media screen and (max-width: 768px) {
+    .auth-title{
+        font-size: 1.5em;
+        text-align: center;
+    }
+
     .auth-page {
+        flex-direction: column; /* Stack container and side panel vertically */
         height: auto;
-        min-height: 100vh;
-        padding: 80px 15px 40px 15px; /* Add top padding so nav doesn't cover it */
-        align-items: flex-start; /* Aligns card to top rather than center on short screens */
+        padding: 20px 0;
     }
 
-    /* 2. Stack the layout vertically */
-    .auth-card-wrapper {
-        flex-direction: column;
-        width: 100%;
-        max-width: 400px; /* Prevents it from getting too wide on tablets */
-        box-shadow: none; /* Optional: Cleaner look on mobile */
-        border-radius: 20px;
-    }
-
-    /* 3. Hide the Side Panel (Green Box) */
-    /* On mobile, we only need the form. The side info takes up too much space. */
-    .auth-side-panel {
-        display: none; 
-    }
-
-    /* 4. Fix the Form Container Width */
     .auth-container {
-        width: 100%; /* crucial: changes from fixed 450px to fluid */
-        height: 650px; /* Slightly shorter to fit mobile screens better */
-        padding: 40px 20px; /* Reduce padding so inputs have room */
+        width: 95%;
+        height: 720px; /* Adjust height for mobile */
+        margin: 20px auto;
+    }
+    
+    .auth-side-panel {
+        display: none; /* Hide side panel on iPhone SE */
     }
 
-    /* 5. Adjust the Sliding Cards */
-    .log-auth-card, 
+    .btn-sub {
+        width: 100%; /* Full width button for thumbs */
+    }
+
+    /* Adjust the login/register card widths */
+    .log-auth-card, .reg-auth-card {
+        width: 88%;
+        left: 6%; /* Center them slightly better */
+    }
+
+    /* Fix the slider positioning for mobile screens */
     .reg-auth-card {
-        width: 90%; /* Make forms slightly wider on mobile */
-        left: 5%;   /* Center them (5% left + 90% width = centered) */
-        right: auto; /* Reset right positioning */
+        right: -100%; /* Use percentages instead of fixed -550px */
     }
     
-    /* Re-position the register card off-screen for the animation logic */
-    /* Note: JS likely toggles a class. Ensure JS sliding still works. 
-       If your JS sets specific pixel 'left' values, the animation might look weird.
-       Ideally, use percentages in JS or CSS classes for movement. */
-    
-    /* 6. Fix the Toggle Switch (Login/Register Buttons) */
     .switch {
+        bottom: 20px;
+        left: 5%;
         width: 90%;
-        left: 5%; /* Center the switch */
-        bottom: 30px; /* Move it up slightly */
+    }
+    
+    .auth-container {
+        width: 95%;
+        height: 800px;
+    }
+
+    .register-mode .log-auth-card {
+        left: -100%; 
+    }
+
+    .reg-auth-card {
+        right: -100%; 
+    }
+
+    .register-mode .reg-auth-card {
+        right: 6%; 
     }
 }
 
@@ -3768,327 +4199,3 @@ main {
     padding: 1rem 0.75rem;
 }
 
-/* ====================================
-   NEW FAQ POPUP STYLES (Chatbot Style - CORRECTED)
-   ==================================== */
-
-/* --- 1. The main floating '?' button --- */
-.chat-toggle-button {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    width: 60px;
-    height: 60px;
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    font-size: 1.8rem;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    transition: all 0.3s ease;
-}
-.chat-toggle-button:hover {
-    transform: scale(1.1);
-    background-color: var(--color-accent);
-}
-.chat-toggle-button i {
-    transition: transform 0.3s ease;
-}
-.chat-toggle-button:hover i {
-    transform: scale(1.1) rotate(10deg);
-}
-
-/* --- 2. The main popup window --- */
-.chat-popup {
-    position: fixed;
-    bottom: 100px;
-    right: 25px;
-    width: 350px;
-    max-width: 90%;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    z-index: 1001;
-    overflow: hidden;
-    display: none; /* Hidden by default */
-    flex-direction: column;
-}
-.chat-popup.show {
-    display: flex; /* This is the class JS adds to show it */
-}
-
-/* --- 3. The popup header --- */
-.chat-header {
-    background-color: var(--color-primary);
-    color: white;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.chat-header h3 {
-    margin: 0;
-    font-size: 1.1rem;
-}
-.chat-close-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-/* --- 4. The content area --- */
-#faq-list {
-    padding: 15px;
-    height: 300px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px; /* Gap between messages/buttons */
-    background-color: #f9f9f9;
-}
-
-/* --- 5. The Question buttons --- */
-.faq-question-btn {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid var(--color-secondary);
-    background-color: #fff;
-    color: var(--color-primary);
-    border-radius: 8px;
-    cursor: pointer;
-    text-align: left;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-    line-height: 1.4;
-}
-.faq-question-btn:hover {
-    background-color: var(--color-background);
-    border-color: var(--color-primary);
-    transform: translateX(3px);
-}
-
-/* --- 6. The "Back" button --- */
-.faq-back-btn {
-    background: none;
-    border: none;
-    color: var(--color-accent);
-    font-weight: 700;
-    cursor: pointer;
-    text-align: left;
-    padding: 5px;
-    font-size: 0.9rem;
-    margin-bottom: 5px;
-    align-self: flex-start;
-}
-.faq-back-btn:hover {
-    text-decoration: underline;
-}
-
-/* --- 7. The chat bubbles --- */
-.chat-message {
-    padding: 10px 15px;
-    border-radius: 18px;
-    max-width: 85%;
-    line-height: 1.4;
-    font-size: 0.95rem;
-    word-wrap: break-word;
-}
-.chat-message.bot {
-    background-color: #f1f1f1;
-    color: #333;
-    border-bottom-left-radius: 4px;
-    align-self: flex-start;
-}
-.chat-message.user {
-    background-color: var(--color-primary);
-    color: #fff;
-    border-bottom-right-radius: 4px;
-    align-self: flex-end;
-}
-/* ====================================
-   NOTIFICATION SYSTEM STYLES (Fixed)
-   ==================================== */
-
-/* Container for Bell + Dropdown */
-.notif-dropdown-container {
-    position: relative; /* Key for absolute positioning of dropdown */
-    display: inline-block;
-    margin-right: 15px;
-}
-
-/* Bell Button */
-.notif-btn {
-    background: none;
-    border: none;
-    color: #1D4C43; /* Forest Green */
-    font-size: 1.3rem;
-    cursor: pointer;
-    position: relative;
-    padding: 8px;
-    transition: transform 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.notif-btn:hover {
-    transform: scale(1.1);
-    color: #71B48D;
-}
-
-/* Red Badge Counter */
-.notif-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background-color: #E53E3E; /* Red */
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 2px 5px;
-    border-radius: 50%;
-    min-width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid #FAFAF0; /* Matches header bg */
-    transform: translate(25%, -25%);
-}
-
-/* Dropdown Menu Box */
-.notif-dropdown {
-    display: none; /* Hidden by default */
-    position: absolute;
-    top: 100%; /* Push below the bell */
-    right: -10px; /* Align right edge slightly offset */
-    width: 320px; /* Fixed width */
-    background-color: #FFFFFF;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    z-index: 2000; /* High z-index to sit on top */
-    border: 1px solid #E2E8F0;
-    overflow: hidden;
-    margin-top: 10px; /* Space from bell */
-}
-
-/* Add a small arrow pointing up */
-.notif-dropdown::before {
-    content: '';
-    position: absolute;
-    top: -6px;
-    right: 18px; /* Align with bell center */
-    width: 12px;
-    height: 12px;
-    background-color: #1D4C43; /* Match header color */
-    transform: rotate(45deg);
-    z-index: -1;
-}
-
-/* Show class (added by JS) */
-.notif-dropdown.show {
-    display: block;
-    animation: fadeIn 0.2s ease-out;
-}
-
-/* Header inside Dropdown */
-.notif-header {
-    background-color: #1D4C43;
-    color: #FFFFFF;
-    padding: 12px 15px;
-    font-weight: 700;
-    font-size: 0.95rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-/* List Container */
-.notif-list {
-    max-height: 350px;
-    overflow-y: auto;
-    background-color: #fff;
-}
-
-/* Individual Item */
-.notif-item {
-    display: block;
-    padding: 12px 15px;
-    border-bottom: 1px solid #F0F0F0;
-    text-decoration: none;
-    color: #333;
-    transition: background 0.2s;
-}
-
-.notif-item:last-child {
-    border-bottom: none;
-}
-
-.notif-item:hover {
-    background-color: #F7FAFC;
-}
-
-/* Unread Item Style */
-.notif-item.unread {
-    background-color: #F0FFF4; /* Light Mint */
-    border-left: 4px solid #71B48D;
-}
-
-.notif-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #1D4C43;
-    margin-bottom: 4px;
-}
-
-.notif-message {
-    font-size: 0.85rem;
-    color: #4A5568;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* Limit to 2 lines */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.notif-time {
-    font-size: 0.75rem;
-    color: #A0AEC0;
-    margin-top: 6px;
-    display: block;
-    text-align: right;
-}
-
-.notif-empty {
-    padding: 30px;
-    text-align: center;
-    color: #A0AEC0;
-    font-style: italic;
-    font-size: 0.9rem;
-}
-
-/* Mobile Responsive */
-@media (max-width: 600px) {
-    .notif-dropdown {
-        position: fixed; /* Fixed on mobile to center it */
-        top: 70px;
-        left: 5%;
-        right: 5%;
-        width: 90%;
-        max-width: none;
-    }
-    .notif-dropdown::before {
-        display: none; /* Hide arrow on mobile */
-    }
-}
-
-/* Animation */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}

@@ -224,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
                             <input type="password" id="password" name="password" class="input-modern" placeholder="Your secret eco-password" required autocomplete="current-password">
-                            <button type="button" class="password-toggle" onclick="togglePassword('password')">🙈</button>
+                            <button type="button" class="password-toggle" onclick="togglePassword(event,'password')">🙈</button>
                         </div>
                     </div>
                     <input type="hidden" name="form_type" value="login">
@@ -263,7 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
                             <input type="password" id="reg_password" name="reg_password" class="input-modern" placeholder="Create a password (min 8 characters)" required minlength="6" autocomplete="new-password">
-                            <button type="button" class="password-toggle" onclick="togglePassword('reg_password')">🙈</button>
+                            <button type="button" class="password-toggle" onclick="togglePassword(event,'reg_password')">🙈</button>
                         </div>
                     </div>
                     
@@ -272,7 +272,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
                             <input type="password" id="confirm_password" name="confirm_password" class="input-modern" placeholder="Confirm your password" required minlength="6" autocomplete="new-password">
-                            <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">🙈</button>
+                            <button type="button" class="password-toggle" onclick="togglePassword(event,'confirm_password')">🙈</button>
                         </div>
                     </div>
                     <input type="hidden" name="form_type" value="register">
@@ -282,7 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="switch">
                 <a href="#" class="login active" onclick="login()">Login</a>
                 <a href="#" class="register" onclick="register()">Register</a>
-                <div class="btn-active" id="btn"></div>
+                <div class="btn-active" id="switch-tab-btn"></div>
             </div>  
         </div>
         <div class="auth-side-panel">
@@ -313,7 +313,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include("../includes/footer.php"); ?>
     <script src="../assets/js/main.js"></script>
 
-    <!--FOR BTN SWITCH TAB ON HOMEPAGE-->
+    <!--Check URL from Homepage btn and auto switch Login/Register view-->
     <script>
         // Check if the URL has ?action=register
         window.addEventListener('DOMContentLoaded', (event) => {
@@ -321,10 +321,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const action = urlParams.get('action');
 
             if (action === 'register') {
-            // Trigger the Register view
+            // Trigger Register view
             register();
             } else if (action === 'login') {
-                // Trigger the Login view
+                // Trigger Login view
                 login();
             }
         });

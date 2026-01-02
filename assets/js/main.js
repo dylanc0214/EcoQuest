@@ -20,6 +20,24 @@ document.addEventListener('DOMContentLoaded', () => {
         navToggle.addEventListener('click', window.toggleMobileMenu);
     }
 
+    // Toggle the main hamburger menu
+    document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+        document.getElementById('navLinks').classList.toggle('active');
+    });
+    
+    // Toggle individual dropdowns inside the mobile menu
+    const dropdowns = document.querySelectorAll('.dropdown-wrapper');
+    
+    dropdowns.forEach(wrapper => {
+        wrapper.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                // Prevent link from navigating if it has a dropdown
+                e.preventDefault(); 
+                this.classList.toggle('open');
+            }
+        });
+    });
+
     // ============================================
     // --- 2. FAQ POPUP LOGIC ---
     // ============================================
@@ -164,13 +182,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /*================================================
-   LOGIN & REGISTER
+    LOGIN & REGISTER
 ================================================*/
 
 // View Password Toggle
-function togglePassword(inputId) {
+function togglePassword(event, inputId) {
     const input = document.getElementById(inputId);
-    // Note: 'event' is deprecated in some contexts but works here because of inline onclick
     const toggle = event.target; 
     if (input.type === 'password') {
         input.type = 'text';
@@ -181,20 +198,16 @@ function togglePassword(inputId) {
     }
 }
 
-// Slider Logic for Login/Register Page
-// We define these variables inside functions or check if they exist 
-// to prevents errors on pages where 'login' div doesn't exist.
+// Login / Register Slider
+var container = document.querySelector('.auth-container');
+var z = document.getElementById('switch-tab-btn');
 
-var x = document.getElementById('login');
-var y = document.getElementById('register');
-var z = document.getElementById('btn');       
-function login(){
-    x.style.left = "27px";
-    y.style.right = "-550px";
-    z.style.left = "0px"; // 0%
+function login() {
+    container.classList.remove('register-mode');
+    z.style.left = "0px"; 
 }
-function register(){
-    x.style.left = "-550px";
-    y.style.right = "25px";
-    z.style.left = "50%"; // Moves exactly halfway
+
+function register() {
+    container.classList.add('register-mode');
+    z.style.left = "50%"; 
 }

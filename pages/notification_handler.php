@@ -1,8 +1,17 @@
 <?php
 // pages/notification_handler.php
 session_start();
+
+// 1. Clean Output Buffer (Prevents whitespace errors)
+ob_start(); 
+
+// 2. Disable on-screen errors (So they don't break JSON)
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
 include("../config/db.php");
 
+// 3. Set Header
 header('Content-Type: application/json');
 
 $user_id = $_SESSION['user_id'] ?? null;
@@ -10,12 +19,14 @@ $user_role = $_SESSION['user_role'] ?? 'guest';
 $student_id = $_SESSION['student_id'] ?? null;
 
 if (!$user_id) {
+    ob_end_clean();
     echo json_encode(['error' => 'Unauthorized']);
     exit;
 }
 
 $notifications = [];
 $unread_count = 0;
+$debug_error = "";
 
 try {
     // =========================================================
@@ -23,20 +34,23 @@ try {
     // =========================================================
     if ($user_role === 'moderator' || $user_role === 'admin') {
         
-        // 1. PENDING QUEST SUBMISSIONS (Existing)
+        // 1. PENDING QUEST SUBMISSIONS
+        // FIX: Changed table names to lowercase (e.g. student_quest_submissions)
         $sql_sub = "
             SELECT s.Student_quest_submission_id, s.Submission_date, u.Username, q.Title 
-            FROM Student_Quest_Submissions s
-            JOIN Student st ON s.Student_id = st.Student_id
-            JOIN User u ON st.User_id = u.User_id
-            JOIN Quest q ON s.Quest_id = q.Quest_id
+            FROM student_quest_submissions s
+            JOIN student st ON s.Student_id = st.Student_id
+            JOIN user u ON st.User_id = u.User_id
+            JOIN quest q ON s.Quest_id = q.Quest_id
             WHERE s.Status = 'pending'
         ";
         $res_sub = $conn->query($sql_sub);
+        if (!$res_sub) throw new Exception("SQL Error (Submissions): " . $conn->error);
+
         while ($row = $res_sub->fetch_assoc()) {
             $notifications[] = [
                 'id' => 'sub_' . $row['Student_quest_submission_id'],
-                'title' => 'New Quest Submission 📝',
+                'title' => 'New Quest Submission 📥',
                 'message' => "<strong>{$row['Username']}</strong> submitted proof for <em>{$row['Title']}</em>.",
                 'time' => time_elapsed_string($row['Submission_date']),
                 'link' => ($user_role === 'admin' ? '../pages/admin/' : '../pages/moderator/') . "review_submission.php?id=" . $row['Student_quest_submission_id'],
@@ -44,15 +58,17 @@ try {
             ];
         }
 
-        // 2. PENDING REPORTS (Post & Comment) - NEW
+        // 2. PENDING REPORTS (Post & Comment)
         // Fetch Post Reports
         $sql_rep_p = "
             SELECT r.Post_report_id, r.Report_time, r.Reason, u.Username 
-            FROM Post_report r
-            JOIN User u ON r.Reported_by = u.User_id
+            FROM post_report r
+            JOIN user u ON r.Reported_by = u.User_id
             WHERE r.Status = 'Pending'
         ";
         $res_rep_p = $conn->query($sql_rep_p);
+        if (!$res_rep_p) throw new Exception("SQL Error (Post Reports): " . $conn->error);
+
         while ($row = $res_rep_p->fetch_assoc()) {
             $notifications[] = [
                 'id' => 'rep_p_' . $row['Post_report_id'],
@@ -67,11 +83,12 @@ try {
         // Fetch Comment Reports
         $sql_rep_c = "
             SELECT r.Comment_report_id, r.Report_time, r.Reason, u.Username 
-            FROM Comment_report r
-            JOIN User u ON r.Reported_by = u.User_id
+            FROM comment_report r
+            JOIN user u ON r.Reported_by = u.User_id
             WHERE r.Status = 'Pending'
         ";
         $res_rep_c = $conn->query($sql_rep_c);
+        
         while ($row = $res_rep_c->fetch_assoc()) {
             $notifications[] = [
                 'id' => 'rep_c_' . $row['Comment_report_id'],
@@ -83,21 +100,21 @@ try {
             ];
         }
 
-        // 3. STUDENT FEEDBACK (Admin Only) - NEW
+        // 3. STUDENT FEEDBACK (Admin Only)
         if ($user_role === 'admin') {
-            // Get feedback from the last 3 days
             $sql_feed = "
                 SELECT f.Title, f.Description, f.Date_time, u.Username 
-                FROM Student_feedback f
-                JOIN Student s ON f.Student_id = s.Student_id
-                JOIN User u ON s.User_id = u.User_id
+                FROM student_feedback f
+                JOIN student s ON f.Student_id = s.Student_id
+                JOIN user u ON s.User_id = u.User_id
                 WHERE f.Date_time > DATE_SUB(NOW(), INTERVAL 3 DAY)
             ";
             $res_feed = $conn->query($sql_feed);
+            
             while ($row = $res_feed->fetch_assoc()) {
                 $notifications[] = [
                     'id' => 'feed_' . uniqid(),
-                    'title' => 'New Student Feedback 📢',
+                    'title' => 'New Student Feedback 💬',
                     'message' => "<strong>{$row['Username']}</strong>: " . substr($row['Title'], 0, 30) . "...",
                     'time' => time_elapsed_string($row['Date_time']),
                     'link' => '../pages/admin/view_feedback.php',
@@ -121,8 +138,8 @@ try {
         // Quest Reviews (Completed/Rejected)
         $sql = "
             SELECT s.Status, s.Review_date, q.Title, q.Points_award 
-            FROM Student_Quest_Submissions s
-            JOIN Quest q ON s.Quest_id = q.Quest_id
+            FROM student_quest_submissions s
+            JOIN quest q ON s.Quest_id = q.Quest_id
             WHERE s.Student_id = ? 
             AND s.Status IN ('completed', 'rejected', 'approved')
             ORDER BY s.Review_date DESC 
@@ -135,7 +152,7 @@ try {
 
         foreach ($raw_data as $row) {
             $status = ucfirst($row['Status']);
-            $icon = ($status == 'Completed' || $status == 'Approved') ? '🎉' : '⚠️';
+            $icon = ($status == 'Completed' || $status == 'Approved') ? '✅' : '❌';
             $msg = ($status == 'Completed' || $status == 'Approved') 
                 ? "Quest <em>{$row['Title']}</em> Approved! +<strong>{$row['Points_award']} PTS</strong>." 
                 : "Submission for <em>{$row['Title']}</em> Rejected. Check details.";
@@ -156,41 +173,49 @@ try {
     }
 
 } catch (Exception $e) {
-    // Fail silently
+    // Catch the error and send it to JS for debugging
+    $debug_error = $e->getMessage();
 }
 
 // Helper: Time Ago
 function time_elapsed_string($datetime, $full = false) {
-    $now = new DateTime;
-    $ago = new DateTime($datetime);
-    $diff = $now->diff($ago);
+    try {
+        if (!$datetime) return 'Recently';
+        $now = new DateTime;
+        $ago = new DateTime($datetime);
+        $diff = $now->diff($ago);
 
-    $diff->w = floor($diff->d / 7);
-    $diff->d -= $diff->w * 7;
+        $diff->w = floor($diff->d / 7);
+        $diff->d -= $diff->w * 7;
 
-    $string = array(
-        'y' => 'year',
-        'm' => 'month',
-        'w' => 'week',
-        'd' => 'day',
-        'h' => 'hour',
-        'i' => 'min',
-        's' => 'sec',
-    );
-    foreach ($string as $k => &$v) {
-        if ($diff->$k) {
-            $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
-        } else {
-            unset($string[$k]);
+        $string = array(
+            'y' => 'year',
+            'm' => 'month',
+            'w' => 'week',
+            'd' => 'day',
+            'h' => 'hour',
+            'i' => 'min',
+            's' => 'sec',
+        );
+        foreach ($string as $k => &$v) {
+            if ($diff->$k) {
+                $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
+            } else {
+                unset($string[$k]);
+            }
         }
+        if (!$full) $string = array_slice($string, 0, 1);
+        return $string ? implode(', ', $string) . ' ago' : 'just now';
+    } catch (Exception $e) {
+        return 'Unknown time';
     }
-
-    if (!$full) $string = array_slice($string, 0, 1);
-    return $string ? implode(', ', $string) . ' ago' : 'just now';
 }
 
+// 4. Send JSON (and clean buffer again just in case)
+ob_end_clean();
 echo json_encode([
     'notifications' => $notifications,
-    'unread_count' => $unread_count
+    'unread_count' => $unread_count,
+    'debug_error'   => $debug_error
 ]);
 ?>
