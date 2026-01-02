@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Dec 28, 2025 at 05:41 PM
+-- Generation Time: Dec 30, 2025 at 06:45 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.3.14
 
@@ -291,6 +291,33 @@ INSERT INTO `quest` (`Quest_id`, `Title`, `Description`, `Points_award`, `Proof_
 (3, 'The Leak Hunter', 'Identify and report a leaking tap, hose, or running toilet at school or home, then track the progress of its repair or fix it yourself (if minor/safe).', 180, 'Image', 'Identify and report a leaking tap, hose, or running toilet at school or home, then track the progress of its repair or fix it yourself (if minor/safe).', 1, 1, '2025-11-10 04:15:39', 3),
 (4, 'Local Ride Challenge', 'Swap out a motorized trip (car/bus/motorcycle) for a sustainable transport method (walking, cycling, public transport) for a set journey, and calculate the estimated CO2 saving.', 250, 'Image', 'Submit an Image Proof of you using the sustainable transport (e.g., locking your bike, standing on the bus). Submit a Text Proof detailing the original journey distance/mode and the estimated CO2 saved (use a simple online calculator for estimation, state the number in kg).', 1, 1, '2025-11-10 04:16:08', 4),
 (5, 'Trash to Treasure Transformation', 'Transform a piece of discarded material (cardboard, old clothes, plastic bottles) into a useful or decorative item.', 220, 'Image', 'Submit a &#39;Before&#39; Image of the waste material. Submit a final &#39;Product Image&#39; of your upcycled creation, alongside a &#39;Description Text&#39; (min 70 words) explaining what you made and how it is useful.', 1, 1, '2025-11-10 04:16:51', 6);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `quest_calendar`
+--
+
+DROP TABLE IF EXISTS `quest_calendar`;
+CREATE TABLE IF NOT EXISTS `quest_calendar` (
+  `Calendar_id` int NOT NULL AUTO_INCREMENT,
+  `Quest_id` int NOT NULL,
+  `Start_date` date NOT NULL,
+  `End_date` date NOT NULL,
+  PRIMARY KEY (`Calendar_id`),
+  KEY `Quest_id` (`Quest_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `quest_calendar`
+--
+
+INSERT INTO `quest_calendar` (`Calendar_id`, `Quest_id`, `Start_date`, `End_date`) VALUES
+(1, 2, '2025-12-14', '2025-12-20'),
+(2, 1, '2025-12-14', '2025-12-20'),
+(3, 3, '2025-12-14', '2025-12-20'),
+(4, 5, '2025-12-14', '2025-12-20'),
+(5, 4, '2025-12-14', '2025-12-20');
 
 -- --------------------------------------------------------
 
@@ -643,6 +670,12 @@ ALTER TABLE `quest`
   ADD CONSTRAINT `fk_quest_category` FOREIGN KEY (`CategoryID`) REFERENCES `quest_categories` (`CategoryID`) ON DELETE SET NULL,
   ADD CONSTRAINT `Quest_fk_Created_by` FOREIGN KEY (`Created_by`) REFERENCES `admin` (`Admin_id`) ON DELETE SET NULL,
   ADD CONSTRAINT `quest_ibfk_1` FOREIGN KEY (`CategoryID`) REFERENCES `quest_categories` (`CategoryID`);
+
+--
+-- Constraints for table `quest_calendar`
+--
+ALTER TABLE `quest_calendar`
+  ADD CONSTRAINT `quest_calendar_ibfk_1` FOREIGN KEY (`Quest_id`) REFERENCES `quest` (`Quest_id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Constraints for table `quest_progress`
