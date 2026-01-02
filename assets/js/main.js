@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 ================================================*/
 
 // View Password Toggle
-function togglePassword(inputId) {
+function togglePassword(event, inputId) {
     const input = document.getElementById(inputId);
     const toggle = event.target; 
     if (input.type === 'password') {

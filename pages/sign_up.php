@@ -224,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
                             <input type="password" id="password" name="password" class="input-modern" placeholder="Your secret eco-password" required autocomplete="current-password">
-                            <button type="button" class="password-toggle" onclick="togglePassword('password')">🙈</button>
+                            <button type="button" class="password-toggle" onclick="togglePassword(event,'password')">🙈</button>
                         </div>
                     </div>
                     <input type="hidden" name="form_type" value="login">
@@ -263,7 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
                             <input type="password" id="reg_password" name="reg_password" class="input-modern" placeholder="Create a password (min 8 characters)" required minlength="6" autocomplete="new-password">
-                            <button type="button" class="password-toggle" onclick="togglePassword('reg_password')">🙈</button>
+                            <button type="button" class="password-toggle" onclick="togglePassword(event,'reg_password')">🙈</button>
                         </div>
                     </div>
                     
@@ -272,7 +272,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
                             <input type="password" id="confirm_password" name="confirm_password" class="input-modern" placeholder="Confirm your password" required minlength="6" autocomplete="new-password">
-                            <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">🙈</button>
+                            <button type="button" class="password-toggle" onclick="togglePassword(event,'confirm_password')">🙈</button>
                         </div>
                     </div>
                     <input type="hidden" name="form_type" value="register">
