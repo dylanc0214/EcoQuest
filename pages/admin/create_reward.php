@@ -1,5 +1,9 @@
 <?php
 // pages/admin/create_reward.php
+
+// 1. 开启输出缓冲，解决 "Headers already sent" 错误
+ob_start();
+
 require_once '../../includes/header.php'; 
 
 // 1. AUTHORIZATION CHECK
@@ -11,14 +15,12 @@ if (!$is_logged_in || $user_role !== 'admin' || !isset($_SESSION['admin_id'])) {
     exit;
 }
 
-$categories = ['Voucher', 'Merchandise', 'Digital Badge', 'Experience', 'Other'];
 $errors = [];
 $form_data = [
     'Reward_name' => '',
     'Description' => '',
     'Points_cost' => '',
     'Stock' => '',
-    'Category' => 'Voucher', // ERD does not show this, but old file had it. Keeping it.
     'Image_url' => '',
     'Is_active' => 1
 ];
@@ -27,7 +29,6 @@ $form_data = [
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $form_data['Reward_name'] = trim(filter_input(INPUT_POST, 'Reward_name', FILTER_SANITIZE_SPECIAL_CHARS));
     $form_data['Description'] = trim(filter_input(INPUT_POST, 'Description', FILTER_SANITIZE_SPECIAL_CHARS));
-    $form_data['Image_url'] = filter_input(INPUT_POST, 'Image_url', FILTER_VALIDATE_URL) ?: null; 
     $form_data['Is_active'] = isset($_POST['Is_active']) ? 1 : 0;
     
     // Numeric Validation
@@ -39,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $stock = filter_input(INPUT_POST, 'Stock', FILTER_VALIDATE_INT);
-    if ($stock === false || $stock < -1) {
-        $errors['Stock'] = "Stock must be a whole number, or -1 for unlimited.";
+    if ($stock === false || $stock < 0) {
+        $errors['Stock'] = "Stock must be a whole number (0 or higher).";
     } else {
         $form_data['Stock'] = $stock;
     }
@@ -49,9 +50,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['Reward_name'] = "Reward name is required.";
     }
 
+    // 2.1 Handle File Upload
+    $image_path = null;
+    if (empty($errors) && isset($_FILES['reward_image']) && $_FILES['reward_image']['error'] === UPLOAD_ERR_OK) {
+        $upload_dir = '../../assets/uploads/rewards/';
+        if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+        
+        $file_ext = pathinfo($_FILES['reward_image']['name'], PATHINFO_EXTENSION);
+        $file_name = 'reward_' . time() . '.' . $file_ext;
+        $target_file = $upload_dir . $file_name;
+        
+        if (move_uploaded_file($_FILES['reward_image']['tmp_name'], $target_file)) {
+            $image_path = '../../assets/uploads/rewards/' . $file_name;
+        } else {
+            $errors['Image'] = "Failed to upload image.";
+        }
+    }
+
     // 2.2 Execute Database INSERT
     if (empty($errors) && isset($conn) && $conn) {
         try {
+            // 注意这里使用的是你的数据库字段名 Image_url (首字母大写)
             $sql = "INSERT INTO Reward (Reward_name, Description, Points_cost, Stock, Image_url, Is_active) 
                     VALUES (?, ?, ?, ?, ?, ?)";
             
@@ -62,13 +81,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $form_data['Description'],
                 $form_data['Points_cost'],
                 $form_data['Stock'],
-                $form_data['Image_url'],
+                $image_path,
                 $form_data['Is_active']
             );
 
             if ($stmt->execute()) {
+                // 清除之前的输出缓冲，确保跳转成功
+                ob_clean();
                 header('Location: manage_rewards.php?success=' . urlencode("Reward '{$form_data['Reward_name']}' created!"));
-                exit;
+                exit; // 必须添加 exit，防止后续代码继续执行
             } else {
                 $errors['db'] = "Failed to create reward: " . $stmt->error;
             }
@@ -90,82 +111,123 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="message error-message"><i class="fas fa-exclamation-triangle mr-2"></i> <?php echo htmlspecialchars($errors['db']); ?></div>
         <?php endif; ?>
 
-        <form method="POST" action="create_reward.php" class="reward-form">
+        <form method="POST" action="create_reward.php" class="reward-form" enctype="multipart/form-data">
+            <div class="form-top-layout">
+                <div class="image-preview-container" onclick="document.getElementById('reward_image').click()">
+                    <img id="img-placeholder" src="https://placehold.co/400x250/2C3E50/FAFAF0?text=Click+to+Upload" alt="Preview">
+                    <input type="file" id="reward_image" name="reward_image" style="display:none" accept="image/*" onchange="previewImage(this)">
+                    <div class="img-label">Click to Upload Image</div>
+                </div>
 
-            <div class="form-group">
-                <label for="Reward_name">Reward Name (e.g., $10 Coffee Voucher)</label>
-                <input type="text" id="Reward_name" name="Reward_name" 
-                       value="<?php echo htmlspecialchars($form_data['Reward_name']); ?>" required>
-                <?php if (isset($errors['Reward_name'])): ?><p class="error-text"><?php echo $errors['Reward_name']; ?></p><?php endif; ?>
+                <div class="top-info-block">
+                    <div class="form-group">
+                        <label for="Reward_name">Reward Name <span class="required">*</span></label>
+                        <input type="text" id="Reward_name" name="Reward_name" class="large-input" value="<?php echo htmlspecialchars($form_data['Reward_name']); ?>" required>
+                        <?php if (isset($errors['Reward_name'])): ?><p class="error-text"><?php echo $errors['Reward_name']; ?></p><?php endif; ?>
+                    </div>
+
+                    <div class="stats-row">
+                        <div class="form-group flex-1">
+                            <label for="Points_cost">Points Cost</label>
+                            <input type="number" id="Points_cost" name="Points_cost" value="<?php echo htmlspecialchars($form_data['Points_cost']); ?>" required min="1">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="Stock">Available Stock</label>
+                            <input type="number" id="Stock" name="Stock" value="<?php echo htmlspecialchars($form_data['Stock']); ?>" required min="0">
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="Description">Detailed Description</label>
                 <textarea id="Description" name="Description" rows="4"><?php echo htmlspecialchars($form_data['Description']); ?></textarea>
             </div>
-
-            <div class="form-row">
-                <div class="form-group half-width">
-                    <label for="Points_cost">Points Cost</label>
-                    <input type="number" id="Points_cost" name="Points_cost" 
-                           value="<?php echo htmlspecialchars($form_data['Points_cost']); ?>" required min="1">
-                    <?php if (isset($errors['Points_cost'])): ?><p class="error-text"><?php echo $errors['Points_cost']; ?></p><?php endif; ?>
-                </div>
-                <div class="form-group half-width">
-                    <label for="Stock">Stock Available (Enter -1 for Unlimited)</label>
-                    <input type="number" id="Stock" name="Stock" 
-                           value="<?php echo htmlspecialchars($form_data['Stock']); ?>" required>
-                    <?php if (isset($errors['Stock'])): ?><p class="error-text"><?php echo $errors['Stock']; ?></p><?php endif; ?>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="Image_url">Image URL (Optional)</label>
-                <input type="url" id="Image_url" name="Image_url" value="<?php echo htmlspecialchars($form_data['Image_url']); ?>" placeholder="https://example.com/image.png">
-            </div>
             
             <div class="form-group checkbox-group">
-                <input type="checkbox" id="Is_active" name="Is_active" 
-                       value="1" <?php echo $form_data['Is_active'] ? 'checked' : ''; ?>>
+                <input type="checkbox" id="Is_active" name="Is_active" value="1" <?php echo $form_data['Is_active'] ? 'checked' : ''; ?>>
                 <label for="Is_active" class="inline-label">Set as Active (Available in Shop)</label>
             </div>
 
             <div class="button-bar">
-                <a href="manage_rewards.php" class="btn-secondary">
-                    <i class="fas fa-arrow-left mr-2"></i> Cancel
-                </a>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-save mr-2"></i> Save Reward
-                </button>
+                <a href="manage_rewards.php" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn-primary"><i class="fas fa-save mr-2"></i> Save Reward</button>
             </div>
         </form>
     </div>
 </main>
 
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('img-placeholder').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
 <style>
+    :root {
+        --eco-dark: #1D4C43;
+        --eco-green: #71B48D;
+        --eco-bg: #FAFAF0;
+        --eco-border: #DDEEE5;
+    }
+
     .admin-page { padding: 30px 20px; background-color: #f4f7f6; min-height: 90vh; }
-    .admin-content-card { max-width: 800px; margin: 0 auto; background: #FFFFFF; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
-    .admin-title { font-size: 2rem; font-weight: 700; color: #1D4C43; margin-bottom: 5px; border-bottom: 2px solid #DDEEE5; padding-bottom: 10px; }
-    .admin-subtitle { font-size: 1rem; color: #5A7F7C; margin-bottom: 25px; }
-    .message { padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95rem; font-weight: 500; }
-    .error-message { background-color: #FADBD8; border: 1px solid #E74C3C; color: #C0392B; }
-    .reward-form { display: flex; flex-direction: column; gap: 20px; }
-    .form-group { width: 100%; }
-    .form-row { display: flex; gap: 20px; }
-    .half-width { flex: 1; }
-    label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95rem; }
-    input[type="text"], input[type="number"], input[type="url"], textarea, select { width: 100%; padding: 12px; border: 1px solid #DDEEE5; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-    input:focus, textarea:focus, select:focus { border-color: #3498DB; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); outline: none; }
-    .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-    .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; margin: 0; }
-    .checkbox-group .inline-label { margin-bottom: 0; font-weight: 500; cursor: pointer; }
-    .error-text { color: #E74C3C; font-size: 0.85rem; margin-top: 5px; }
-    .button-bar { display: flex; justify-content: flex-end; gap: 15px; padding-top: 10px; }
-    .btn-primary, .btn-secondary { padding: 12px 25px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; }
-    .btn-primary { background: #1D4C43; color: #FFFFFF; }
-    .btn-secondary { background: #E0E0E0; color: #555; }
-    .mr-2 { margin-right: 0.5rem; }
-    @media (max-width: 600px) { .form-row { flex-direction: column; gap: 15px; } }
+    .admin-content-card { max-width: 850px; margin: 0 auto; background: #FFFFFF; padding: 35px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }
+    .admin-title { font-size: 1.8rem; font-weight: 700; color: var(--eco-dark); margin-bottom: 5px; }
+    .admin-subtitle { font-size: 0.95rem; color: #666; margin-bottom: 30px; border-bottom: 2px solid var(--eco-bg); padding-bottom: 15px; }
+    
+    .form-top-layout { display: flex; gap: 25px; margin-bottom: 20px; }
+    
+    .image-preview-container { 
+        width: 180px; height: 180px; min-width: 180px; 
+        background: #f0f0f0; border-radius: 15px; 
+        border: 2px solid var(--eco-border); overflow: hidden;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        position: relative; cursor: pointer;
+    }
+    .image-preview-container:hover { border-color: var(--eco-green); }
+    .image-preview-container img { width: 100%; height: 100%; object-fit: cover; }
+    .img-label { position: absolute; bottom: 0; background: rgba(0,0,0,0.5); color: white; width: 100%; font-size: 0.7rem; text-align: center; padding: 4px 0; }
+
+    .top-info-block { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+    .large-input { font-size: 1.2rem; font-weight: 600; padding: 15px !important; border-color: var(--eco-green) !important; }
+    
+    .stats-row { display: flex; gap: 15px; }
+    .flex-1 { flex: 1; }
+
+    .form-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.9rem; }
+    .required { color: #E74C3C; }
+
+    input, textarea { 
+        width: 100%; padding: 12px; border: 1.5px solid var(--eco-border); 
+        border-radius: 10px; box-sizing: border-box; font-size: 1rem; 
+        background-color: var(--eco-bg);
+    }
+    input:focus, textarea:focus { border-color: var(--eco-green); outline: none; background-color: #fff; }
+
+    .checkbox-group { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
+    .checkbox-group input { width: 18px; height: 18px; }
+
+    .button-bar { display: flex; justify-content: flex-end; gap: 15px; padding-top: 20px; border-top: 1px solid #eee; }
+    .btn-primary { background: var(--eco-dark); color: white; padding: 12px 30px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; }
+    .btn-secondary { background: #eee; color: #666; padding: 12px 30px; border-radius: 10px; text-decoration: none; font-weight: 600; }
+    .error-text { color: #E74C3C; font-size: 0.8rem; margin-top: 4px; }
+    
+    @media (max-width: 600px) {
+        .form-top-layout { flex-direction: column; align-items: center; }
+        .image-preview-container { width: 100%; }
+    }
 </style>
 
-<?php require_once '../../includes/footer.php'; ?>
+<?php 
+require_once '../../includes/footer.php'; 
+// 3. 刷新并发送缓冲区内容
+ob_end_flush(); 
+?>
