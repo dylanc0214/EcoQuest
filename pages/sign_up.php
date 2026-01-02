@@ -313,7 +313,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include("../includes/footer.php"); ?>
     <script src="../assets/js/main.js"></script>
 
-    <!--FOR BTN SWITCH TAB ON HOMEPAGE-->
+    <!--Check URL from Homepage btn and auto switch Login/Register view-->
     <script>
         // Check if the URL has ?action=register
         window.addEventListener('DOMContentLoaded', (event) => {
@@ -321,10 +321,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const action = urlParams.get('action');
 
             if (action === 'register') {
-            // Trigger the Register view
+            // Trigger Register view
             register();
             } else if (action === 'login') {
-                // Trigger the Login view
+                // Trigger Login view
                 login();
             }
         });
