@@ -1,6 +1,6 @@
 <?php
 // pages/admin/manage_rewards.php
-ob_start(); // 必须在最顶端开启，防止任何 HTML 输出破坏 AJAX 的 JSON 格式
+ob_start(); 
 require_once '../../includes/header.php'; 
 
 // 1. AUTHORIZATION CHECK
@@ -56,11 +56,12 @@ if (isset($conn)) {
     }
 }
 
-// --- AJAX UPDATE LOGIC ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_reward') {
+// --- AJAX UPDATE & CREATE LOGIC ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if (ob_get_length()) ob_clean(); 
     header('Content-Type: application/json');
     
+    $action = $_POST['action'];
     $r_id = filter_input(INPUT_POST, 'Reward_id', FILTER_VALIDATE_INT);
     $name = $_POST['Reward_name'] ?? '';
     $points = filter_input(INPUT_POST, 'Points_cost', FILTER_VALIDATE_INT);
@@ -68,22 +69,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $desc = $_POST['Description'] ?? '';
     $active = isset($_POST['Is_active']) ? (int)$_POST['Is_active'] : 0;
     
-    if ($r_id && isset($conn)) {
-        try {
-            $new_image_url = null;
-            if (isset($_FILES['reward_image']) && $_FILES['reward_image']['error'] === UPLOAD_ERR_OK) {
-                $upload_dir = '../../assets/uploads/rewards/';
-                if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
-                
-                $file_ext = pathinfo($_FILES['reward_image']['name'], PATHINFO_EXTENSION);
-                $file_name = 'reward_' . $r_id . '_' . time() . '.' . $file_ext;
-                $target_file = $upload_dir . $file_name;
-                
-                if (move_uploaded_file($_FILES['reward_image']['tmp_name'], $target_file)) {
-                    $new_image_url = '../../assets/uploads/rewards/' . $file_name;
-                }
+    try {
+        $new_image_url = null;
+        if (isset($_FILES['reward_image']) && $_FILES['reward_image']['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = '../../assets/uploads/rewards/';
+            if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+            $file_ext = pathinfo($_FILES['reward_image']['name'], PATHINFO_EXTENSION);
+            $file_name = 'reward_' . time() . '_' . rand(100,999) . '.' . $file_ext;
+            $target_file = $upload_dir . $file_name;
+            if (move_uploaded_file($_FILES['reward_image']['tmp_name'], $target_file)) {
+                $new_image_url = '../../assets/uploads/rewards/' . $file_name;
             }
+        }
 
+        if ($action === 'update_reward' && $r_id) {
             if ($new_image_url) {
                 $stmt = $conn->prepare("UPDATE Reward SET Reward_name = ?, Points_cost = ?, Stock = ?, Description = ?, Is_active = ?, Image_url = ? WHERE Reward_id = ?");
                 $stmt->bind_param("siisisi", $name, $points, $stock, $desc, $active, $new_image_url, $r_id);
@@ -91,20 +90,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $stmt = $conn->prepare("UPDATE Reward SET Reward_name = ?, Points_cost = ?, Stock = ?, Description = ?, Is_active = ? WHERE Reward_id = ?");
                 $stmt->bind_param("siisii", $name, $points, $stock, $desc, $active, $r_id);
             }
-
-            if ($stmt->execute()) {
-                echo json_encode(['status' => 'success', 'message' => 'Reward updated successfully!']);
-            } else {
-                echo json_encode(['status' => 'error', 'message' => 'DB Error: ' . $stmt->error]);
-            }
-            $stmt->close();
-        } catch (Exception $e) {
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            $stmt->execute();
+            echo json_encode(['status' => 'success', 'message' => 'Reward updated successfully!']);
+        } 
+        else if ($action === 'create_reward') {
+            $stmt = $conn->prepare("INSERT INTO Reward (Reward_name, Points_cost, Stock, Description, Is_active, Image_url) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("siisis", $name, $points, $stock, $desc, $active, $new_image_url);
+            $stmt->execute();
+            echo json_encode(['status' => 'success', 'message' => 'New reward created successfully!']);
         }
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Invalid Request Data']);
+        exit;
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        exit;
     }
-    exit;
 }
 ?>
 
@@ -161,17 +160,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             </div>
             <?php endforeach; ?>
 
-            <a href="create_reward.php" class="add-new-card">
+            <div class="add-new-card" onclick="openCreateModal()" style="cursor:pointer">
                 <div class="add-circle"><i class="fas fa-plus"></i></div>
                 <p>Add New Reward</p>
-            </a>
+            </div>
         </div>
     </div>
 
     <div id="editModal" class="modal-overlay" style="display: none;">
         <div class="modal-content redesigned-modal">
-            <form id="editRewardForm" enctype="multipart/form-data">
+            <form id="rewardForm" enctype="multipart/form-data">
                 <input type="hidden" name="Reward_id" id="modal-id">
+                <input type="hidden" name="action" id="modal-action" value="update_reward">
+                
                 <div class="modal-top-row">
                     <div class="image-upload-container" onclick="document.getElementById('imageInput').click()">
                         <img id="modal-img-preview" src="" alt="Preview">
@@ -179,18 +180,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     </div>
                     <div class="top-info-block">
                         <div class="flex-header-row">
-                            <input type="text" name="Reward_name" id="modal-name" class="input-name-field" placeholder="Name">
+                            <input type="text" name="Reward_name" id="modal-name" class="input-name-field" placeholder="Reward Name" required>
                             <div class="toggle-track" id="modal-status-toggle" onclick="toggleModalStatus()">
                                 <span id="modal-status-text">Active</span>
                             </div>
-                            <input type="hidden" name="Is_active" id="modal-status-val">
+                            <input type="hidden" name="Is_active" id="modal-status-val" value="1">
                         </div>
                         <div class="stats-wrapper">
                             <div class="input-group-row">
                                 <span class="field-label-box">Point :</span>
                                 <div class="counter-control-wrap">
                                     <button type="button" class="btn-math" onclick="adjustModalValue('modal-points', -10)">-</button>
-                                    <div class="pill-display"><input type="number" name="Points_cost" id="modal-points" value="0"></div>
+                                    <div class="pill-display"><input type="number" name="Points_cost" id="modal-points" value="0" min="0"></div>
                                     <button type="button" class="btn-math" onclick="adjustModalValue('modal-points', 10)">+</button>
                                 </div>
                             </div>
@@ -198,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <span class="field-label-box">Quantity :</span>
                                 <div class="counter-control-wrap">
                                     <button type="button" class="btn-math" onclick="adjustModalValue('modal-stock', -1)">-</button>
-                                    <div class="pill-display"><input type="number" name="Stock" id="modal-stock" value="0"></div>
+                                    <div class="pill-display"><input type="number" name="Stock" id="modal-stock" value="0" min="-1"></div>
                                     <button type="button" class="btn-math" onclick="adjustModalValue('modal-stock', 1)">+</button>
                                 </div>
                             </div>
@@ -210,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 </div>
                 <div class="modal-footer-action-btns">
                     <button type="button" class="btn-cancel-flat" onclick="closeEditModal()">Cancel</button>
-                    <button type="submit" class="btn-confirm-flat">Confirm</button>
+                    <button type="submit" class="btn-confirm-flat" id="modal-submit-btn">Confirm</button>
                 </div>
             </form>
         </div>
@@ -240,14 +241,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
     });
 
+    function openCreateModal() {
+        document.getElementById('rewardForm').reset();
+        document.getElementById('modal-id').value = '';
+        document.getElementById('modal-action').value = 'create_reward';
+        document.getElementById('modal-img-preview').src = 'https://placehold.co/400x250/2C3E50/FAFAF0?text=Upload+Image';
+        document.getElementById('modal-status-val').value = 1;
+        document.getElementById('modal-submit-btn').innerText = 'Create';
+        updateModalStatusUI(1);
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
     function openEditModal(id, name, desc, points, stock, imageUrl, isActive) {
         document.getElementById('modal-id').value = id;
+        document.getElementById('modal-action').value = 'update_reward';
         document.getElementById('modal-name').value = name;
         document.getElementById('modal-desc').value = desc;
         document.getElementById('modal-points').value = points;
         document.getElementById('modal-stock').value = stock;
         document.getElementById('modal-status-val').value = isActive;
-        document.getElementById('modal-img-preview').src = imageUrl || "https://placehold.co/400x250/2C3E50/FAFAF0?text=Reward";
+        document.getElementById('modal-img-preview').src = imageUrl;
+        document.getElementById('modal-submit-btn').innerText = 'Confirm';
         updateModalStatusUI(isActive);
         document.getElementById('editModal').style.display = 'flex';
     }
@@ -256,16 +270,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         const toggle = document.getElementById('modal-status-toggle');
         const text = document.getElementById('modal-status-text');
         const isActive = parseInt(val) === 1;
-        
         text.innerText = isActive ? "Active" : "Inactive";
-        
-        if(isActive) {
-            toggle.style.backgroundColor = "#2ecc71";
-            toggle.style.color = "#fff";
-        } else {
-            toggle.style.backgroundColor = "#e74c3c";
-            toggle.style.color = "#fff";
-        }
+        toggle.style.backgroundColor = isActive ? "#2ecc71" : "#e74c3c";
+        toggle.style.color = "#fff";
     }
 
     function toggleModalStatus() {
@@ -276,7 +283,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     function adjustModalValue(inputId, amount) {
         const input = document.getElementById(inputId);
-        input.value = Math.max(0, (parseInt(input.value) || 0) + amount);
+        input.value = Math.max(-1, (parseInt(input.value) || 0) + amount);
     }
 
     function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
@@ -289,22 +296,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
     }
 
-    document.getElementById('editRewardForm').onsubmit = function(e) {
+    document.getElementById('rewardForm').onsubmit = function(e) {
         e.preventDefault();
         const formData = new FormData(this);
-        formData.append('action', 'update_reward');
         
-        fetch('manage_rewards.php', { 
-            method: 'POST', 
-            body: formData 
-        })
-        .then(r => {
-            if (!r.ok) return r.text().then(text => { throw new Error(text) });
-            return r.json();
-        })
+        fetch('manage_rewards.php', { method: 'POST', body: formData })
+        .then(r => r.json())
         .then(data => {
             if (data.status === 'success') {
-                alert(data.message);
                 window.location.reload();
             } else {
                 alert("Error: " + data.message);
@@ -312,7 +311,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         })
         .catch(err => {
             console.error("Fetch Error:", err);
-            alert("A system error occurred. Please check database connectivity or file permissions.");
+            alert("An error occurred. Check file size or database connection.");
         });
     };
 </script>
@@ -335,22 +334,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     .rewards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; align-items: stretch; }
     
-    /* Reward Card Design - Blending with BG but Standing Out */
     .reward-card { 
-        background-color: var(--eco-bg); 
-        border-radius: 25px; 
-        overflow: hidden; 
-        display: flex; 
-        flex-direction: column; 
-        position: relative; 
-        border: 2px solid rgba(29, 76, 67, 0.2); /* Thicker border to stand out */
-        box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.1), -5px -5px 20px rgba(255, 255, 255, 0.9); /* Neumorphic deep shadow */
+        background-color: var(--eco-bg); border-radius: 25px; overflow: hidden; display: flex; 
+        flex-direction: column; position: relative; border: 2px solid rgba(29, 76, 67, 0.2); 
+        box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.1), -5px -5px 20px rgba(255, 255, 255, 0.9); 
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .reward-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 15px 15px 35px rgba(0, 0, 0, 0.15);
-    }
+    .reward-card:hover { transform: translateY(-8px); box-shadow: 15px 15px 35px rgba(0, 0, 0, 0.15); }
     .inactive-card { opacity: 0.75; filter: grayscale(0.2); }
 
     .card-header { height: 180px; background-size: cover; background-position: center; border-bottom: 1.5px solid rgba(29, 76, 67, 0.1); }
@@ -370,92 +360,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     .status-inactive { color: #e74c3c; border-bottom: 3px solid #e74c3c; }
 
     .add-new-card { 
-        background-color: var(--eco-bg);
-        border: 3px dashed #bbb;
-        border-radius: 25px; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        justify-content: center; 
-        text-decoration: none; 
-        color: #666; 
-        height: 100%; 
-        box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.05);
+        background-color: var(--eco-bg); border: 3px dashed #bbb; border-radius: 25px; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        text-decoration: none; color: #666; height: 100%; box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.05); 
         transition: background 0.3s ease;
     }
     .add-new-card:hover { background: rgba(113, 180, 141, 0.05); }
     .add-circle { width: 80px; height: 80px; border: 4px solid currentColor; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 15px; }
 
-    /* Updated Larger Options Dropdown */
     .card-options { position: absolute; top: 15px; right: 15px; z-index: 10; }
     .options-trigger { background: rgba(0,0,0,0.25); border: none; color: #fff; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; }
-    
-    .options-dropdown { 
-        position: absolute; 
-        right: 0; 
-        top: 45px; 
-        background: #fff; 
-        border: 1px solid var(--eco-border); 
-        border-radius: 15px; 
-        display: none; 
-        min-width: 220px; 
-        padding: 10px 0; 
-        box-shadow: 0 15px 35px rgba(0,0,0,0.2); 
-        z-index: 100;
-    }
+    .options-dropdown { position: absolute; right: 0; top: 45px; background: #fff; border: 1px solid var(--eco-border); border-radius: 15px; display: none; min-width: 220px; padding: 10px 0; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 100; }
     .options-dropdown.show { display: block; }
-    
-    .options-dropdown button { 
-        display: flex; 
-        align-items: center; 
-        width: 100%; 
-        padding: 18px 25px; /* Larger Padding */
-        border: none; 
-        background: none; 
-        cursor: pointer; 
-        font-size: 1.1rem; /* Larger Font */
-        font-weight: 600;
-        color: var(--eco-dark);
-        text-align: left;
-        transition: background 0.2s;
-    }
+    .options-dropdown button { display: flex; align-items: center; width: 100%; padding: 18px 25px; border: none; background: none; cursor: pointer; font-size: 1.1rem; font-weight: 600; color: #666; text-align: left; transition: background 0.2s; }
     .options-dropdown button i { font-size: 1.3rem; margin-right: 15px; width: 25px; text-align: center; }
     .options-dropdown button:hover { background: #f0f7f4; color: var(--eco-green); }
     .options-dropdown button.btn-delete-opt { color: #e74c3c; }
-    .options-dropdown button.btn-delete-opt:hover { background: #fff5f5; color: #c0392b; }
 
-    /* Modal Styling */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-    .redesigned-modal { background: #fff; border-radius: 20px; border: 2px solid var(--eco-dark); padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .redesigned-modal { background: #fff; border-radius: 20px;  border: 3px dashed #bbb; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%;}
     .modal-top-row { display: flex; gap: 25px; margin-bottom: 20px; }
-    
-    .image-upload-container { width: 160px; height: 160px; min-width: 160px; background: #E0E0E0; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 15px; border: 2px solid var(--eco-border); overflow: hidden; }
+    .image-upload-container { width: 160px; height: 160px; min-width: 160px; background: #F0F0F0; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 15px; border: 2px solid var(--eco-border); overflow: hidden; }
     .image-upload-container img { width: 100%; height: 100%; object-fit: cover; }
-    
     .top-info-block { flex: 1; display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
     .flex-header-row { display: flex; align-items: center; gap: 15px; width: 100%; }
     .input-name-field { flex: 1; background: #F0F0F0; border: none; padding: 10px; border-radius: 8px; font-size: 1.3rem; font-weight: bold; color: var(--eco-dark); }
-    
     .toggle-track { width: 100px; min-width: 100px; padding: 8px 0; border-radius: 25px; cursor: pointer; font-size: 0.85rem; font-weight: 800; text-align: center; transition: all 0.3s ease; }
-
     .stats-wrapper { display: flex; flex-direction: column; gap: 12px; width: 100%; }
     .input-group-row { display: flex; align-items: center; gap: 10px; width: 100%; }
     .field-label-box { background: #F0F0F0; padding: 8px 15px; border-radius: 8px; width: 110px; font-weight: bold; color: #555; text-align: left; box-sizing: border-box; }
-    
     .counter-control-wrap { display: flex; align-items: center; gap: 10px; flex: 1; width: 100%; }
     .pill-display { background: #F0F0F0; border-radius: 25px; flex: 1; padding: 6px 15px; text-align: center; border: 1px solid transparent; }
     .pill-display input { width: 100%; background: transparent; border: none; text-align: center; outline: none; font-size: 1.1rem; font-weight: bold; color: var(--eco-dark); }
-    
     .btn-math { background: #71B48D; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: transform 0.1s; flex-shrink: 0; }
-    .btn-math:active { transform: scale(0.9); }
-
     .description-area-box { background: #F0F0F0; border-radius: 12px; padding: 15px; border: 1px solid var(--eco-border); }
     .description-field-flat { width: 100%; background: transparent; border: none; resize: none; height: 100px; outline: none; font-size: 0.95rem; line-height: 1.5; color: #444; }
-    
     .modal-footer-action-btns { display: flex; justify-content: flex-end; gap: 15px; margin-top: 25px; }
     .btn-cancel-flat { background: #eee; border: 1px solid #ccc; padding: 10px 30px; border-radius: 10px; cursor: pointer; font-weight: 600; color: #666; transition: background 0.2s; }
     .btn-confirm-flat { background: var(--eco-dark); color: #fff; border: none; padding: 10px 40px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
-    .btn-confirm-flat:hover { opacity: 0.9; }
 </style>
 
 <?php 
