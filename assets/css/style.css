@@ -247,6 +247,7 @@ main {
     margin-bottom: 5px;
 }
 
+/*NavBar Mobile View*/
 @media (max-width: 768px) {
     /* 1. Hide the horizontal nav and stack it vertically */
     .nav-links {
@@ -695,7 +696,7 @@ main {
     font-size: 0.9rem;
 }
 
-/* Mobile Responsive */
+/* Notification Mobile View */
 @media (max-width: 600px) {
     .notif-dropdown {
         position: fixed; /* Fixed on mobile to center it */
@@ -717,7 +718,7 @@ main {
 }
 
 /* ====================================
-   HERO SECTION (Curved Design Update)
+   HomePage (Curved Design Update)
    ==================================== */
 
 .hero {
@@ -1071,8 +1072,224 @@ main {
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
 }
 
-/*Hero Mobile View*/
+/*HomePage Mobile View*/
+
 @media screen and (max-width: 768px){
+        .nav-links {
+        /* This is for the JS toggle - initial state is hidden */
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        position: absolute;
+        top: 65px; /* Adjust based on header height */
+        left: 0;
+        background-color: #FAFAF0;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        padding: 0;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        /*transform: translateY(-10px);*/
+        visibility: hidden;
+        transition: max-height 0.5s ease, opacity 0.3s ease, visibility 0.5s;
+    }
+
+    .nav-links.is-open {
+        /* New properties to show it smoothly */
+        max-height: 500px; /* Needs to be larger than content height */
+        padding: 10px 0; /* Add padding when open */
+        opacity: 1;
+        visibility: visible;
+        /* Remove transform property for this transition model */
+    }
+
+    .nav-links li {
+        margin: 0;
+        border-bottom: 1px solid rgba(29, 76, 67, 0.1);
+    }
+
+    .nav-links a {
+        display: block;
+        padding: 15px 5%;
+        border-bottom: none;
+    }
+
+    .nav-auth {
+        display: none; /* Hide auth buttons in nav on mobile */
+    }
+
+    .nav-toggle {
+        display: block; /* Show the burger menu button */
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: #1D4C43;
+        padding: 10px;
+        transition: color 0.3s ease;
+    }
+
+    .nav-toggle:hover {
+        color: #71B48D;
+    }
+
+    .nav-toggle.is-active {
+        color: #71B48D;
+    }
+
+    /* Hero Section Mobile Overrides */
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 50px 5%;
+        min-height: unset;
+        background: transparent; /* Make background transparent */
+        box-shadow: none;
+    }
+    .hero::after {
+        background: none; /* Remove gradient for mobile */
+        width: 0;
+    }
+    .hero-left {
+        max-width: 100%;
+    }
+    .hero-slogan {
+        font-size: 2.2rem;
+    }
+    .hero-right {
+        display:none;
+    }
+
+    .btn-signup {
+        min-width: 250px;
+    }
+
+    /* Dashboard responsive adjustments */
+    .dashboard-page {
+        padding: 30px 5%;
+    }
+    .welcome-card {
+        padding: 25px;
+    }
+    .welcome-card h1 {
+        font-size: 1.8rem;
+    }
+    .rank-number {
+        font-size: 2.5rem;
+    }
+    .action-activity-grid {
+        grid-template-columns: 1fr; /* Stack action and activity cards vertically */
+    }
+    .btn-leaderboard {
+        margin-left: unset;
+        width: 100%;
+        margin-top: 15px;
+        order: 1; /* Place button below rank number/label */
+    }
+    .current-rank {
+        flex-wrap: wrap;
+    }
+    .activity-list li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    .activity-points {
+        margin-right: 0;
+    }
+
+    /* Quest Page Mobile Overrides */
+    .quests-page {
+        padding: 30px 5%;
+    }
+    .quest-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .quest-controls input,
+    .quest-controls select {
+        max-width: 100%;
+        width: 100%;
+    }
+    .quest-grid {
+        grid-template-columns: 1fr; /* Stack cards vertically on small screens */
+    }
+    .quest-card {
+        min-height: unset; /* Remove fixed height on small screens */
+    }
+
+    /* About page columns stack */
+    .about-columns {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    .about-section {
+        border-bottom: 1px dashed #DCDCDC;
+        padding-bottom: 20px;
+    }
+    .about-section:last-child {
+        border-bottom: none;
+    }
+
+    /* Rewards page adjustments */
+    .reward-grid {
+        grid-template-columns: 1fr;
+    }
+    .user-points-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .reward-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .reward-controls .form-group input,
+    .reward-controls .form-group select {
+        width: 100%;
+    }
+
+    /* Leaderboard table adjustments */
+    .leaderboard-table thead {
+        display: none; /* Hide table headers */
+    }
+    .leaderboard-table,
+    .leaderboard-table tbody,
+    .leaderboard-table tr,
+    .leaderboard-table td {
+        display: block;
+        width: 100%;
+    }
+    .leaderboard-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #DCDCDC;
+        border-radius: 8px;
+        background-color: #FFFFFF;
+    }
+    .leaderboard-table td {
+        text-align: right;
+        padding: 10px 15px;
+        position: relative;
+        padding-left: 50%; /* Space for the data label */
+        border-bottom: none;
+    }
+    .leaderboard-table td::before {
+        /* Mobile data labels */
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: calc(50% - 20px);
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 600;
+        color: #1D4C43;
+    }
+    .leaderboard-table .current-user {
+        border: 2px solid #71B48D;
+        border-left: 5px solid #71B48D;
+    }
+
     .homepage-content h2{
         font-size: 2rem;
         font-weight: 700;
@@ -1084,20 +1301,58 @@ main {
 
     .stat-1 {
         top: 25%;
-        left: 15%;
+        left: 12%;
     }
 
     .stat-2 {
         top: 50%;
-        right: 16%;
-
+        right: 10%;
     }
 
     .stat-3 {
         bottom: 15%;
-        left: 23%;
+        left: 16%;
     }
+
+    .stat-1 label,.stat-2 label,.stat-3 label{
+        font-size: 1em;
+    }
+
+    .stat-1 p,.stat-2 p,.stat-3 p{
+        font-size: .8em;
+    }
+
+    .feature-section-header h2,.HIW-header h2{
+        font-size: 2em;
+    }
+    .feature-section-header p,.HIW-header p{
+        font-size: 1em;
+    }
+
     .step-connector .arrow-right{
+        display: none;
+    }
+
+    .cta-container{
+        padding: 2rem 2rem 2rem 2rem;
+    }
+
+    .cta-btn{
+        font-size: 1rem;
+        border-radius: .5rem;
+        padding: 10px 6px;
+        font-weight: 510;
+    }
+
+    .cta-content h2{
+        font-size: 1em;
+    }
+
+    .cta-content p{
+        font-size: .8em;
+    }
+
+    .cta-img-content img{
         display: none;
     }
 }
@@ -1956,235 +2211,6 @@ main {
     /* Dashboard adjustments */
     .welcome-card h1 {
         font-size: 2rem;
-    }
-}
-
-@media (max-width: 768px) {
-    /* Mobile Navigation */
-    .nav-links {
-        /* This is for the JS toggle - initial state is hidden */
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        position: absolute;
-        top: 65px; /* Adjust based on header height */
-        left: 0;
-        background-color: #FAFAF0;
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-        padding: 0;
-        max-height: 0;
-        overflow: hidden;
-        opacity: 0;
-        /*transform: translateY(-10px);*/
-        visibility: hidden;
-        transition: max-height 0.5s ease, opacity 0.3s ease, visibility 0.5s;
-    }
-
-    .nav-links.is-open {
-        /* New properties to show it smoothly */
-        max-height: 500px; /* Needs to be larger than content height */
-        padding: 10px 0; /* Add padding when open */
-        opacity: 1;
-        visibility: visible;
-        /* Remove transform property for this transition model */
-    }
-
-    .nav-links li {
-        margin: 0;
-        border-bottom: 1px solid rgba(29, 76, 67, 0.1);
-    }
-
-    .nav-links a {
-        display: block;
-        padding: 15px 5%;
-        border-bottom: none;
-    }
-
-    .nav-auth {
-        display: none; /* Hide auth buttons in nav on mobile */
-    }
-
-    .nav-toggle {
-        display: block; /* Show the burger menu button */
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 1.5rem;
-        color: #1D4C43;
-        padding: 10px;
-        transition: color 0.3s ease;
-    }
-
-    .nav-toggle:hover {
-        color: #71B48D;
-    }
-
-    .nav-toggle.is-active {
-        color: #71B48D;
-    }
-
-    /* Hero Section Mobile Overrides */
-    .hero {
-        flex-direction: column;
-        text-align: center;
-        padding: 50px 5%;
-        min-height: unset;
-        background: transparent; /* Make background transparent */
-        box-shadow: none;
-    }
-    .hero::after {
-        background: none; /* Remove gradient for mobile */
-        width: 0;
-    }
-    .hero-left {
-        max-width: 100%;
-    }
-    .hero-slogan {
-        font-size: 2.2rem;
-    }
-    .hero-right {
-        background: transparent;
-        box-shadow: none;
-        border: none;
-        padding: 0;
-        margin: 0 auto;
-    }
-    .hero-right img {
-        display: block;
-        background: transparent;
-        border-radius: 50%; /* keep your droplet shape if desired */
-        box-shadow: none;
-        margin: 0 auto;
-    }
-    .btn-signup {
-        min-width: 250px;
-    }
-
-    /* Dashboard responsive adjustments */
-    .dashboard-page {
-        padding: 30px 5%;
-    }
-    .welcome-card {
-        padding: 25px;
-    }
-    .welcome-card h1 {
-        font-size: 1.8rem;
-    }
-    .rank-number {
-        font-size: 2.5rem;
-    }
-    .action-activity-grid {
-        grid-template-columns: 1fr; /* Stack action and activity cards vertically */
-    }
-    .btn-leaderboard {
-        margin-left: unset;
-        width: 100%;
-        margin-top: 15px;
-        order: 1; /* Place button below rank number/label */
-    }
-    .current-rank {
-        flex-wrap: wrap;
-    }
-    .activity-list li {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-    }
-    .activity-points {
-        margin-right: 0;
-    }
-
-
-    /* Quest Page Mobile Overrides */
-    .quests-page {
-        padding: 30px 5%;
-    }
-    .quest-controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .quest-controls input,
-    .quest-controls select {
-        max-width: 100%;
-        width: 100%;
-    }
-    .quest-grid {
-        grid-template-columns: 1fr; /* Stack cards vertically on small screens */
-    }
-    .quest-card {
-        min-height: unset; /* Remove fixed height on small screens */
-    }
-
-    /* About page columns stack */
-    .about-columns {
-        grid-template-columns: 1fr;
-        gap: 30px;
-    }
-    .about-section {
-        border-bottom: 1px dashed #DCDCDC;
-        padding-bottom: 20px;
-    }
-    .about-section:last-child {
-        border-bottom: none;
-    }
-
-    /* Rewards page adjustments */
-    .reward-grid {
-        grid-template-columns: 1fr;
-    }
-    .user-points-summary {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    .reward-controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .reward-controls .form-group input,
-    .reward-controls .form-group select {
-        width: 100%;
-    }
-
-    /* Leaderboard table adjustments */
-    .leaderboard-table thead {
-        display: none; /* Hide table headers */
-    }
-    .leaderboard-table,
-    .leaderboard-table tbody,
-    .leaderboard-table tr,
-    .leaderboard-table td {
-        display: block;
-        width: 100%;
-    }
-    .leaderboard-table tr {
-        margin-bottom: 15px;
-        border: 1px solid #DCDCDC;
-        border-radius: 8px;
-        background-color: #FFFFFF;
-    }
-    .leaderboard-table td {
-        text-align: right;
-        padding: 10px 15px;
-        position: relative;
-        padding-left: 50%; /* Space for the data label */
-        border-bottom: none;
-    }
-    .leaderboard-table td::before {
-        /* Mobile data labels */
-        content: attr(data-label);
-        position: absolute;
-        left: 10px;
-        width: calc(50% - 20px);
-        padding-right: 10px;
-        white-space: nowrap;
-        text-align: left;
-        font-weight: 600;
-        color: #1D4C43;
-    }
-    .leaderboard-table .current-user {
-        border: 2px solid #71B48D;
-        border-left: 5px solid #71B48D;
     }
 }
 
@@ -4199,3 +4225,6 @@ main {
     padding: 1rem 0.75rem;
 }
 
+/* ====================================
+   Mobile View
+   ==================================== */
