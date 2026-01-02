@@ -76,24 +76,24 @@ $base_path = '/Group7_EcoQuest/'; // Update this if your project folder is diffe
             <li class="dropdown-wrapper">
                 <a href="" class="dropdown-title">Manage</a>
                 <ul class="dropdown-content">
-                    <li><a href="<?php echo $base_path; ?>pages/admin/manage_users.php"><img src="<?php echo $base_path; ?>assets/images/quest.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Users</strong></p></a></li>
-                    <li><a href="<?php echo $base_path; ?>pages/admin/manage_submissions.php"><img src="<?php echo $base_path; ?>assets/images/submission.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Submissions</strong></p></a></li>
-                    <li><a href="<?php echo $base_path; ?>pages/admin/manage_quests.php"><img src="<?php echo $base_path; ?>assets/images/quest.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Quests</strong></p></a></li>
-                    <li><a href="<?php echo $base_path; ?>pages/admin/manage_badges.php"><img src="<?php echo $base_path; ?>assets/images/submission.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Badge</strong></p></a></li>
-                    <li><a href="<?php echo $base_path; ?>pages/admin/manage_rewards.php"><img src="<?php echo $base_path; ?>assets/images/reward.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Rewards</strong></p></a></li>
+                    <li><a href="<?php echo $base_path; ?>pages/admin/manage_users.php"><img src="<?php echo $base_path; ?>assets/images/icons/quest.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Users</strong></p></a></li>
+                    <li><a href="<?php echo $base_path; ?>pages/admin/manage_submissions.php"><img src="<?php echo $base_path; ?>assets/images/icons/submission.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Submissions</strong></p></a></li>
+                    <li><a href="<?php echo $base_path; ?>pages/admin/manage_quests.php"><img src="<?php echo $base_path; ?>assets/images/icons/quest.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Quests</strong></p></a></li>
+                    <li><a href="<?php echo $base_path; ?>pages/admin/manage_badges.php"><img src="<?php echo $base_path; ?>assets/images/icons/submission.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Badge</strong></p></a></li>
+                    <li><a href="<?php echo $base_path; ?>pages/admin/manage_rewards.php"><img src="<?php echo $base_path; ?>assets/images/icons/reward.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Rewards</strong></p></a></li>
                 </ul>
             </li>
             <li class="dropdown-wrapper">
                 <a href="#" class="dropdown-title">Moderate</a>
                 <ul class="dropdown-content">
-                    <li><a href="<?php echo $base_path; ?>pages/admin/moderation_records.php"><img src="<?php echo $base_path; ?>assets/images/reward.png" alt="reward image" class="dropdown-img"><p><strong class="dropdown-title-text">Moderation Log</strong></p></a></li>
+                    <li><a href="<?php echo $base_path; ?>pages/admin/moderation_records.php"><img src="<?php echo $base_path; ?>assets/images/icons/log.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Moderation Log</strong></p></a></li>
                 </ul>
             </li>
             <li class="dropdown-wrapper">
                 <a href="#" class="dropdown-title">Review</a>
                 <ul class="dropdown-content">
-                    <li><a href="<?php echo $base_path; ?>pages/admin/view_feedback.php"><img src="<?php echo $base_path; ?>assets/images/reward.png" alt="reward image" class="dropdown-img"><p><strong class="dropdown-title-text">Feedback</strong></p></a></li>
-                    <li><a href="<?php echo $base_path; ?>pages/forum.php"><img src="<?php echo $base_path; ?>assets/images/achievement.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Forum</strong></p></a></li>
+                    <li><a href="<?php echo $base_path; ?>pages/admin/view_feedback.php"><img src="<?php echo $base_path; ?>assets/images/icons/reward.png" alt="reward image" class="dropdown-img"><p><strong class="dropdown-title-text">Feedback</strong></p></a></li>
+                    <li><a href="<?php echo $base_path; ?>pages/forum.php"><img src="<?php echo $base_path; ?>assets/images/icons/achievement.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Forum</strong></p></a></li>
                 </ul>
             </li>
         <?php endif; ?>
