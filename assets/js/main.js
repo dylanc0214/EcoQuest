@@ -2,41 +2,23 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ============================================
-    // --- 1. MOBILE MENU TOGGLE ---
-    // ============================================
-    const navToggle = document.querySelector('.nav-toggle');
-    const navMenu = document.querySelector('.nav-links');
-    
-    // Global toggle function
-    window.toggleMobileMenu = function() {
-        if (navMenu && navToggle) {
-            navMenu.classList.toggle('is-open');
-            navToggle.classList.toggle('is-active');
-        }
-    };
+// ============================================
+// --- 1. MOBILE MENU TOGGLE ---
+// ============================================
+const navToggle = document.querySelector('.nav-toggle');
+const navMenu = document.querySelector('.nav-links');
 
-    if (navToggle) {
-        navToggle.addEventListener('click', window.toggleMobileMenu);
+// Global toggle function
+window.toggleMobileMenu = function() {
+    if (navMenu && navToggle) {
+        navMenu.classList.toggle('is-open');
+        navToggle.classList.toggle('is-active');
     }
+};
+if (navToggle) {
+    navToggle.addEventListener('click', window.toggleMobileMenu);
+}
 
-    // Toggle the main hamburger menu
-    document.getElementById('mobile-menu-btn').addEventListener('click', function() {
-        document.getElementById('navLinks').classList.toggle('active');
-    });
-    
-    // Toggle individual dropdowns inside the mobile menu
-    const dropdowns = document.querySelectorAll('.dropdown-wrapper');
-    
-    dropdowns.forEach(wrapper => {
-        wrapper.addEventListener('click', function(e) {
-            if (window.innerWidth <= 768) {
-                // Prevent link from navigating if it has a dropdown
-                e.preventDefault(); 
-                this.classList.toggle('open');
-            }
-        });
-    });
 
     // ============================================
     // --- 2. FAQ POPUP LOGIC ---
