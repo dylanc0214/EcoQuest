@@ -39,8 +39,8 @@ if ($conn) {
     // ==========================================
     // 2. CHECK BADGES (XP Based)
     // ==========================================
-    // This logic was fine, just keeping it simple
-    $db_badges = $conn->query("SELECT * FROM badge")->fetch_all(MYSQLI_ASSOC);
+    // Added WHERE Is_active = 1 to only process active badges
+    $db_badges = $conn->query("SELECT * FROM badge WHERE Is_active = 1")->fetch_all(MYSQLI_ASSOC);
     foreach ($db_badges as $b) {
         if ($xp >= $b['Require_Exp_Points']) {
             unlock_item($conn, $student_id, 'badge', $b['Badge_id'], $b['Badge_Name'], $newly_unlocked);
@@ -105,8 +105,12 @@ $my_badges = [];
 $my_achievements = [];
 
 if ($conn) {
-    // Fetch Badges
-    $sql_b = "SELECT b.*, sb.Earned_Date FROM badge b LEFT JOIN student_badge sb ON b.Badge_id = sb.Badge_id AND sb.Student_id = $student_id ORDER BY b.Require_Exp_Points ASC";
+    // Fetch Badges - Added WHERE Is_active = 1 to hide inactive badges from the UI
+    $sql_b = "SELECT b.*, sb.Earned_Date 
+              FROM badge b 
+              LEFT JOIN student_badge sb ON b.Badge_id = sb.Badge_id AND sb.Student_id = $student_id 
+              WHERE b.Is_active = 1
+              ORDER BY b.Require_Exp_Points ASC";
     $my_badges = $conn->query($sql_b)->fetch_all(MYSQLI_ASSOC);
 
     // Fetch Achievements
