@@ -3,7 +3,7 @@
 session_start();
 include("../config/db.php");
 
-// --- 1. 处理点赞逻辑 (AJAX) - 必须在最顶部以确保返回纯 JSON ---
+// --- 1. HANDLE LIKE TOGGLE (AJAX) - MUST BE AT THE VERY TOP FOR CLEAN JSON RESPONSE ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_like'])) {
     if (ob_get_length()) ob_clean();
     header('Content-Type: application/json');
@@ -18,17 +18,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_like'])) {
         $res = $stmt->get_result();
         
         if ($res->num_rows > 0) {
+            // Unlike post
             $stmt = $conn->prepare("DELETE FROM post_likes WHERE User_id = ? AND Post_id = ?");
             $stmt->bind_param("ii", $current_session_user_id, $post_id);
             $stmt->execute();
             $status = 'unliked';
         } else {
+            // Like post
             $stmt = $conn->prepare("INSERT INTO post_likes (User_id, Post_id) VALUES (?, ?)");
             $stmt->bind_param("ii", $current_session_user_id, $post_id);
             $stmt->execute();
             $status = 'liked';
         }
         
+        // Get updated count
         $stmt = $conn->prepare("SELECT COUNT(*) as count FROM post_likes WHERE Post_id = ?");
         $stmt->bind_param("i", $post_id);
         $stmt->execute();
@@ -41,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_like'])) {
     exit(); 
 }
 
-// --- 2. 处理删除逻辑 (必须在 include header 之前) ---
+// --- 2. HANDLE DELETE LOGIC (MUST BE BEFORE HEADER INCLUDE) ---
 $user_id = $_SESSION['user_id'] ?? null;
 $user_role = $_SESSION['user_role'] ?? 'guest';
 
@@ -51,14 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_post'])) {
         if ($post_id_to_delete && isset($conn)) {
             $conn->begin_transaction();
             try {
-                // 按照外键约束顺序删除关联数据
+                // Delete associated data first due to foreign key constraints
                 $conn->query("DELETE FROM Comment WHERE Post_id = $post_id_to_delete");
                 $conn->query("DELETE FROM post_likes WHERE Post_id = $post_id_to_delete");
                 $conn->query("DELETE FROM Post_report WHERE Post_id = $post_id_to_delete");
                 $conn->query("DELETE FROM Post WHERE Post_id = $post_id_to_delete");
                 $conn->commit();
                 
-                // 执行跳转
                 header("Location: forum.php");
                 exit();
             } catch (Exception $e) {
@@ -68,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_post'])) {
     }
 }
 
-// --- 3. 处理举报逻辑 (必须在 include header 之前) ---
+// --- 3. HANDLE REPORT LOGIC (MUST BE BEFORE HEADER INCLUDE) ---
 $success_msg = null;
 $error_msg = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_report'])) {
@@ -98,19 +100,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_report'])) {
     }
 }
 
-// --- 4. 包含页面头部 (此时可以安全输出 HTML) ---
+// --- 4. INCLUDE PAGE HEADER (SAFE TO OUTPUT HTML NOW) ---
 include("../includes/header.php");
 
-// 权限验证
+// Authorization verification
 if (!in_array($user_role, ['student', 'moderator', 'admin'])) {
     header("Location: login.php");
     exit();
 }
 
-// --- 5. 获取帖子列表 ---
+// --- 5. FETCH POST LIST ---
 $posts = [];
 if (isset($conn) && !$conn->connect_error) {
-    // 修正 SQL: 使用 p.User_id 关联，并移除不存在的 p.Is_active
     $sql = "
         SELECT p.Post_id, p.Title, p.Content, p.Image, p.Created_at, u.Username,
         (SELECT COUNT(*) FROM Comment c WHERE c.Post_id = p.Post_id) AS comment_count,
@@ -166,12 +167,13 @@ if (isset($conn) && !$conn->connect_error) {
                     
                     <div class="post-footer">
                         <span class="post-stat like-btn <?php echo $post['user_liked'] ? 'liked' : ''; ?>" 
-                              onclick="toggleLike(this, <?php echo $post['Post_id']; ?>)" style="cursor: pointer;">
+                              onclick="toggleLike(this, <?php echo $post['Post_id']; ?>)" style="cursor: pointer; background: transparent; border: none; padding: 0;">
                             <i class="<?php echo $post['user_liked'] ? 'fas' : 'far'; ?> fa-heart"></i> 
                             <span class="count"><?php echo $post['like_count']; ?></span>
                         </span>
 
-                        <span class="post-stat" style="cursor: default;">
+                        <span class="post-stat" style="cursor: pointer; background: transparent;" 
+                              onclick="window.location.href='post_detail.php?id=<?php echo $post['Post_id']; ?>'">
                             <i class="fas fa-comment"></i> <?php echo $post['comment_count']; ?>
                         </span>
                         
@@ -217,11 +219,21 @@ if (isset($conn) && !$conn->connect_error) {
     .report-btn-corner { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #ccc; cursor: pointer; font-size: 1.1rem; transition: color 0.3s; z-index: 10; }
     .report-btn-corner:hover { color: #E53E3E; }
     .post-date { margin-right: 35px; }
-    .post-stat.like-btn { color: #555; transition: all 0.2s ease; }
+    
+    .post-stat.like-btn { 
+        color: #555; 
+        transition: all 0.2s ease; 
+        background: transparent !important; 
+        border: none !important;
+        box-shadow: none !important;
+    }
     .post-stat.like-btn i { transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 1.2rem; margin-right: 5px; }
     .post-stat.like-btn.liked { color: #ff4d4d !important; }
     .post-stat.like-btn.liked i { color: #ff4d4d !important; }
     .post-stat.like-btn:active i { transform: scale(1.4); }
+
+    .post-stat { background: transparent !important; border: none !important; color: #555; }
+
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); animation: fadeIn 0.3s; }
     .modal-content { background-color: #fefefe; margin: 10% auto; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
     .close-modal { position: absolute; top: 10px; right: 20px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }

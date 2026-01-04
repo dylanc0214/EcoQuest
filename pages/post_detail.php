@@ -211,10 +211,23 @@ if (isset($conn)) {
     .report-btn-corner:hover { color: #E53E3E; }
     .report-btn-corner-sm { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #ddd; cursor: pointer; font-size: 0.9rem; transition: 0.2s; z-index: 10; }
     .report-btn-corner-sm:hover { color: #E53E3E; }
-    .post-stat.like-btn { color: #555; transition: all 0.2s ease; display: flex; align-items: center; gap: 5px; }
+    
+    /* MODIFIED: Removed background color and border from like button */
+    .post-stat.like-btn { 
+        color: #555; 
+        transition: all 0.2s ease; 
+        display: flex; 
+        align-items: center; 
+        gap: 5px; 
+        background: transparent !important; 
+        border: none !important; 
+        padding: 0;
+        box-shadow: none !important;
+    }
     .post-stat.like-btn i { transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 1.3rem; }
     .post-stat.like-btn.liked { color: #ff4d4d !important; }
     .post-stat.like-btn:active i { transform: scale(1.4); }
+    
     .btn-delete-comment { background: none; border: none; color: #cc0000; font-size: 1.2rem; font-weight: bold; cursor: pointer; float:right; margin-right: 30px; }
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); animation: fadeIn 0.3s; }
     .modal-content { background-color: #fefefe; margin: 10% auto; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; }
