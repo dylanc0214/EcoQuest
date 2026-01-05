@@ -31,12 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // --- NEW LOGIN LOGIC: Query only the User table ---
             $sql = "SELECT User_id, Username, Email, Role, Password_hash FROM User WHERE Username = ? OR Email = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ss", $identifier, $identifier);
-            $stmt->execute();
-            $result = $stmt->get_result();
+            $result = $conn->execute_query($sql, [$identifier, $identifier]);
             $user = $result->fetch_assoc();
-            $stmt->close();
 
             // Verify password
             if ($user && password_verify($password, $user['Password_hash'])) {
