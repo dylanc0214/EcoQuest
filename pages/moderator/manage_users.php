@@ -68,7 +68,7 @@ if ($conn) {
                                     <div class="action-dropdown">
                                         <button class="action-btn"><i class="fas fa-ellipsis-v"></i></button>
                                         <div class="action-menu">
-                                            <a href="view_student.php?student_id=<?php echo $student['Student_id']; ?>">View Profile</a>
+                                            <a href="../view_student.php?student_id=<?php echo $student['Student_id']; ?>">View Profile</a>
                                             
                                             <?php if ($is_banned): ?>
                                                 <a href="../../pages/ban_handler.php?student_id=<?php echo $student['Student_id']; ?>&action=unban" style="color:green;">

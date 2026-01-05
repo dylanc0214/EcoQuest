@@ -99,7 +99,8 @@ include("../includes/header.php");
 $post = null; $comments = [];
 if (isset($conn)) {
     $stmt = $conn->prepare("
-        SELECT p.*, u.Username,
+        SELECT p.*, u.User_id as author_id, u.Username, u.Role as author_role,
+        (SELECT s.Student_id FROM Student s WHERE s.User_id = u.User_id) AS author_student_id,
         (SELECT COUNT(*) FROM post_likes WHERE Post_id = p.Post_id AND User_id = ?) AS user_liked
         FROM Post p JOIN User u ON p.User_id = u.User_id WHERE p.Post_id = ?");
     $stmt->bind_param("ii", $user_id, $post_id); $stmt->execute();
@@ -107,7 +108,9 @@ if (isset($conn)) {
     $stmt->close();
 
     if ($post) {
-        $res = $conn->query("SELECT c.*, u.Username FROM Comment c JOIN User u ON c.User_id = u.User_id WHERE c.Post_id = $post_id ORDER BY c.Created_at ASC");
+        $res = $conn->query("SELECT c.*, u.User_id as comment_author_id, u.Username, u.Role as comment_author_role, 
+                             (SELECT s.Student_id FROM Student s WHERE s.User_id = u.User_id) AS comment_author_student_id 
+                             FROM Comment c JOIN User u ON c.User_id = u.User_id WHERE c.Post_id = $post_id ORDER BY c.Created_at ASC");
         while ($row = $res->fetch_assoc()) $comments[] = $row;
         $post['like_count'] = $conn->query("SELECT COUNT(*) FROM post_likes WHERE Post_id = $post_id")->fetch_row()[0];
     }
@@ -123,10 +126,43 @@ if (isset($conn)) {
 
         <?php if ($post): ?>
             <div class="post-full-content" style="position: relative;">
-                <?php if ($user_role === 'student'): ?>
-                    <button class="report-btn-corner" onclick="openReportModal('post', <?php echo $post['Post_id']; ?>)" title="Report Post">
-                        <i class="fas fa-flag"></i>
-                    </button>
+                <?php 
+                // Show menu only if: 
+                // 1. Student who is NOT the post author AND post author is not admin/moderator
+                // 2. Admin/Moderator viewing ONLY student posts (not other admin/moderator)
+                $show_menu = false;
+                
+                if ($user_role === 'student') {
+                    // Student can report if: not their own post AND not admin/moderator
+                    $show_menu = ($post['author_id'] != $user_id && !in_array($post['author_role'], ['admin', 'moderator']));
+                } elseif (in_array($user_role, ['admin', 'moderator'])) {
+                    // Admin/Moderator can view and delete ONLY if post is from student
+                    $show_menu = ($post['author_role'] === 'student');
+                }
+                ?>
+                <?php if ($show_menu): ?>
+                    <div class="post-menu-container">
+                        <button class="post-menu-btn" onclick="togglePostMenu(this)">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div class="post-menu-dropdown">
+                            <?php if ($user_role === 'student'): ?>
+                                <a href="#" onclick="openReportModal('post', <?php echo $post['Post_id']; ?>); return false;">
+                                    <i class="fas fa-flag"></i> Report
+                                </a>
+                            <?php elseif (in_array($user_role, ['admin', 'moderator'])): ?>
+                                <a href="view_student.php?student_id=<?php echo $post['author_student_id']; ?>">
+                                    <i class="fas fa-user"></i> View Profile
+                                </a>
+                                <form method="POST" style="display: inline;">
+                                    <input type="hidden" name="post_id" value="<?php echo $post['Post_id']; ?>">
+                                    <button type="submit" name="delete_post" class="delete-menu-item" onclick="return confirm('Delete this post?');">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 <?php endif; ?>
 
                 <h1 class="post-full-title"><?php echo htmlspecialchars($post['Title']); ?></h1>
@@ -154,19 +190,46 @@ if (isset($conn)) {
                 <div class="comment-list">
                     <?php foreach ($comments as $comment): ?>
                         <div class="comment-item" style="position: relative;">
-                            <?php if ($user_role === 'student'): ?>
-                                <button class="report-btn-corner-sm" onclick="openReportModal('comment', <?php echo $comment['Comment_id']; ?>)" title="Report Comment">
-                                    <i class="fas fa-flag"></i>
-                                </button>
+                            <?php 
+                            // Show menu only if: 
+                            // 1. Student who is NOT the comment author AND comment author is not admin/moderator
+                            // 2. Admin/Moderator viewing ONLY student comments (not other admin/moderator)
+                            $show_comment_menu = false;
+                            
+                            if ($user_role === 'student') {
+                                // Student can report if: not their own comment AND not admin/moderator
+                                $show_comment_menu = ($comment['comment_author_id'] != $user_id && !in_array($comment['comment_author_role'], ['admin', 'moderator']));
+                            } elseif (in_array($user_role, ['admin', 'moderator'])) {
+                                // Admin/Moderator can view and delete ONLY if comment is from student
+                                $show_comment_menu = ($comment['comment_author_role'] === 'student');
+                            }
+                            ?>
+                            <?php if ($show_comment_menu): ?>
+                                <div class="comment-menu-container">
+                                    <button class="comment-menu-btn" onclick="toggleCommentMenu(this)">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="comment-menu-dropdown">
+                                        <?php if ($user_role === 'student'): ?>
+                                            <a href="#" onclick="openReportModal('comment', <?php echo $comment['Comment_id']; ?>); return false;">
+                                                <i class="fas fa-flag"></i> Report
+                                            </a>
+                                        <?php elseif (in_array($user_role, ['admin', 'moderator'])): ?>
+                                            <a href="view_student.php?student_id=<?php echo $comment['comment_author_student_id']; ?>">
+                                                <i class="fas fa-user"></i> View Profile
+                                            </a>
+                                            <form method="POST" style="display: inline;">
+                                                <input type="hidden" name="comment_id" value="<?php echo $comment['Comment_id']; ?>">
+                                                <button type="submit" name="delete_comment" class="delete-menu-item" onclick="return confirm('Delete comment?');">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
                             <?php endif; ?>
                             <div class="comment-header">
                                 <span class="comment-author"><?php echo htmlspecialchars($comment['Username']); ?></span>
-                                <?php if (in_array($user_role, ['admin', 'moderator'])): ?>
-                                    <form method="POST" onsubmit="return confirm('Delete comment?');" style="display:inline;">
-                                        <input type="hidden" name="comment_id" value="<?php echo $comment['Comment_id']; ?>">
-                                        <button type="submit" name="delete_comment" class="btn-delete-comment">&times;</button>
-                                    </form>
-                                <?php endif; ?>
                             </div>
                             <p class="comment-body"><?php echo nl2br(htmlspecialchars($comment['Comment'])); ?></p>
                         </div>
@@ -207,6 +270,132 @@ if (isset($conn)) {
 </main>
 
 <style>
+    .post-menu-container { position: absolute; top: 20px; right: 20px; z-index: 20; }
+    .post-menu-btn { 
+        background: none; 
+        border: none; 
+        color: #999; 
+        cursor: pointer; 
+        font-size: 1.5rem; 
+        padding: 5px 8px;
+        transition: color 0.3s;
+    }
+    .post-menu-btn:hover { color: #333; }
+    
+    .post-menu-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        min-width: 180px;
+        margin-top: 8px;
+        z-index: 100;
+    }
+    
+    .post-menu-dropdown.active { display: block; }
+    
+    .post-menu-dropdown a,
+    .post-menu-dropdown button {
+        display: block;
+        width: 100%;
+        padding: 12px 16px;
+        border: none;
+        background: none;
+        text-align: left;
+        color: #333;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color 0.2s;
+        font-size: 0.95rem;
+    }
+    
+    .post-menu-dropdown a:hover,
+    .post-menu-dropdown button:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .post-menu-dropdown a:first-child,
+    .post-menu-dropdown button:first-child {
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .post-menu-dropdown a:last-child,
+    .post-menu-dropdown button:last-child {
+        border-radius: 0 0 8px 8px;
+    }
+    
+    .delete-menu-item { color: #E53E3E !important; }
+    .delete-menu-item:hover { background-color: #ffe0e0 !important; }
+    
+    .post-menu-dropdown i { margin-right: 10px; width: 16px; }
+
+    .comment-menu-container { position: absolute; top: 10px; right: 10px; z-index: 20; }
+    .comment-menu-btn { 
+        background: none; 
+        border: none; 
+        color: #ccc; 
+        cursor: pointer; 
+        font-size: 1.2rem; 
+        padding: 3px 6px;
+        transition: color 0.3s;
+    }
+    .comment-menu-btn:hover { color: #333; }
+    
+    .comment-menu-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        min-width: 180px;
+        margin-top: 5px;
+        z-index: 100;
+    }
+    
+    .comment-menu-dropdown.active { display: block; }
+    
+    .comment-menu-dropdown a,
+    .comment-menu-dropdown button {
+        display: block;
+        width: 100%;
+        padding: 12px 16px;
+        border: none;
+        background: none;
+        text-align: left;
+        color: #333;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color 0.2s;
+        font-size: 0.95rem;
+    }
+    
+    .comment-menu-dropdown a:hover,
+    .comment-menu-dropdown button:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .comment-menu-dropdown a:first-child,
+    .comment-menu-dropdown button:first-child {
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .comment-menu-dropdown a:last-child,
+    .comment-menu-dropdown button:last-child {
+        border-radius: 0 0 8px 8px;
+    }
+    
+    .comment-menu-dropdown .delete-menu-item { color: #E53E3E !important; }
+    .comment-menu-dropdown .delete-menu-item:hover { background-color: #ffe0e0 !important; }
+    
+    .comment-menu-dropdown i { margin-right: 10px; width: 16px; }
+    
     .report-btn-corner { position: absolute; top: 20px; right: 20px; background: none; border: none; color: #ccc; cursor: pointer; font-size: 1.2rem; transition: 0.2s; z-index: 10; }
     .report-btn-corner:hover { color: #E53E3E; }
     .report-btn-corner-sm { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #ddd; cursor: pointer; font-size: 0.9rem; transition: 0.2s; z-index: 10; }
@@ -239,6 +428,27 @@ if (isset($conn)) {
 </style>
 
 <script>
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.post-menu-container') && !event.target.closest('.comment-menu-container')) {
+            document.querySelectorAll('.post-menu-dropdown.active, .comment-menu-dropdown.active').forEach(menu => {
+                menu.classList.remove('active');
+            });
+        }
+    });
+
+    function togglePostMenu(button) {
+        const menu = button.nextElementSibling;
+        menu.classList.toggle('active');
+        event.stopPropagation();
+    }
+
+    function toggleCommentMenu(button) {
+        const menu = button.nextElementSibling;
+        menu.classList.toggle('active');
+        event.stopPropagation();
+    }
+
     function toggleLike(element, postId) {
         const icon = element.querySelector('i');
         const countSpan = element.querySelector('.count');

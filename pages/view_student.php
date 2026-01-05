@@ -1,13 +1,13 @@
 <?php
-// pages/moderator/view_student.php
-require_once '../../includes/header.php';
+// pages/view_student.php
+require_once '../includes/header.php';
 
 $is_logged_in = $is_logged_in ?? false;
 $user_role = $user_role ?? 'guest';
 $conn = $conn ?? null;
 
 if (!$is_logged_in || !in_array($user_role, ['moderator', 'admin'])) {
-    header('Location: ../../index.php?error=unauthorized');
+    header('Location: ../index.php?error=unauthorized');
     exit;
 }
 
@@ -74,7 +74,7 @@ if (!$conn) {
 
 <main class="page-content view-student">
     <div class="container">
-        <a href="manage_users.php" class="btn-link">← Back to Students</a>
+        <a href="forum.php" class="btn-link">← Back</a>
         <h1 class="page-title">View Student</h1>
 
         <?php if ($error_message): ?>
@@ -158,4 +158,4 @@ if (!$conn) {
     </div>
 </main>
 
-<?php require_once '../../includes/footer.php'; ?>
+<?php require_once '../includes/footer.php'; ?>
