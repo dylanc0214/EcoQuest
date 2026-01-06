@@ -247,6 +247,10 @@ main {
     margin-bottom: 5px;
 }
 
+#profile-li, #logout-li, #signup-li {
+    display: none; /* Hide profile and logout links on desktop - handled in auth buttons */
+}
+
 /*NavBar Mobile View*/
 @media (max-width: 768px) {
     /* 1. Hide the horizontal nav and stack it vertically */
@@ -317,6 +321,10 @@ main {
         font-size: 2rem;
         color: #1D4C43;
         cursor: pointer;
+    }
+
+    #profile-li, #logout-li, #signup-li {
+        display: block; /* Hide profile and logout links on mobile - handled in auth buttons */
     }
 }
 
@@ -1115,7 +1123,10 @@ main {
     }
 
     .nav-auth {
-        display: none; /* Hide auth buttons in nav on mobile */
+        display: block; /* Show auth buttons in nav on mobile */
+    }
+    .profile-container, .logout-container, .signup-container {
+        display: none; /* Hide profile/logout/signup outside nav on mobile */
     }
 
     .nav-toggle {

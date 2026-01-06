@@ -21,6 +21,7 @@ $base_path = '/Group7_EcoQuest/'; // Update this if your project folder is diffe
             <li class="dropdown-wrapper"><a href="<?php echo $base_path; ?>pages/leaderboard.php" class="dropdown-title">Leaderboard</a></li>
             <li class="dropdown-wrapper"><a href="<?php echo $base_path; ?>pages/rewards.php" class="dropdown-title">Rewards</a></li>
 
+            <li class="dropdown-wrapper" id = "signup-li"><a href="<?php echo $base_path; ?>pages/sign_up.php">Sign Up</a></li>
         <?php elseif ($user_role == 'student'): ?>
             <li class="dropdown-wrapper"><a href="<?php echo $base_path; ?>pages/student/dashboard.php" class="dropdown-title">Dashboard</a></li>
             <li class="dropdown-wrapper">
@@ -46,7 +47,9 @@ $base_path = '/Group7_EcoQuest/'; // Update this if your project folder is diffe
                     <li><a href="<?php echo $base_path; ?>pages/student/feedback.php"><img src="<?php echo $base_path; ?>assets/images/icons/feedback.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Feedback</strong></p></a></li>
                 </ul>
             </li>
-        
+
+            <li class="dropdown-wrapper" id = "profile-li"><a href="<?php echo $base_path; ?>pages/profile.php">Profile</a></li>
+            <li class="dropdown-wrapper" id = "logout-li"><a href="<?php echo $base_path; ?>pages/logout.php" class="logout-link">Logout</a></li>
 
         <?php elseif ($user_role == 'moderator'): ?>
             <li class="dropdown-wrapper"><a href="<?php echo $base_path; ?>pages/moderator/dashboard.php" class="dropdown-title">Dashboard</a></li>
@@ -66,7 +69,8 @@ $base_path = '/Group7_EcoQuest/'; // Update this if your project folder is diffe
                     <li><a href="<?php echo $base_path; ?>pages/forum.php"><img src="<?php echo $base_path; ?>assets/images/icons/forum.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Forum</strong></p></a></li>
                 </ul>
             </li>
-
+            <li class="dropdown-wrapper" id = "profile-li"><a href="<?php echo $base_path; ?>pages/profile.php">Profile</a></li>
+            <li class="dropdown-wrapper" id = "logout-li"><a href="<?php echo $base_path; ?>pages/logout.php" class="logout-link">Logout</a></li>
         <?php elseif ($user_role == 'admin'): ?>
             <li class="dropdown-wrapper"><a href="<?php echo $base_path; ?>pages/admin/dashboard.php" class="dropdown-title">Dashboard</a></li>
             <li class="dropdown-wrapper">
@@ -92,6 +96,9 @@ $base_path = '/Group7_EcoQuest/'; // Update this if your project folder is diffe
                     <li><a href="<?php echo $base_path; ?>pages/forum.php"><img src="<?php echo $base_path; ?>assets/images/icons/achievement.png" alt="" class="dropdown-img"><p><strong class="dropdown-title-text">Forum</strong></p></a></li>
                 </ul>
             </li>
+
+            <li class="dropdown-wrapper" id = "profile-li"><a href="<?php echo $base_path; ?>pages/profile.php">Profile</a></li>
+            <li class="dropdown-wrapper" id = "logout-li"><a href="<?php echo $base_path; ?>pages/logout.php" class="logout-link">Logout</a></li>
         <?php endif; ?>
     </div>
 
@@ -111,12 +118,24 @@ $base_path = '/Group7_EcoQuest/'; // Update this if your project folder is diffe
                     </div>
                 </div>
             </div>
-            <li><a href="<?php echo $base_path; ?>pages/profile.php" class="nav-btn-profile">
+
+            <div class="profile-container">
+                <li><a href="<?php echo $base_path; ?>pages/profile.php" class="nav-btn-profile">
+                    <i class="fas fa-user-circle"></i> Profile
+                </a></li>
+            </div>
+            <div class="logout-container">
+                <li><a href="<?php echo $base_path; ?>pages/logout.php" class="nav-btn-signup">Logout</a></li>
+            </div>
+                
+            <!-- <li><a href="<?php echo $base_path; ?>pages/profile.php" class="nav-btn-profile">
                 <i class="fas fa-user-circle"></i> Profile
             </a></li>
-            <li><a href="<?php echo $base_path; ?>pages/logout.php" class="nav-btn-signup">Logout</a></li>
+            <li><a href="<?php echo $base_path; ?>pages/logout.php" class="nav-btn-signup">Logout</a></li> -->
         <?php else: ?>
-            <li><a href="<?php echo $base_path; ?>pages/sign_up.php" class="nav-btn-signup">Sign Up</a></li>
+            <div class="signup-container">
+                <li><a href="<?php echo $base_path; ?>pages/sign_up.php" class="nav-btn-signup">Sign Up</a></li>
+            </div>
         <?php endif; ?>
     </div>
 
