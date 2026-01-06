@@ -52,8 +52,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $role_data = $stmt_role->get_result()->fetch_assoc();
                     $_SESSION['student_id'] = $role_data['Student_id']; // CRITICAL
                     $stmt_role->close();
-                    header("Location: dashboard.php");
-                    exit();
+
+                    $ban_stmt = $conn->prepare("SELECT Student_id, Ban_time FROM student WHERE User_id = ?");
+                    $ban_stmt->bind_param("i", $user['User_id']);
+                    $ban_stmt->execute();
+                    $s_check = $ban_stmt->get_result()->fetch_assoc();
+                    $ban_stmt->close();
+                        
+                    if ($s_check) {
+                        $_SESSION['student_id'] = $s_check['Student_id'];
+                            
+                        // Check if ban is active
+                        if (!empty($s_check['Ban_time']) && $s_check['Ban_time'] !== '0000-00-00 00:00:00') {
+                            $ban_expiry = new DateTime($s_check['Ban_time'], new DateTimeZone('UTC')); // Assume Ban_time is UTC
+                            $now = new DateTime('now', new DateTimeZone('UTC')); // Compare with current UTC time
+                                
+                            if ($ban_expiry > $now) {
+                                $_SESSION['ban_time'] = $s_check['Ban_time'];
+                                $login_error = 'Your account is locked until ' . $s_check['Ban_time'] . '. Please contact support for more information.';
+                                unset($_SESSION['user_id']);
+                                unset($_SESSION['username']);
+                                unset($_SESSION['user_role']);
+                                unset($_SESSION['student_id']);
+                            } else {
+                                // Ban expired, allow login
+                                header("Location: dashboard.php");
+                                exit();
+                            }
+                        } else {
+                            // Not banned, allow login
+                            header("Location: dashboard.php");
+                            exit();
+                        }
+                    }
 
                 } elseif ($user['Role'] === 'moderator') {
                     $stmt_role = $conn->prepare("SELECT Moderator_id FROM Moderator WHERE User_id = ?");

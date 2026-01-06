@@ -14,8 +14,6 @@ if (isset($_SESSION['user_id'])) {
 $login_error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    file_put_contents('../login_debug.txt', "POST REQUEST RECEIVED\n", FILE_APPEND);
-    
     $identifier = $_POST['identifier'] ?? '';
     $password = $_POST['password'] ?? '';
 
@@ -24,9 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Updated function to return status codes
         function attempt_login($conn, $identifier, $password, $role) {
-            $debug_file = '../login_debug.txt';
-            file_put_contents($debug_file, "===== ATTEMPT_LOGIN: role=$role, identifier=$identifier =====\n", FILE_APPEND);
-            
             $sql = "SELECT User_id, Username, Role, Password_hash FROM user WHERE Username = ? OR Email = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ss", $identifier, $identifier);
@@ -34,12 +29,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $stmt->get_result();
             $user = $result->fetch_assoc();
             $stmt->close();
-            
-            $user_found = $user ? 'YES (User_id=' . $user['User_id'] . ', Role=' . $user['Role'] . ')' : 'NO';
-            file_put_contents($debug_file, "User found: $user_found\n", FILE_APPEND);
 
             if ($user && $user['Role'] === $role) {
-                file_put_contents($debug_file, "Role matches! Checking password...\n", FILE_APPEND);
+                // Verify Password (Use password_verify if hashed, or == if plain text)
+                // Your SQL dump shows hashes ($2y$10$...), so use password_verify
+                if (password_verify($password, $user['Password_hash'])) {
+                    
+                    // --- 🛑 BAN CHECK FOR STUDENTS ---
+                    if ($role === 'student') {
+                        $ban_stmt = $conn->prepare("SELECT Student_id, Ban_time FROM student WHERE User_id = ?");
+                        $ban_stmt->bind_param("i", $user['User_id']);
+                        $ban_stmt->execute();
+                        $s_check = $ban_stmt->get_result()->fetch_assoc();
+                        $ban_stmt->close();
+                        
+                        if ($s_check) {
+                            $_SESSION['student_id'] = $s_check['Student_id'];
+                            
+                            // Check if ban is active
+                            if (!empty($s_check['Ban_time']) && $s_check['Ban_time'] !== '0000-00-00 00:00:00') {
+                                $ban_expiry = new DateTime($s_check['Ban_time'], new DateTimeZone('UTC')); // Assume Ban_time is UTC
+                                $now = new DateTime('now', new DateTimeZone('UTC')); // Compare with current UTC time
+                                
+                                if ($ban_expiry > $now) {
+                                    $_SESSION['ban_time'] = $s_check['Ban_time'];
+                                    return 'banned';
+                                }
+                            }
+                        }
+                    }
+                    
+                    $_SESSION['user_id'] = $user['User_id'];
+                    $_SESSION['username'] = $user['Username'];
+                    $_SESSION['user_role'] = $role;
+                    return 'success';
+                }
+            }
+            return 'fail';
+        }
                 // Verify Password (Use password_verify if hashed, or == if plain text)
                 // Your SQL dump shows hashes ($2y$10$...), so use password_verify
                 if (password_verify($password, $user['Password_hash'])) {
@@ -108,7 +135,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: dashboard.php"); exit();
             } elseif ($status === 'banned') {
                 $ban_time = isset($_SESSION['ban_time']) ? $_SESSION['ban_time'] : null;
-                $formatted_time = $ban_time ? date('h:i A m/d/Y', strtotime($ban_time)) : 'Unknown';
+                if ($ban_time) {
+                    $ban_dt = new DateTime($ban_time, new DateTimeZone('UTC'));
+                    $formatted_time = $ban_dt->format('h:i A m/d/Y');
+                } else {
+                    $formatted_time = 'Unknown';
+                }
                 $login_error = "🚫 Your account is locked until " . $formatted_time . ". Please contact support.";
                 unset($_SESSION['ban_time']); // Clear the session variable
             } else {

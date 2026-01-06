@@ -58,15 +58,16 @@ if (!$conn) {
 
                 // Update Student table based on category
                 if ($category === 'ban') {
-                    $update_sql = "UPDATE Student SET Ban_time = ? WHERE Student_id = ?";
+                    $update_sql = "UPDATE Student SET Ban_time = UTC_TIMESTAMP() + INTERVAL ? DAY WHERE Student_id = ?";
                 } elseif ($category === 'mute_post') {
-                    $update_sql = "UPDATE Student SET Mute_post = ? WHERE Student_id = ?";
+                    $update_sql = "UPDATE Student SET Mute_post = UTC_TIMESTAMP() + INTERVAL ? DAY WHERE Student_id = ?";
                 } else { // mute_comment
-                    $update_sql = "UPDATE Student SET Mute_comment = ? WHERE Student_id = ?";
+                    $update_sql = "UPDATE Student SET Mute_comment = UTC_TIMESTAMP() + INTERVAL ? DAY WHERE Student_id = ?";
                 }
 
                 $update_stmt = $conn->prepare($update_sql);
-                $update_stmt->bind_param('si', $expiration_time, $student_id);
+                // For UTC_TIMESTAMP() + INTERVAL ? DAY, we bind the duration as an integer
+                $update_stmt->bind_param('ii', $duration, $student_id);
                 $update_stmt->execute();
                 $update_stmt->close();
 
