@@ -20,11 +20,12 @@ if (!$conn) {
     $error_message = 'Database connection failed.';
 } else {
     try {
-        // Fetch student info
-        $sql = "SELECT u.User_id, u.Username, s.Student_id FROM User u 
-                JOIN Student s ON u.User_id = s.User_id 
+        // Student info
+        $sql = "SELECT u.User_id, u.Username, s.Student_id
+                FROM User u
+                JOIN Student s ON u.User_id = s.User_id
                 WHERE s.Student_id = ? LIMIT 1";
-        
+
         if ($stmt = $conn->prepare($sql)) {
             $stmt->bind_param('i', $student_id);
             $stmt->execute();
@@ -37,14 +38,14 @@ if (!$conn) {
             $stmt->close();
         }
 
-        // Fetch moderation records
+        // Moderation history
         if ($student) {
-            $history_sql = "SELECT smr.*, u.Username as moderator_name
+            $history_sql = "SELECT smr.*, u.Username AS moderator_name
                             FROM student_moderation_records smr
                             JOIN User u ON smr.User_id = u.User_id
                             WHERE smr.Student_id = ?
                             ORDER BY smr.Date_Time DESC";
-            
+
             if ($stmt = $conn->prepare($history_sql)) {
                 $stmt->bind_param('i', $student_id);
                 $stmt->execute();
@@ -57,15 +58,18 @@ if (!$conn) {
         }
 
     } catch (Exception $e) {
-        $error_message = 'Query error: ' . $e->getMessage();
+        $error_message = 'Query error.';
     }
 }
 ?>
 
 <main class="page-content moderation-logs-page">
-    <div class="container" style="max-width: 900px;">
-        <h1 class="logs-title"><?php echo htmlspecialchars($student['Username'] ?? 'Student'); ?>'s Moderation Logs</h1>
-        <p class="logs-subtitle">Record of student behaviour and actions taken!</p>
+    <div class="container">
+
+        <h1 class="logs-title">
+            <?php echo htmlspecialchars($student['Username'] ?? 'Student'); ?>'s Moderation Logs
+        </h1>
+        <p class="logs-subtitle">Record of student behaviour and actions taken</p>
         <div class="header-divider"></div>
 
         <?php if ($error_message): ?>
@@ -74,33 +78,47 @@ if (!$conn) {
 
         <?php if ($student): ?>
             <div class="logs-card">
+
                 <?php if (empty($moderation_records)): ?>
                     <div class="no-records-message">
-                        <i class="fas fa-info-circle"></i>
-                        <p>No moderation records found for this student.</p>
+                        <p>No moderation records found.</p>
                     </div>
                 <?php else: ?>
                     <div class="table-wrapper">
-                        <table class="logs-table">
+                        <table class="logs-table data-table">
                             <thead>
                                 <tr>
-                                    <th>DATE</th>
-                                    <th>ACTION</th>
-                                    <th>DESCRIPTION</th>
-                                    <th>DURATION</th>
-                                    <th>BY</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                    <th>Description</th>
+                                    <th>Duration</th>
+                                    <th>By</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($moderation_records as $record): ?>
                                     <tr>
-                                        <td><?php echo date('d/m/Y', strtotime($record['Date_Time'])); ?></td>
-                                        <td>
-                                            <span class="title-badge"><?php echo htmlspecialchars($record['Reason']); ?></span>
+                                        <td data-label="Date">
+                                            <?php echo date('d/m/Y', strtotime($record['Date_Time'])); ?>
                                         </td>
-                                        <td><?php echo htmlspecialchars($record['Description']); ?></td>
-                                        <td><?php echo !empty($record['Duration']) && $record['Duration'] !== '0' ? htmlspecialchars($record['Duration']) . ' Day' : 'N/A'; ?></td>
-                                        <td><?php echo htmlspecialchars($record['moderator_name']); ?></td>
+                                        <td data-label="Action">
+                                            <span class="title-badge">
+                                                <?php echo htmlspecialchars($record['Reason']); ?>
+                                            </span>
+                                        </td>
+                                        <td data-label="Description">
+                                            <?php echo htmlspecialchars($record['Description']); ?>
+                                        </td>
+                                        <td data-label="Duration">
+                                            <?php
+                                                echo (!empty($record['Duration']) && $record['Duration'] !== '0')
+                                                    ? htmlspecialchars($record['Duration']) . ' Day'
+                                                    : 'N/A';
+                                            ?>
+                                        </td>
+                                        <td data-label="By">
+                                            <?php echo htmlspecialchars($record['moderator_name']); ?>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -113,162 +131,157 @@ if (!$conn) {
                 <a href="view_student.php?student_id=<?php echo $student_id; ?>" class="back-btn">Back</a>
             </div>
         <?php endif; ?>
+
     </div>
 </main>
 
 <style>
-    .moderation-logs-page {
-        padding: 40px 20px;
-        background-color: #f5f7fa;
-        min-height: calc(100vh - 250px);
-    }
+/* ===== GLOBAL SAFETY ===== */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+    padding: 0 12px;
+}
+
+/* ===== PAGE ===== */
+.moderation-logs-page {
+    padding: 30px 10px;
+    background: #f5f7fa;
+}
+
+.logs-title {
+    color: #1D4C43;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.logs-subtitle {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+}
+
+.header-divider {
+    height: 2px;
+    background: linear-gradient(90deg, #1D4C43 30%, transparent);
+    margin-bottom: 20px;
+}
+
+/* ===== CARD ===== */
+.logs-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    margin-bottom: 20px;
+}
+
+.no-records-message {
+    text-align: center;
+    color: #999;
+    padding: 40px 10px;
+}
+
+/* ===== TABLE ===== */
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.logs-table th,
+.logs-table td {
+    padding: 14px;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.logs-table thead {
+    background: #f9f9f9;
+    border-top: 2px solid #1D4C43;
+    border-bottom: 2px solid #1D4C43;
+}
+
+.title-badge {
+    display: inline-block;
+    padding: 6px 10px;
+    background: #ffe0e0;
+    color: #E53E3E;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* ===== FOOTER ===== */
+.logs-footer {
+    margin-top: 10px;
+}
+
+.back-btn {
+    padding: 10px 22px;
+    background: #1D4C43;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* ===== MOBILE CARD VIEW ===== */
+@media (max-width: 768px) {
 
     .logs-title {
-        color: #1D4C43;
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0 0 8px 0;
-    }
-
-    .logs-subtitle {
-        color: #666;
-        font-size: 0.95rem;
-        margin: 0 0 15px 0;
-    }
-
-    .header-divider {
-        height: 2px;
-        background: linear-gradient(90deg, #1D4C43 30%, transparent);
-        margin-bottom: 25px;
+        font-size: 1.5rem;
     }
 
     .logs-card {
-        background: white;
-        border-radius: 8px;
-        padding: 30px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        margin-bottom: 25px;
-        min-height: 400px;
-    }
-
-    .no-records-message {
-        text-align: center;
-        padding: 60px 20px;
-        color: #999;
-    }
-
-    .no-records-message i {
-        font-size: 3rem;
-        color: #ddd;
-        margin-bottom: 15px;
-        display: block;
-    }
-
-    .table-wrapper {
-        overflow-x: auto;
-    }
-
-    .logs-table {
-        width: 100%;
-        border-collapse: collapse;
+        padding: 18px;
     }
 
     .logs-table thead {
-        background-color: #f9f9f9;
-        border-top: 2px solid #1D4C43;
-        border-bottom: 2px solid #1D4C43;
+        display: none;
     }
 
-    .logs-table th {
-        padding: 15px;
-        text-align: left;
-        font-weight: 700;
-        color: #1D4C43;
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
+    .logs-table,
+    .logs-table tbody,
+    .logs-table tr,
+    .logs-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .logs-table tr {
+        margin-bottom: 14px;
+        padding: 14px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        background: #fff;
     }
 
     .logs-table td {
-        padding: 15px;
-        border-bottom: 1px solid #f0f0f0;
-        color: #333;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
     }
 
-    .logs-table tbody tr:hover {
-        background-color: #fafafa;
-    }
-
-    .logs-table tbody tr:last-child td {
+    .logs-table td:last-child {
         border-bottom: none;
     }
 
-    .title-badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 4px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        background-color: #ffe0e0;
-        color: #E53E3E;
-        white-space: nowrap;
+    .logs-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 0.75rem;
+        color: #555;
     }
-
-    .logs-footer {
-        text-align: left;
-    }
-
-    .back-btn {
-        display: inline-block;
-        padding: 10px 24px;
-        background-color: #1D4C43;
-        color: white;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-    .back-btn:hover {
-        background-color: #0f3028;
-        box-shadow: 0 2px 8px rgba(29, 76, 67, 0.3);
-    }
-
-    .alert {
-        padding: 15px 20px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-        font-weight: 500;
-    }
-
-    .alert-error {
-        background-color: #ffe0e0;
-        color: #c92a2a;
-        border-left: 4px solid #c92a2a;
-    }
-
-    @media (max-width: 768px) {
-        .logs-title {
-            font-size: 1.5rem;
-        }
-
-        .logs-card {
-            padding: 20px;
-        }
-
-        .logs-table th,
-        .logs-table td {
-            padding: 10px 8px;
-            font-size: 0.85rem;
-        }
-
-        .title-badge {
-            padding: 4px 8px;
-            font-size: 0.8rem;
-        }
-    }
+}
 </style>
 
 <?php require_once '../includes/footer.php'; ?>
