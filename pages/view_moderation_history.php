@@ -42,8 +42,8 @@ if (!$conn) {
             $history_sql = "SELECT smr.*, u.Username as moderator_name
                             FROM student_moderation_records smr
                             JOIN User u ON smr.User_id = u.User_id
-                            WHERE smr.student_id = ?
-                            ORDER BY smr.date_time DESC";
+                            WHERE smr.Student_id = ?
+                            ORDER BY smr.Date_Time DESC";
             
             if ($stmt = $conn->prepare($history_sql)) {
                 $stmt->bind_param('i', $student_id);
@@ -62,50 +62,45 @@ if (!$conn) {
 }
 ?>
 
-<main class="page-content moderation-history">
-    <div class="container">
-        <a href="view_student.php?student_id=<?php echo $student_id; ?>" class="btn-link">← Back to Student</a>
-        <h1 class="page-title">Moderation History</h1>
+<main class="page-content moderation-logs-page">
+    <div class="container" style="max-width: 900px;">
+        <h1 class="logs-title"><?php echo htmlspecialchars($student['Username'] ?? 'Student'); ?>'s Moderation Logs</h1>
+        <p class="logs-subtitle">Record of student behaviour and actions taken!</p>
+        <div class="header-divider"></div>
 
         <?php if ($error_message): ?>
             <div class="alert alert-error"><?php echo htmlspecialchars($error_message); ?></div>
         <?php endif; ?>
 
         <?php if ($student): ?>
-            <div class="history-card">
-                <div class="student-info-header">
-                    <h2><?php echo htmlspecialchars($student['Username']); ?>'s Moderation Records</h2>
-                </div>
-
+            <div class="logs-card">
                 <?php if (empty($moderation_records)): ?>
-                    <div class="no-records">
+                    <div class="no-records-message">
                         <i class="fas fa-info-circle"></i>
                         <p>No moderation records found for this student.</p>
                     </div>
                 <?php else: ?>
-                    <div class="records-table">
-                        <table>
+                    <div class="table-wrapper">
+                        <table class="logs-table">
                             <thead>
                                 <tr>
-                                    <th>Date & Time</th>
-                                    <th>Action</th>
-                                    <th>Duration (Days)</th>
-                                    <th>Moderator/Admin</th>
-                                    <th>Description</th>
+                                    <th>DATE</th>
+                                    <th>TITLE</th>
+                                    <th>DESCRIPTION</th>
+                                    <th>DURATION</th>
+                                    <th>BY</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($moderation_records as $record): ?>
                                     <tr>
-                                        <td><?php echo date('M d, Y h:i A', strtotime($record['date_time'])); ?></td>
+                                        <td><?php echo date('d/m/Y', strtotime($record['Date_Time'])); ?></td>
                                         <td>
-                                            <span class="action-badge action-<?php echo strtolower(str_replace(' ', '-', $record['reason'])); ?>">
-                                                <?php echo htmlspecialchars($record['reason']); ?>
-                                            </span>
+                                            <span class="title-badge"><?php echo htmlspecialchars($record['Title']); ?></span>
                                         </td>
-                                        <td><?php echo $record['duration'] > 0 ? $record['duration'] . ' days' : 'N/A'; ?></td>
+                                        <td><?php echo htmlspecialchars($record['Description']); ?></td>
+                                        <td><?php echo $record['Duration'] > 0 ? $record['Duration'] . ' Day' : 'N/A'; ?></td>
                                         <td><?php echo htmlspecialchars($record['moderator_name']); ?></td>
-                                        <td><?php echo htmlspecialchars(substr($record['description'], 0, 50)) . (strlen($record['description']) > 50 ? '...' : ''); ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -113,135 +108,136 @@ if (!$conn) {
                     </div>
                 <?php endif; ?>
             </div>
+
+            <div class="logs-footer">
+                <a href="view_student.php?student_id=<?php echo $student_id; ?>" class="back-btn">Back</a>
+            </div>
         <?php endif; ?>
     </div>
 </main>
 
 <style>
-    .moderation-history {
-        padding: 40px 0;
-    }
-
-    .btn-link {
-        display: inline-block;
-        color: #1D4C43;
-        text-decoration: none;
-        font-weight: 500;
-        margin-bottom: 20px;
-        transition: color 0.3s;
-    }
-
-    .btn-link:hover {
-        color: #71B48D;
-    }
-
-    .page-title {
-        color: #1D4C43;
-        font-size: 2.5rem;
-        margin: 20px 0 30px;
-    }
-
-    .history-card {
-        background: white;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .student-info-header {
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #eee;
-    }
-
-    .student-info-header h2 {
-        color: #1D4C43;
-        margin: 0;
-    }
-
-    .no-records {
-        text-align: center;
+    .moderation-logs-page {
         padding: 40px 20px;
+        background-color: #f5f7fa;
+        min-height: calc(100vh - 250px);
+    }
+
+    .logs-title {
+        color: #1D4C43;
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+    }
+
+    .logs-subtitle {
+        color: #666;
+        font-size: 0.95rem;
+        margin: 0 0 15px 0;
+    }
+
+    .header-divider {
+        height: 2px;
+        background: linear-gradient(90deg, #1D4C43 30%, transparent);
+        margin-bottom: 25px;
+    }
+
+    .logs-card {
+        background: white;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+        min-height: 400px;
+    }
+
+    .no-records-message {
+        text-align: center;
+        padding: 60px 20px;
         color: #999;
     }
 
-    .no-records i {
+    .no-records-message i {
         font-size: 3rem;
         color: #ddd;
         margin-bottom: 15px;
         display: block;
     }
 
-    .records-table {
+    .table-wrapper {
         overflow-x: auto;
     }
 
-    .records-table table {
+    .logs-table {
         width: 100%;
         border-collapse: collapse;
     }
 
-    .records-table thead {
-        background-color: #f5f5f5;
-    }
-
-    .records-table th {
-        padding: 12px;
-        text-align: left;
-        font-weight: 600;
-        color: #1D4C43;
-        border-bottom: 2px solid #ddd;
-    }
-
-    .records-table td {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .records-table tbody tr:hover {
+    .logs-table thead {
         background-color: #f9f9f9;
+        border-top: 2px solid #1D4C43;
+        border-bottom: 2px solid #1D4C43;
     }
 
-    .action-badge {
+    .logs-table th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 700;
+        color: #1D4C43;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .logs-table td {
+        padding: 15px;
+        border-bottom: 1px solid #f0f0f0;
+        color: #333;
+    }
+
+    .logs-table tbody tr:hover {
+        background-color: #fafafa;
+    }
+
+    .logs-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .title-badge {
         display: inline-block;
         padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
+        border-radius: 4px;
         font-weight: 600;
-    }
-
-    .action-temporary-ban {
+        font-size: 0.9rem;
         background-color: #ffe0e0;
         color: #E53E3E;
+        white-space: nowrap;
     }
 
-    .action-mute-post {
-        background-color: #e3f2fd;
-        color: #1976d2;
+    .logs-footer {
+        text-align: left;
     }
 
-    .action-mute-comment {
-        background-color: #f3e5f5;
-        color: #7b1fa2;
+    .back-btn {
+        display: inline-block;
+        padding: 10px 24px;
+        background-color: #1D4C43;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
     }
 
-    .action-unban {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-    }
-
-    .action-unmute-post {
-        background-color: #e0f2f1;
-        color: #00796b;
-    }
-
-    .action-unmute-comment {
-        background-color: #fce4ec;
-        color: #c2185b;
+    .back-btn:hover {
+        background-color: #0f3028;
+        box-shadow: 0 2px 8px rgba(29, 76, 67, 0.3);
     }
 
     .alert {
-        padding: 15px;
+        padding: 15px 20px;
         border-radius: 6px;
         margin-bottom: 20px;
         font-weight: 500;
@@ -251,6 +247,27 @@ if (!$conn) {
         background-color: #ffe0e0;
         color: #c92a2a;
         border-left: 4px solid #c92a2a;
+    }
+
+    @media (max-width: 768px) {
+        .logs-title {
+            font-size: 1.5rem;
+        }
+
+        .logs-card {
+            padding: 20px;
+        }
+
+        .logs-table th,
+        .logs-table td {
+            padding: 10px 8px;
+            font-size: 0.85rem;
+        }
+
+        .title-badge {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+        }
     }
 </style>
 

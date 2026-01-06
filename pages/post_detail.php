@@ -77,19 +77,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_comment']) && $user_id) {
         $comment = trim($_POST['comment_content']);
         if($comment) {
-            $stmt = $conn->prepare("INSERT INTO Comment (Post_id, User_id, Comment, Created_at) VALUES (?, ?, ?, NOW())");
-            $stmt->bind_param("iis", $post_id, $user_id, $comment);
-            $stmt->execute();
-            header("Location: post_detail.php?id=$post_id"); exit();
+            // CHECK IF USER IS MUTED FOR COMMENTING
+            $mute_check = $conn->prepare("SELECT Mute_comment FROM Student WHERE User_id = ?");
+            $mute_check->bind_param("i", $user_id);
+            $mute_check->execute();
+            $mute_result = $mute_check->get_result()->fetch_assoc();
+            $mute_check->close();
+
+            if ($mute_result && !empty($mute_result['Mute_comment']) && $mute_result['Mute_comment'] !== '0000-00-00 00:00:00') {
+                $mute_expiry = new DateTime($mute_result['Mute_comment'], new DateTimeZone('UTC'));
+                $now = new DateTime('now', new DateTimeZone('UTC'));
+                
+                if ($mute_expiry > $now) {
+                    $error_msg = 'Your commenting privileges are muted until ' . $mute_result['Mute_comment'] . '. Please contact support for more information.';
+                } else {
+                    // Mute expired, allow comment
+                    $stmt = $conn->prepare("INSERT INTO Comment (Post_id, User_id, Comment, Created_at) VALUES (?, ?, ?, NOW())");
+                    $stmt->bind_param("iis", $post_id, $user_id, $comment);
+                    $stmt->execute();
+                    header("Location: post_detail.php?id=$post_id"); exit();
+                }
+            } else {
+                // Not muted, allow comment
+                $stmt = $conn->prepare("INSERT INTO Comment (Post_id, User_id, Comment, Created_at) VALUES (?, ?, ?, NOW())");
+                $stmt->bind_param("iis", $post_id, $user_id, $comment);
+                $stmt->execute();
+                header("Location: post_detail.php?id=$post_id"); exit();
+            }
         }
     }
 
     // C. DELETE COMMENT
-    if (isset($_POST['delete_comment']) && in_array($user_role, ['admin', 'moderator'])) {
+    if (isset($_POST['delete_comment'])) {
         $cid = (int)$_POST['comment_id'];
-        $conn->query("DELETE FROM Comment_report WHERE Comment_id = $cid"); 
-        $conn->query("DELETE FROM Comment WHERE Comment_id = $cid");
-        header("Location: post_detail.php?id=$post_id"); exit();
+        // Get comment author ID
+        $stmt_check = $conn->prepare("SELECT User_id FROM Comment WHERE Comment_id = ?");
+        $stmt_check->bind_param("i", $cid);
+        $stmt_check->execute();
+        $comment_check = $stmt_check->get_result()->fetch_assoc();
+        $stmt_check->close();
+        
+        // Check if user is the comment author or is admin/moderator
+        if ($comment_check && ($comment_check['User_id'] == $user_id || in_array($user_role, ['admin', 'moderator']))) {
+            $conn->query("DELETE FROM Comment_report WHERE Comment_id = $cid"); 
+            $conn->query("DELETE FROM Comment WHERE Comment_id = $cid");
+            header("Location: post_detail.php?id=$post_id"); exit();
+        }
     }
 }
 
@@ -127,14 +160,15 @@ if (isset($conn)) {
         <?php if ($post): ?>
             <div class="post-full-content" style="position: relative;">
                 <?php 
-                // Show menu only if: 
-                // 1. Student who is NOT the post author AND post author is not admin/moderator
-                // 2. Admin/Moderator viewing ONLY student posts (not other admin/moderator)
+                // Show menu if: 
+                // 1. Student who is NOT the post author AND post author is not admin/moderator (to report)
+                // 2. Student who IS the post author (to delete own post)
+                // 3. Admin/Moderator viewing ONLY student posts (not other admin/moderator)
                 $show_menu = false;
                 
                 if ($user_role === 'student') {
-                    // Student can report if: not their own post AND not admin/moderator
-                    $show_menu = ($post['author_id'] != $user_id && !in_array($post['author_role'], ['admin', 'moderator']));
+                    // Student can: delete own post OR report others' posts (not admin/moderator)
+                    $show_menu = ($post['author_id'] == $user_id) || ($post['author_id'] != $user_id && !in_array($post['author_role'], ['admin', 'moderator']));
                 } elseif (in_array($user_role, ['admin', 'moderator'])) {
                     // Admin/Moderator can view and delete ONLY if post is from student
                     $show_menu = ($post['author_role'] === 'student');
@@ -146,7 +180,15 @@ if (isset($conn)) {
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
                         <div class="post-menu-dropdown">
-                            <?php if ($user_role === 'student'): ?>
+                            <?php if ($post['author_id'] == $user_id): ?>
+                                <!-- Post owner can delete their own post -->
+                                <form method="POST" style="display: inline;">
+                                    <input type="hidden" name="post_id" value="<?php echo $post['Post_id']; ?>">
+                                    <button type="submit" name="delete_post" class="delete-menu-item" onclick="return confirm('Delete this post?');">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                            <?php elseif ($user_role === 'student'): ?>
                                 <a href="#" onclick="openReportModal('post', <?php echo $post['Post_id']; ?>); return false;">
                                     <i class="fas fa-flag"></i> Report
                                 </a>
@@ -210,7 +252,15 @@ if (isset($conn)) {
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <div class="comment-menu-dropdown">
-                                        <?php if ($user_role === 'student'): ?>
+                                        <?php if ($comment['comment_author_id'] == $user_id): ?>
+                                            <!-- Comment owner can delete their own comment -->
+                                            <form method="POST" style="display: inline;">
+                                                <input type="hidden" name="comment_id" value="<?php echo $comment['Comment_id']; ?>">
+                                                <button type="submit" name="delete_comment" class="delete-menu-item" onclick="return confirm('Delete comment?');">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        <?php elseif ($user_role === 'student'): ?>
                                             <a href="#" onclick="openReportModal('comment', <?php echo $comment['Comment_id']; ?>); return false;">
                                                 <i class="fas fa-flag"></i> Report
                                             </a>

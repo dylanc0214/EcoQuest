@@ -59,19 +59,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                     
-                    $_SESSION['user_id'] = $user['User_id'];
-                    $_SESSION['username'] = $user['Username'];
-                    $_SESSION['user_role'] = $role;
-                    return 'success';
-                }
-            }
-            return 'fail';
-        }
-                // Verify Password (Use password_verify if hashed, or == if plain text)
-                // Your SQL dump shows hashes ($2y$10$...), so use password_verify
-                if (password_verify($password, $user['Password_hash'])) {
-                    file_put_contents($debug_file, "Password verified!\n", FILE_APPEND);
-                    
                     // --- 🛑 BAN CHECK FOR STUDENTS ---
                     if ($role === 'student') {
                         $ban_stmt = $conn->prepare("SELECT Student_id, Ban_time FROM student WHERE User_id = ?");
@@ -83,13 +70,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($s_check) {
                             $_SESSION['student_id'] = $s_check['Student_id'];
                             
-                            // Check if ban is active - simple timestamp comparison
+                            // Check if ban is active
                             if (!empty($s_check['Ban_time']) && $s_check['Ban_time'] !== '0000-00-00 00:00:00') {
-                                $ban_timestamp = strtotime($s_check['Ban_time']);
-                                $now_timestamp = time();
+                                $ban_expiry = new DateTime($s_check['Ban_time'], new DateTimeZone('UTC'));
+                                $now = new DateTime('now', new DateTimeZone('UTC'));
                                 
-                                if ($ban_timestamp > $now_timestamp) {
-                                    // BAN IS ACTIVE
+                                if ($ban_expiry > $now) {
                                     $_SESSION['ban_time'] = $s_check['Ban_time'];
                                     return 'banned';
                                 }
@@ -97,10 +83,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                     
+                    // --- SET ADMIN_ID AND MODERATOR_ID FOR ADMINS AND MODERATORS ---
+                    if ($role === 'admin') {
+                        $admin_stmt = $conn->prepare("SELECT Admin_id FROM admin WHERE User_id = ?");
+                        $admin_stmt->bind_param("i", $user['User_id']);
+                        $admin_stmt->execute();
+                        $admin_check = $admin_stmt->get_result()->fetch_assoc();
+                        $admin_stmt->close();
+                        
+                        if ($admin_check) {
+                            $_SESSION['admin_id'] = $admin_check['Admin_id'];
+                        }
+                    } elseif ($role === 'moderator') {
+                        $mod_stmt = $conn->prepare("SELECT Moderator_id FROM moderator WHERE User_id = ?");
+                        $mod_stmt->bind_param("i", $user['User_id']);
+                        $mod_stmt->execute();
+                        $mod_check = $mod_stmt->get_result()->fetch_assoc();
+                        $mod_stmt->close();
+                        
+                        if ($mod_check) {
+                            $_SESSION['moderator_id'] = $mod_check['Moderator_id'];
+                        }
+                    }
+                    
                     $_SESSION['user_id'] = $user['User_id'];
                     $_SESSION['username'] = $user['Username'];
                     $_SESSION['user_role'] = $role;
-                    file_put_contents($debug_file, "RETURNING SUCCESS\n", FILE_APPEND);
                     return 'success';
                 }
             }

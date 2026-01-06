@@ -27,8 +27,7 @@ if (!in_array($filter_role, $valid_roles)) {
 }
 
 // --- UPDATED QUERY ---
-// We LEFT JOIN with the 'student' table to get Ban info and Student_id.
-// This allows us to see ban status even when viewing "All" users.
+// Fetch users with Student_id for students
 $query = "
     SELECT 
         u.User_id, 
@@ -36,8 +35,7 @@ $query = "
         u.Email, 
         u.Role, 
         u.Created_at,
-        s.Student_id,
-        s.Ban_time
+        s.Student_id
     FROM User u
     LEFT JOIN Student s ON u.User_id = s.User_id
 ";
@@ -113,29 +111,20 @@ if (!$conn) {
                     <table class="admin-data-table">
                         <thead>
                             <tr>
-                                <th>User ID</th>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Action</th>
+                                <th>USER ID</th>
+                                <th>USERNAME</th>
+                                <th>EMAIL</th>
+                                <th>ROLE</th>
+                                <th>ACTION</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($users as $user): ?>
                                 <?php 
-                                    // Logic to check ban status
                                     $is_student = ($user['Role'] === 'student');
-                                    $is_banned = false;
-                                    if ($is_student && !empty($user['Ban_time'])) {
-                                        // Check if ban time is in the future
-                                        if (new DateTime($user['Ban_time']) > new DateTime()) {
-                                            $is_banned = true;
-                                        }
-                                    }
                                 ?>
-                                <tr style="<?php echo $is_banned ? 'background-color: #fff0f0;' : ''; ?>">
-                                    <td data-label="ID"><?php echo htmlspecialchars($user['User_id']); ?></td>
+                                <tr>
+                                    <td data-label="User ID"><?php echo htmlspecialchars($user['User_id']); ?></td>
                                     <td data-label="Username">
                                         <i class="fas fa-user-circle user-icon"></i> 
                                         <?php echo htmlspecialchars($user['Username']); ?>
@@ -146,41 +135,21 @@ if (!$conn) {
                                             <?php echo htmlspecialchars(ucfirst($user['Role'])); ?>
                                         </span>
                                     </td>
-                                    <td data-label="Status">
-                                        <?php if ($is_banned): ?>
-                                            <span style="color: #dc2626; font-weight: 700; font-size: 0.9em;">
-                                                <i class="fas fa-ban"></i> Banned
-                                            </span>
-                                        <?php elseif ($is_student): ?>
-                                            <span style="color: #059669; font-weight: 600; font-size: 0.9em;">Active</span>
-                                        <?php else: ?>
-                                            <span style="color: #6b7280; font-size: 0.9em;">Staff</span>
-                                        <?php endif; ?>
-                                    </td>
                                     <td data-label="Action">
-                                        <div class="action-group">
-                                            <a href="edit_user.php?id=<?php echo $user['User_id']; ?>" class="btn-action-icon btn-action-edit" title="Edit User">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-
-                                            <?php if ($is_student): ?>
-                                                <?php if ($is_banned): ?>
-                                                    <a href="../../pages/ban_handler.php?student_id=<?php echo $user['Student_id']; ?>&action=unban" 
-                                                       class="btn-action-icon" 
-                                                       title="Unban User"
-                                                       style="color: #059669; margin-left: 10px;">
-                                                        <i class="fas fa-unlock"></i>
-                                                    </a>
-                                                <?php else: ?>
-                                                    <a href="../../pages/ban_handler.php?student_id=<?php echo $user['Student_id']; ?>&action=ban" 
-                                                       class="btn-action-icon" 
-                                                       title="Ban User"
-                                                       style="color: #dc2626; margin-left: 10px;"
-                                                       onclick="return confirm('Are you sure you want to ban this user?');">
-                                                        <i class="fas fa-ban"></i>
+                                        <div class="action-menu-container">
+                                            <button class="menu-btn" onclick="toggleMenu(this)">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="menu-dropdown">
+                                                <a href="edit_user.php?id=<?php echo $user['User_id']; ?>" class="menu-item">
+                                                    <i class="fas fa-edit"></i> Edit User
+                                                </a>
+                                                <?php if ($is_student): ?>
+                                                    <a href="../view_student.php?student_id=<?php echo $user['Student_id']; ?>" class="menu-item">
+                                                        <i class="fas fa-eye"></i> View Profile
                                                     </a>
                                                 <?php endif; ?>
-                                            <?php endif; ?>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -197,7 +166,7 @@ if (!$conn) {
 
 <style>
     /* ---------------------------------------------------- */
-    /* Reuse the styles you already had */
+    /* Admin Users Page Styles */
     /* ---------------------------------------------------- */
     .user-filter-nav {
         display: flex;
@@ -225,6 +194,69 @@ if (!$conn) {
         margin-left: auto;
     }
 
+    .action-menu-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .menu-btn {
+        background: none;
+        border: none;
+        color: #1D4C43;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .menu-btn:hover {
+        background-color: #f0f0f0;
+        color: #0f3028;
+    }
+
+    .menu-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        min-width: 150px;
+        display: none;
+        z-index: 1000;
+    }
+
+    .menu-dropdown.active {
+        display: block;
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 15px;
+        color: #1D4C43;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .menu-item:last-child {
+        border-bottom: none;
+    }
+
+    .menu-item:hover {
+        background-color: #f9f9f9;
+        color: #0f3028;
+        padding-left: 20px;
+    }
+
+    .menu-item i {
+        width: 16px;
+    }
+
     /* Mobile Styles */
     @media (max-width: 768px) {
         .user-filter-nav { flex-direction: column; align-items: stretch; }
@@ -237,8 +269,34 @@ if (!$conn) {
         .admin-data-table td { text-align: right; padding: 8px 15px; padding-left: 100px; position: relative; border-bottom: 1px dashed #f0f0f0; }
         .admin-data-table td:last-child { border-bottom: none; text-align: center; padding-top: 15px; }
         .admin-data-table td::before { content: attr(data-label); position: absolute; left: 15px; width: 80px; text-align: left; font-weight: 700; color: #4A5568; font-size: 0.75rem; }
-        .action-group { display: flex; justify-content: center; gap: 15px; width: 100%; }
     }
 </style>
+
+<script>
+    function toggleMenu(button) {
+        const container = button.closest('.action-menu-container');
+        const menu = container.querySelector('.menu-dropdown');
+        const allMenus = document.querySelectorAll('.menu-dropdown');
+        
+        // Close all other menus
+        allMenus.forEach(m => {
+            if (m !== menu) {
+                m.classList.remove('active');
+            }
+        });
+        
+        // Toggle current menu
+        menu.classList.toggle('active');
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.action-menu-container')) {
+            document.querySelectorAll('.menu-dropdown').forEach(m => {
+                m.classList.remove('active');
+            });
+        }
+    });
+</script>
 
 <?php require_once '../../includes/footer.php'; ?>

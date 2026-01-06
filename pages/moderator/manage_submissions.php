@@ -10,12 +10,9 @@ $user_role = $user_role ?? 'guest';
 $conn = $conn ?? null;
 
 // Allow both moderators and admins to access this page
-if (!$is_logged_in || !in_array($user_role, ['moderator', 'admin']) || !isset($_SESSION['moderator_id'])) {
-    // Note: Admins can also be moderators, but for simplicity we check moderator_id
-    // A better check might be just role, but we need moderator_id for reviews.
-    // Let's stick to the role check.
-     header('Location: ../../index.php?error=unauthorized');
-     exit;
+if (!$is_logged_in || !in_array($user_role, ['moderator', 'admin'])) {
+    header('Location: ../../index.php?error=unauthorized');
+    exit;
 }
 
 // =======================================================

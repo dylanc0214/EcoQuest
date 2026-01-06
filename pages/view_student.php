@@ -45,21 +45,21 @@ if (!$conn) {
             $stmt->close();
             
             // Record in student_moderation_records
-            $reason_map = [
+            $title_map = [
                 'unban' => 'Unban',
                 'unmute_post' => 'Unmute Post',
                 'unmute_comment' => 'Unmute Comment'
             ];
             
-            $record_sql = "INSERT INTO student_moderation_records (student_id, User_id, reason, description, duration, date_time) 
+            $record_sql = "INSERT INTO student_moderation_records (Student_id, User_id, Title, Description, Duration, Date_Time) 
                            VALUES (?, ?, ?, ?, ?, NOW())";
             $record_stmt = $conn->prepare($record_sql);
             
-            $reason = $reason_map[$action] ?? 'Unknown';
-            $description = ucfirst($action) . " action";
+            $title = $title_map[$action] ?? 'Unknown';
+            $description = ucfirst(str_replace('_', ' ', $action)) . " action";
             $duration = 0;
             
-            $record_stmt->bind_param('iissi', $student_id, $current_user_id, $reason, $description, $duration);
+            $record_stmt->bind_param('iissi', $student_id, $current_user_id, $title, $description, $duration);
             $record_stmt->execute();
             $record_stmt->close();
             

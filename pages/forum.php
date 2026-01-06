@@ -49,9 +49,17 @@ $user_id = $_SESSION['user_id'] ?? null;
 $user_role = $_SESSION['user_role'] ?? 'guest';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_post'])) {
-    if (in_array($user_role, ['admin', 'moderator'])) {
-        $post_id_to_delete = filter_input(INPUT_POST, 'post_id', FILTER_VALIDATE_INT);
-        if ($post_id_to_delete && isset($conn)) {
+    $post_id_to_delete = filter_input(INPUT_POST, 'post_id', FILTER_VALIDATE_INT);
+    if ($post_id_to_delete && isset($conn)) {
+        // Get post author ID
+        $stmt_check = $conn->prepare("SELECT User_id FROM Post WHERE Post_id = ?");
+        $stmt_check->bind_param("i", $post_id_to_delete);
+        $stmt_check->execute();
+        $post_check = $stmt_check->get_result()->fetch_assoc();
+        $stmt_check->close();
+        
+        // Check if user is the post author or is admin/moderator
+        if ($post_check && ($post_check['User_id'] == $user_id || in_array($user_role, ['admin', 'moderator']))) {
             $conn->begin_transaction();
             try {
                 // Delete associated data first due to foreign key constraints
@@ -147,14 +155,15 @@ if (isset($conn) && !$conn->connect_error) {
             <?php foreach ($posts as $post): ?>
                 <div class="post-card">
                     <?php 
-                    // Show menu only if: 
-                    // 1. Student who is NOT the post author AND post author is not admin/moderator
-                    // 2. Admin/Moderator viewing ONLY student posts (not other admin/moderator)
+                    // Show menu if: 
+                    // 1. Student who is NOT the post author AND post author is not admin/moderator (to report)
+                    // 2. Student who IS the post author (to delete own post)
+                    // 3. Admin/Moderator viewing ONLY student posts (not other admin/moderator)
                     $show_menu = false;
                     
                     if ($user_role === 'student') {
-                        // Student can report if: not their own post AND not admin/moderator
-                        $show_menu = ($post['User_id'] != $user_id && !in_array($post['Role'], ['admin', 'moderator']));
+                        // Student can: delete own post OR report others' posts (not admin/moderator)
+                        $show_menu = ($post['User_id'] == $user_id) || ($post['User_id'] != $user_id && !in_array($post['Role'], ['admin', 'moderator']));
                     } elseif (in_array($user_role, ['admin', 'moderator'])) {
                         // Admin/Moderator can view and delete ONLY if post is from student
                         $show_menu = ($post['Role'] === 'student');
@@ -166,7 +175,15 @@ if (isset($conn) && !$conn->connect_error) {
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                             <div class="post-menu-dropdown">
-                                <?php if ($user_role === 'student'): ?>
+                                <?php if ($post['User_id'] == $user_id): ?>
+                                    <!-- Post owner can delete their own post -->
+                                    <form method="POST" style="display: inline;">
+                                        <input type="hidden" name="post_id" value="<?php echo $post['Post_id']; ?>">
+                                        <button type="submit" name="delete_post" class="delete-menu-item" onclick="return confirm('Delete this post?');">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                <?php elseif ($user_role === 'student'): ?>
                                     <a href="#" onclick="openReportModal('post', <?php echo $post['Post_id']; ?>); return false;">
                                         <i class="fas fa-flag"></i> Report
                                     </a>

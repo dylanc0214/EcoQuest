@@ -48,6 +48,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+                // --- CHECK IF USER IS MUTED FOR POSTING ---
+        if (empty($error_message)) {
+            $mute_check = $conn->prepare("SELECT Mute_post FROM Student WHERE User_id = ?");
+            $mute_check->bind_param("i", $user_id);
+            $mute_check->execute();
+            $mute_result = $mute_check->get_result()->fetch_assoc();
+            $mute_check->close();
+
+            if ($mute_result && !empty($mute_result['Mute_post']) && $mute_result['Mute_post'] !== '0000-00-00 00:00:00') {
+                $mute_expiry = new DateTime($mute_result['Mute_post'], new DateTimeZone('UTC'));
+                $now = new DateTime('now', new DateTimeZone('UTC'));
+                
+                if ($mute_expiry > $now) {
+                    $error_message = 'Your posting privileges are muted until ' . $mute_result['Mute_post'] . '. Please contact support for more information.';
+                }
+            }
+        }
+
         // --- INSERT INTO DATABASE ---
         if (empty($error_message)) {
             if (isset($conn) && !$conn->connect_error) {

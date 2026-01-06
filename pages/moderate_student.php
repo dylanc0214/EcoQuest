@@ -72,47 +72,21 @@ if (!$conn) {
                 $update_stmt->close();
 
                 // Record in student_moderation_records
-                $record_sql = "INSERT INTO student_moderation_records (student_id, User_id, reason, description, duration, date_time) 
+                $record_sql = "INSERT INTO student_moderation_records (Student_id, User_id, Title, Description, Duration, Date_Time) 
                                VALUES (?, ?, ?, ?, ?, NOW())";
                 $record_stmt = $conn->prepare($record_sql);
                 
-                // Map category to reason
-                $reason_map = [
+                // Map category to title
+                $title_map = [
                     'ban' => 'Temporary Ban',
                     'mute_post' => 'Mute Post',
                     'mute_comment' => 'Mute Comment'
                 ];
-                $reason = $reason_map[$category];
+                $title = $title_map[$category];
                 
-                $record_stmt->bind_param('iissi', $student_id, $current_user_id, $reason, $description, $duration);
+                $record_stmt->bind_param('iissi', $student_id, $current_user_id, $title, $description, $duration);
                 $record_stmt->execute();
                 $record_stmt->close();
-
-                // If moderator, record in moderator_records
-                if ($user_role === 'moderator') {
-                    $mod_id_sql = "SELECT Moderator_id FROM Moderator WHERE User_id = ?";
-                    $mod_stmt = $conn->prepare($mod_id_sql);
-                    $mod_stmt->bind_param('i', $current_user_id);
-                    $mod_stmt->execute();
-                    $mod_result = $mod_stmt->get_result();
-                    
-                    if ($mod_result->num_rows === 1) {
-                        $mod_row = $mod_result->fetch_assoc();
-                        $moderator_id = $mod_row['Moderator_id'];
-                        
-                        $mod_record_sql = "INSERT INTO moderator_records (Moderator_id, action, description, date_time) 
-                                           VALUES (?, ?, ?, NOW())";
-                        $mod_record_stmt = $conn->prepare($mod_record_sql);
-                        
-                        $action = "Moderated Student: " . $student['Username'] . " (" . $reason . ")";
-                        $mod_description = $description;
-                        
-                        $mod_record_stmt->bind_param('iss', $moderator_id, $action, $mod_description);
-                        $mod_record_stmt->execute();
-                        $mod_record_stmt->close();
-                    }
-                    $mod_stmt->close();
-                }
 
                 $conn->commit();
                 $success_message = "Student moderation applied successfully!";
