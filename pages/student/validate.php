@@ -1,6 +1,6 @@
 <?php
 // pages/validate.php
-include("../includes/header.php");
+include("../../includes/header.php");
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['student_id'])) {
@@ -281,4 +281,4 @@ function get_status_class($status) {
     .history-item.status-rejected { border-left-color: #F56565; }
 </style>
 
-<?php include("../includes/footer.php"); ?>
+<?php include("../../includes/footer.php"); ?>

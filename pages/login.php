@@ -7,7 +7,7 @@ include("../includes/header.php");
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['user_role'] === 'admin') header("Location: admin/dashboard.php");
     elseif ($_SESSION['user_role'] === 'moderator') header("Location: moderator/dashboard.php");
-    else header("Location: dashboard.php");
+    else header("Location: student/dashboard.php");
     exit();
 }
 
@@ -140,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // END DEBUG
             
             if ($status === 'success') {
-                header("Location: dashboard.php"); exit();
+                header("Location: student/dashboard.php"); exit();
             } elseif ($status === 'banned') {
                 $ban_time = isset($_SESSION['ban_time']) ? $_SESSION['ban_time'] : null;
                 if ($ban_time) {

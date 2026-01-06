@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Dec 30, 2025 at 06:45 PM
+-- Generation Time: Jan 06, 2026 at 11:31 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.3.14
 
@@ -80,19 +80,20 @@ CREATE TABLE IF NOT EXISTS `badge` (
   `Badge_Name` varchar(255) DEFAULT NULL,
   `Badge_image` varchar(255) DEFAULT NULL,
   `Require_Exp_Points` int DEFAULT NULL,
+  `Is_active` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`Badge_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `badge`
 --
 
-INSERT INTO `badge` (`Badge_id`, `Badge_Name`, `Badge_image`, `Require_Exp_Points`) VALUES
-(1, 'Bronze Scavenger', '🥉', 100),
-(2, 'Silver Guardian', '🥈', 500),
-(3, 'Gold Hero', '🥇', 1000),
-(4, 'Platinum Legend', '💎', 2500),
-(5, 'Diamond Master', '👑', 5000);
+INSERT INTO `badge` (`Badge_id`, `Badge_Name`, `Badge_image`, `Require_Exp_Points`, `Is_active`) VALUES
+(1, 'Bronze Scavenger', '🥉', 100, 1),
+(2, 'Silver Guardian', '🥈', 500, 1),
+(3, 'Gold Hero', '🥇', 1000, 1),
+(4, 'Platinum Legend', '💎', 2500, 1),
+(5, 'Diamond Master', '👑', 5000, 1);
 
 -- --------------------------------------------------------
 
@@ -103,21 +104,23 @@ INSERT INTO `badge` (`Badge_id`, `Badge_Name`, `Badge_image`, `Require_Exp_Point
 DROP TABLE IF EXISTS `comment`;
 CREATE TABLE IF NOT EXISTS `comment` (
   `Comment_id` int NOT NULL AUTO_INCREMENT,
-  `Student_id` int NOT NULL,
+  `User_id` int NOT NULL,
   `Post_id` int NOT NULL,
   `Comment` text,
   `Created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`Comment_id`),
-  KEY `Comment_fk_Student_id` (`Student_id`),
+  KEY `Comment_fk_Student_id` (`User_id`),
   KEY `Comment_fk_Post_id` (`Post_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `comment`
 --
 
-INSERT INTO `comment` (`Comment_id`, `Student_id`, `Post_id`, `Comment`, `Created_at`) VALUES
-(1, 1, 2, 'Hope everyone will like it.', '2025-12-11 06:42:39');
+INSERT INTO `comment` (`Comment_id`, `User_id`, `Post_id`, `Comment`, `Created_at`) VALUES
+(1, 1, 2, 'Hope everyone will like it.', '2025-12-11 06:42:39'),
+(4, 3, 6, 'test', '2026-01-05 13:32:51'),
+(5, 4, 8, 'asd', '2026-01-06 05:17:56');
 
 -- --------------------------------------------------------
 
@@ -136,22 +139,15 @@ CREATE TABLE IF NOT EXISTS `comment_report` (
   PRIMARY KEY (`Comment_report_id`),
   KEY `CommentReport_fk_Comment_id` (`Comment_id`),
   KEY `CommentReport_fk_Reported_by` (`Reported_by`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Table structure for table `forum_badges`
+-- Dumping data for table `comment_report`
 --
 
-DROP TABLE IF EXISTS `forum_badges`;
-CREATE TABLE IF NOT EXISTS `forum_badges` (
-  `Badge_ID` int NOT NULL AUTO_INCREMENT,
-  `Badge_Name` varchar(100) NOT NULL,
-  `Description` text,
-  `Icon_URL` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`Badge_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+INSERT INTO `comment_report` (`Comment_report_id`, `Comment_id`, `Reason`, `Report_time`, `Status`, `Reported_by`) VALUES
+(1, 1, 'Violent Content', '2026-01-05 13:06:10', 'Completed', 1),
+(2, 5, 'Spam', '2026-01-06 06:25:46', 'Pending', 1);
 
 -- --------------------------------------------------------
 
@@ -163,33 +159,16 @@ DROP TABLE IF EXISTS `moderator`;
 CREATE TABLE IF NOT EXISTS `moderator` (
   `Moderator_id` int NOT NULL AUTO_INCREMENT,
   `User_id` int NOT NULL,
-  `Moderator_records_id` int DEFAULT NULL,
   PRIMARY KEY (`Moderator_id`),
-  KEY `Moderator_fk_User_id` (`User_id`),
-  KEY `Moderator_fk_Records_id` (`Moderator_records_id`)
+  KEY `Moderator_fk_User_id` (`User_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `moderator`
 --
 
-INSERT INTO `moderator` (`Moderator_id`, `User_id`, `Moderator_records_id`) VALUES
-(1, 3, NULL);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `moderator_records`
---
-
-DROP TABLE IF EXISTS `moderator_records`;
-CREATE TABLE IF NOT EXISTS `moderator_records` (
-  `Moderator_records_id` int NOT NULL AUTO_INCREMENT,
-  `Title` varchar(255) DEFAULT NULL,
-  `Description` text,
-  `Date_Time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`Moderator_records_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+INSERT INTO `moderator` (`Moderator_id`, `User_id`) VALUES
+(1, 3);
 
 -- --------------------------------------------------------
 
@@ -200,21 +179,26 @@ CREATE TABLE IF NOT EXISTS `moderator_records` (
 DROP TABLE IF EXISTS `post`;
 CREATE TABLE IF NOT EXISTS `post` (
   `Post_id` int NOT NULL AUTO_INCREMENT,
-  `Student_id` int NOT NULL,
+  `User_id` int NOT NULL,
   `Image` varchar(255) DEFAULT NULL,
   `Title` varchar(255) DEFAULT NULL,
   `Content` text,
   `Created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`Post_id`),
-  KEY `Post_fk_Student_id` (`Student_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `Post_fk_Student_id` (`User_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `post`
 --
 
-INSERT INTO `post` (`Post_id`, `Student_id`, `Image`, `Title`, `Content`, `Created_at`) VALUES
-(2, 1, NULL, 'Recycling', 'I Love Doing Recycle', '2025-11-14 17:23:22');
+INSERT INTO `post` (`Post_id`, `User_id`, `Image`, `Title`, `Content`, `Created_at`) VALUES
+(2, 1, NULL, 'Recycling', 'I Love Doing Recycle', '2025-11-14 17:23:22'),
+(3, 2, 'uploads/forum/post_695a43564219f3.32796086.png', 'I plant a tree.', 'I don\'t believe i made it!', '2026-01-04 10:39:18'),
+(6, 3, NULL, 'test', 'test', '2026-01-05 13:32:39'),
+(7, 4, NULL, '67', '67', '2026-01-05 15:08:48'),
+(8, 4, NULL, 'test mute', 'a', '2026-01-06 05:17:34'),
+(9, 3, NULL, 'te', 't', '2026-01-06 05:37:02');
 
 -- --------------------------------------------------------
 
@@ -225,12 +209,20 @@ INSERT INTO `post` (`Post_id`, `Student_id`, `Image`, `Title`, `Content`, `Creat
 DROP TABLE IF EXISTS `post_likes`;
 CREATE TABLE IF NOT EXISTS `post_likes` (
   `Like_id` int NOT NULL AUTO_INCREMENT,
-  `Student_id` int NOT NULL,
+  `User_id` int NOT NULL,
   `Post_id` int NOT NULL,
   PRIMARY KEY (`Like_id`),
-  UNIQUE KEY `student_post_like` (`Student_id`,`Post_id`),
+  UNIQUE KEY `student_post_like` (`User_id`,`Post_id`),
   KEY `Like_fk_Post_id` (`Post_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `post_likes`
+--
+
+INSERT INTO `post_likes` (`Like_id`, `User_id`, `Post_id`) VALUES
+(7, 1, 2),
+(12, 4, 8);
 
 -- --------------------------------------------------------
 
@@ -249,14 +241,15 @@ CREATE TABLE IF NOT EXISTS `post_report` (
   PRIMARY KEY (`Post_report_id`),
   KEY `PostReport_fk_Post_id` (`Post_id`),
   KEY `PostReport_fk_Reported_by` (`Reported_by`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `post_report`
 --
 
 INSERT INTO `post_report` (`Post_report_id`, `Post_id`, `Reason`, `Report_time`, `Status`, `Reported_by`) VALUES
-(1, 2, 'Sexual Content', '2025-12-11 06:43:24', 'Pending', 1);
+(1, 2, 'Sexual Content', '2025-12-11 06:43:24', 'Pending', 1),
+(2, 3, 'Spam', '2026-01-05 13:05:25', 'Pending', 1);
 
 -- --------------------------------------------------------
 
@@ -279,7 +272,7 @@ CREATE TABLE IF NOT EXISTS `quest` (
   PRIMARY KEY (`Quest_id`),
   KEY `Quest_fk_Created_by` (`Created_by`),
   KEY `fk_quest_category` (`CategoryID`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `quest`
@@ -306,18 +299,7 @@ CREATE TABLE IF NOT EXISTS `quest_calendar` (
   `End_date` date NOT NULL,
   PRIMARY KEY (`Calendar_id`),
   KEY `Quest_id` (`Quest_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `quest_calendar`
---
-
-INSERT INTO `quest_calendar` (`Calendar_id`, `Quest_id`, `Start_date`, `End_date`) VALUES
-(1, 2, '2025-12-14', '2025-12-20'),
-(2, 1, '2025-12-14', '2025-12-20'),
-(3, 3, '2025-12-14', '2025-12-20'),
-(4, 5, '2025-12-14', '2025-12-20'),
-(5, 4, '2025-12-14', '2025-12-20');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -412,19 +394,20 @@ CREATE TABLE IF NOT EXISTS `reward` (
   `Image_url` varchar(255) DEFAULT NULL,
   `Is_active` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`Reward_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `reward`
 --
 
 INSERT INTO `reward` (`Reward_id`, `Reward_name`, `Description`, `Points_cost`, `Stock`, `Image_url`, `Is_active`) VALUES
-(1, 'Cuppa Sustainability', 'A voucher for one free premium drink from the school canteen or a partnering local cafe (like a fancy frappe or latte). Perfect fuel after a long quest!', 250, 29, NULL, 1),
+(1, 'Cuppa Sustainability', 'A voucher for one free premium drink from the school canteen or a partnering local cafe (like a fancy frappe or latte). Perfect fuel after a long quest!', 260, 29, NULL, 1),
 (2, 'Eco-Planner Pack', 'A sustainable stationary bundle: one recycled paper notebook and a bamboo pen. Keep those assignment notes eco-friendly!', 350, 50, NULL, 1),
 (3, 'Early Access Pass', 'Get priority entry to the next major school event (e.g., school carnival, sports day entrance, or lecture hall seating). Skip the queue, you earned it!', 400, 20, NULL, 1),
-(4, 'Powerbank', 'A high-quality mini power bank to keep your devices charged, essential for any IT student or quest winner. Named after your pet, lah!', 550, 15, NULL, 1),
-(5, 'Retreat Day', 'A voucher for a &#34;No Homework Pass&#34; for one subject or a &#34;Uniform Exemption Day&#34; (wear casual clothes). A day off is priceless!', 700, 10, NULL, 1),
-(6, 'Master of Sustainability Badge', 'An exclusive physical badge/medal awarded at the next school assembly, plus a mention on the school&#39;s social media/newsletter. Flex on your friends.', 1000, 5, NULL, 1);
+(4, 'Powerbank', 'A high-quality mini power bank to keep your devices charged, essential for any IT student or quest winner. Named after your pet, lah!', 550, 17, NULL, 1),
+(5, 'Retreat Day', 'A voucher for a \"No Homework Pass\" for one subject or a \"Uniform Exemption Day\" (wear casual clothes). A day off is priceless!', 700, 11, NULL, 1),
+(6, 'Master of Sustainability Badge', 'An exclusive physical badge/medal awarded at the next school assembly, plus a mention on the school&#39;s social media/newsletter. Flex on your friends.', 1000, 5, NULL, 1),
+(11, 'tree', 'tree', 5000, 10, '../../assets/uploads/rewards/reward_1767498877_846.webp', 1);
 
 -- --------------------------------------------------------
 
@@ -444,14 +427,15 @@ CREATE TABLE IF NOT EXISTS `student` (
   `Quest_Progress_id` int DEFAULT NULL,
   PRIMARY KEY (`Student_id`),
   KEY `Student_fk_User_id` (`User_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `student`
 --
 
 INSERT INTO `student` (`Student_id`, `User_id`, `Ban_time`, `Mute_comment`, `Mute_post`, `Total_Exp_Point`, `Total_point`, `Quest_Progress_id`) VALUES
-(1, 1, NULL, NULL, NULL, 0, 0, NULL);
+(1, 1, NULL, NULL, NULL, 0, 0, NULL),
+(2, 4, '2026-01-01 05:06:47', '2026-01-01 05:59:04', '2026-01-07 05:16:28', 0, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -510,7 +494,15 @@ CREATE TABLE IF NOT EXISTS `student_feedback` (
   `Date_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`Student_feedback_id`),
   KEY `Feedback_fk_Student_id` (`Student_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `student_feedback`
+--
+
+INSERT INTO `student_feedback` (`Student_feedback_id`, `Student_id`, `Title`, `Description`, `Date_time`) VALUES
+(1, 1, 'test', 'test123', '2026-01-04 03:55:35'),
+(2, 1, 'test', 'testttt', '2026-01-06 05:12:51');
 
 -- --------------------------------------------------------
 
@@ -523,14 +515,22 @@ CREATE TABLE IF NOT EXISTS `student_moderation_records` (
   `Student_moderation_records_id` int NOT NULL AUTO_INCREMENT,
   `Student_id` int NOT NULL,
   `User_id` int NOT NULL,
-  `Title` varchar(255) DEFAULT NULL,
+  `Reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `Description` text,
   `Duration` varchar(100) DEFAULT NULL,
   `Date_Time` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`Student_moderation_records_id`),
   KEY `ModRecord_fk_Student_id` (`Student_id`),
   KEY `ModRecord_fk_User_id` (`User_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `student_moderation_records`
+--
+
+INSERT INTO `student_moderation_records` (`Student_moderation_records_id`, `Student_id`, `User_id`, `Reason`, `Description`, `Duration`, `Date_Time`) VALUES
+(18, 2, 3, 'Unmute Comment', 'Unmute_comment action', '0', '2026-01-06 13:58:58'),
+(19, 2, 3, 'Mute Comment', 'bad', '1', '2026-01-06 13:59:04');
 
 -- --------------------------------------------------------
 
@@ -601,7 +601,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   PRIMARY KEY (`User_id`),
   UNIQUE KEY `Username_UNIQUE` (`Username`),
   UNIQUE KEY `Email_UNIQUE` (`Email`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `user`
@@ -610,7 +610,8 @@ CREATE TABLE IF NOT EXISTS `user` (
 INSERT INTO `user` (`User_id`, `Username`, `Email`, `Role`, `Password_hash`, `Created_at`) VALUES
 (1, 'TP123456', 'TP123456@mail.apu.edu.my', 'student', '$2y$10$fCrzR7hnNzYhwyMmawTuk.fL7G1/jUXDyjNCPbfYQHSkVbU2Gs1ue', '2025-11-03 18:19:23'),
 (2, 'AD123456', 'admin@mail.apu.edu.my', 'admin', '$2y$10$fCrzR7hnNzYhwyMmawTuk.fL7G1/jUXDyjNCPbfYQHSkVbU2Gs1ue', '2025-11-04 01:32:20'),
-(3, 'MD123456', 'mod@mail.apu.edu.my', 'moderator', '$2y$10$u3QRPAFVpUX3ymkI6/2l0OKgvmJV30HSwoPxc0cODPdZDsm92q6Y.', '2025-11-04 01:32:55');
+(3, 'MD123456', 'mod@mail.apu.edu.my', 'moderator', '$2y$10$u3QRPAFVpUX3ymkI6/2l0OKgvmJV30HSwoPxc0cODPdZDsm92q6Y.', '2025-11-04 01:32:55'),
+(4, 'tp67', '67@gmail.com', 'student', '$2y$10$SdQYVFRPoF4OoLMLzCnCsOrlZEq/Ubx.OIcE6Z9zV/3sGWclezyJC', '2026-01-05 13:08:10');
 
 --
 -- Constraints for dumped tables
@@ -627,7 +628,7 @@ ALTER TABLE `admin`
 --
 ALTER TABLE `comment`
   ADD CONSTRAINT `Comment_fk_Post_id` FOREIGN KEY (`Post_id`) REFERENCES `post` (`Post_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `Comment_fk_Student_id` FOREIGN KEY (`Student_id`) REFERENCES `student` (`Student_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `Comment_fk_Student_id` FOREIGN KEY (`User_id`) REFERENCES `user` (`User_id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 --
 -- Constraints for table `comment_report`
@@ -637,107 +638,10 @@ ALTER TABLE `comment_report`
   ADD CONSTRAINT `CommentReport_fk_Reported_by` FOREIGN KEY (`Reported_by`) REFERENCES `user` (`User_id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `moderator`
---
-ALTER TABLE `moderator`
-  ADD CONSTRAINT `Moderator_fk_Records_id` FOREIGN KEY (`Moderator_records_id`) REFERENCES `moderator_records` (`Moderator_records_id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `Moderator_fk_User_id` FOREIGN KEY (`User_id`) REFERENCES `user` (`User_id`) ON DELETE CASCADE;
-
---
 -- Constraints for table `post`
 --
 ALTER TABLE `post`
-  ADD CONSTRAINT `Post_fk_Student_id` FOREIGN KEY (`Student_id`) REFERENCES `student` (`Student_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `post_likes`
---
-ALTER TABLE `post_likes`
-  ADD CONSTRAINT `Like_fk_Post_id` FOREIGN KEY (`Post_id`) REFERENCES `post` (`Post_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `Like_fk_Student_id` FOREIGN KEY (`Student_id`) REFERENCES `student` (`Student_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `post_report`
---
-ALTER TABLE `post_report`
-  ADD CONSTRAINT `PostReport_fk_Post_id` FOREIGN KEY (`Post_id`) REFERENCES `post` (`Post_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `PostReport_fk_Reported_by` FOREIGN KEY (`Reported_by`) REFERENCES `user` (`User_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `quest`
---
-ALTER TABLE `quest`
-  ADD CONSTRAINT `fk_quest_category` FOREIGN KEY (`CategoryID`) REFERENCES `quest_categories` (`CategoryID`) ON DELETE SET NULL,
-  ADD CONSTRAINT `Quest_fk_Created_by` FOREIGN KEY (`Created_by`) REFERENCES `admin` (`Admin_id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `quest_ibfk_1` FOREIGN KEY (`CategoryID`) REFERENCES `quest_categories` (`CategoryID`);
-
---
--- Constraints for table `quest_calendar`
---
-ALTER TABLE `quest_calendar`
-  ADD CONSTRAINT `quest_calendar_ibfk_1` FOREIGN KEY (`Quest_id`) REFERENCES `quest` (`Quest_id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
-
---
--- Constraints for table `quest_progress`
---
-ALTER TABLE `quest_progress`
-  ADD CONSTRAINT `QuestProgress_fk_Quest_id` FOREIGN KEY (`Quest_id`) REFERENCES `quest` (`Quest_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `QuestProgress_fk_Student_id` FOREIGN KEY (`Student_id`) REFERENCES `student` (`Student_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `redemption_history`
---
-ALTER TABLE `redemption_history`
-  ADD CONSTRAINT `Redemption_fk_Reward_id` FOREIGN KEY (`Reward_id`) REFERENCES `reward` (`Reward_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `Redemption_fk_Student_id` FOREIGN KEY (`Student_id`) REFERENCES `student` (`Student_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `student`
---
-ALTER TABLE `student`
-  ADD CONSTRAINT `Student_fk_User_id` FOREIGN KEY (`User_id`) REFERENCES `user` (`User_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `student_achievement`
---
-ALTER TABLE `student_achievement`
-  ADD CONSTRAINT `StudentAchievement_fk_Achievement_id` FOREIGN KEY (`Achievement_id`) REFERENCES `achievement` (`Achievement_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `StudentAchievement_fk_Student_id` FOREIGN KEY (`Student_id`) REFERENCES `student` (`Student_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `student_badge`
---
-ALTER TABLE `student_badge`
-  ADD CONSTRAINT `StudentBadge_fk_Badge_id` FOREIGN KEY (`Badge_id`) REFERENCES `badge` (`Badge_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `StudentBadge_fk_Student_id` FOREIGN KEY (`Student_id`) REFERENCES `student` (`Student_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `student_feedback`
---
-ALTER TABLE `student_feedback`
-  ADD CONSTRAINT `Feedback_fk_Student_id` FOREIGN KEY (`Student_id`) REFERENCES `student` (`Student_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `student_moderation_records`
---
-ALTER TABLE `student_moderation_records`
-  ADD CONSTRAINT `ModRecord_fk_Student_id` FOREIGN KEY (`Student_id`) REFERENCES `student` (`Student_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `ModRecord_fk_User_id` FOREIGN KEY (`User_id`) REFERENCES `user` (`User_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `student_quest_submissions`
---
-ALTER TABLE `student_quest_submissions`
-  ADD CONSTRAINT `Submission_fk_Moderator_id` FOREIGN KEY (`Moderator_id`) REFERENCES `moderator` (`Moderator_id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `Submission_fk_Quest_id` FOREIGN KEY (`Quest_id`) REFERENCES `quest` (`Quest_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `Submission_fk_Student_id` FOREIGN KEY (`Student_id`) REFERENCES `student` (`Student_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `student_report`
---
-ALTER TABLE `student_report`
-  ADD CONSTRAINT `Report_fk_Moderator_id` FOREIGN KEY (`Moderator_id`) REFERENCES `moderator` (`Moderator_id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `Report_fk_Student_id` FOREIGN KEY (`Student_id`) REFERENCES `student` (`Student_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `Post_fk_Student_id` FOREIGN KEY (`User_id`) REFERENCES `user` (`User_id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

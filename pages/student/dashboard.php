@@ -3,8 +3,8 @@
 session_start();
 
 // --- DB Connection and Dependencies ---
-include("../config/db.php"); // Provides $conn (MySQLi object)
-include("../includes/header.php");
+include("../../config/db.php"); // Provides $conn (MySQLi object)
+include("../../includes/header.php");
 
 // Check if user is logged in and is a student
 // We now check for student_id, which is set during login
@@ -206,4 +206,4 @@ if (!$is_db_connected) {
     </div>
 </main>
 
-<?php include("../includes/footer.php"); ?>
+<?php include("../../includes/footer.php"); ?>

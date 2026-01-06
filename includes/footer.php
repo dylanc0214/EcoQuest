@@ -68,15 +68,15 @@
             echo "<a href='{$bp}pages/rewards.php'>Rewards</a>";
 
         } elseif ($role === 'student') {
-            echo "<a href='{$bp}pages/dashboard.php'>Dashboard</a>";
+            echo "<a href='{$bp}pages/student/dashboard.php'>Dashboard</a>";
             echo "<a href='{$bp}pages/quests.php'>Quests</a>";
             echo "<a href='{$bp}pages/leaderboard.php'>Leaderboard</a>";
             echo "<a href='{$bp}pages/rewards.php'>Rewards</a>";
-            echo "<a href='{$bp}pages/my_rewards.php'>Claimed</a>";
-            echo "<a href='{$bp}pages/achievements.php'>Achievements</a>";
-            echo "<a href='{$bp}pages/validate.php'>Submissions</a>";
+            echo "<a href='{$bp}pages/student/my_rewards.php'>Claimed</a>";
+            echo "<a href='{$bp}pages/student/achievements.php'>Achievements</a>";
+            echo "<a href='{$bp}pages/student/validate.php'>Submissions</a>";
             echo "<a href='{$bp}pages/forum.php'>Forum</a>";
-            echo "<a href='{$bp}pages/feedback.php'>Feedback</a>";
+            echo "<a href='{$bp}pages/student/feedback.php'>Feedback</a>";
 
         } elseif ($role === 'moderator') {
             echo "<a href='{$bp}pages/moderator/dashboard.php'>Dashboard</a>";

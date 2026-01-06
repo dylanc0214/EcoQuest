@@ -8,7 +8,7 @@ include("../includes/header.php");
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['user_role'] === 'admin') header("Location: admin/dashboard.php");
     elseif ($_SESSION['user_role'] === 'moderator') header("Location: moderator/dashboard.php");
-    else header("Location: dashboard.php");
+    else header("Location: student/dashboard.php");
     exit();
 }
 
@@ -76,12 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 unset($_SESSION['student_id']);
                             } else {
                                 // Ban expired, allow login
-                                header("Location: dashboard.php");
+                                header("Location: student/dashboard.php");
                                 exit();
                             }
                         } else {
                             // Not banned, allow login
-                            header("Location: dashboard.php");
+                            header("Location: student/dashboard.php");
                             exit();
                         }
                     }
