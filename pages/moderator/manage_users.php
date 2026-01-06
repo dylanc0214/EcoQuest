@@ -283,35 +283,40 @@ if ($conn) {
         }
 
         .students-table tr {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             border: 1px solid #DCDCDC;
-            border-radius: 8px;
-            padding: 10px 0;
+            border-radius: 12px;
+            padding: 12px;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .students-table td {
-            text-align: right;
-            padding: 8px 15px;
-            padding-left: 100px;
+            padding: 10px 0 10px 0;
+            text-align: left;
             position: relative;
-            border-bottom: 1px dashed #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .students-table td:last-child {
             border-bottom: none;
-            text-align: center;
-            padding-top: 15px;
+            margin-top: 8px;
         }
 
         .students-table td::before {
             content: attr(data-label);
-            position: absolute;
-            left: 15px;
-            width: 80px;
-            text-align: left;
             font-weight: 700;
             color: #4A5568;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
+            min-width: 80px;
+            text-transform: uppercase;
+        }
+
+        .students-table td:last-child::before {
+            display: none;
         }
 
         .header-content {
@@ -336,8 +341,19 @@ if ($conn) {
             font-size: 1.3rem;
         }
 
+        .students-table tr {
+            padding: 10px;
+        }
+
         .students-table td {
-            padding-left: 100%;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 8px 0;
+        }
+
+        .students-table td::before {
+            display: block;
+            margin-bottom: 4px;
         }
 
         .menu-item {
