@@ -93,7 +93,7 @@ if ($conn) {
 <style>
     .manage-students-page {
         padding: 40px 20px;
-        background-color: #f5f7fa;
+        background-color: transparent;
         min-height: calc(100vh - 250px);
     }
 
@@ -102,10 +102,7 @@ if ($conn) {
     }
 
     .header-content {
-        background: white;
-        padding: 25px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        background: transparent;
     }
 
     .page-title {
@@ -119,7 +116,7 @@ if ($conn) {
     }
 
     .page-subtitle {
-        color: #666;
+        color: #000000ff;
         font-size: 0.95rem;
         margin: 0;
     }
