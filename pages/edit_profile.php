@@ -161,5 +161,4 @@ if (!isset($conn) || $conn->connect_error) {
         <?php endif; ?>
     </div>
 </main>
-
 <?php include("../includes/footer.php"); ?>
