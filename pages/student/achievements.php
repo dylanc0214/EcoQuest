@@ -1,8 +1,8 @@
 <?php
 // pages/achievements.php
 session_start();
-include("../config/db.php");
-include("../includes/header.php");
+include("../../config/db.php");
+include("../../includes/header.php");
 
 // Authorization
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'student' || !isset($_SESSION['student_id'])) {
@@ -232,4 +232,4 @@ if ($conn) {
     @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 </style>
 
-<?php include("../includes/footer.php"); ?>
+<?php include("../../includes/footer.php"); ?>

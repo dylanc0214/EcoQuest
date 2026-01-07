@@ -112,9 +112,17 @@ if (isset($conn) && $conn) {
     @media (max-width: 768px) {
         .data-table thead { display: none; }
         .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
-        .data-table tr { margin-bottom: 15px; border: 1px solid #f0f0f0; border-radius: 8px; }
-        .data-table td { text-align: right; padding-left: 50%; position: relative; }
-        .data-table td::before { content: attr(data-label); position: absolute; left: 10px; width: calc(50% - 20px); font-weight: 600; color: #5A7F7C; text-align: left; }
+        .data-table tr { margin-bottom: 20px; border: 1px solid #DCDCDC; border-radius: 12px; padding: 12px; background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
+        .data-table td { padding: 10px 0 10px 0; text-align: left; position: relative; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .data-table td:last-child { border-bottom: none; margin-top: 8px; }
+        .data-table td::before { content: attr(data-label); font-weight: 700; color: #4A5568; text-align: left; font-size: 0.8rem; min-width: 80px; text-transform: uppercase; }
+        .data-table td:last-child::before { display: none; }
+    }
+    
+    @media (max-width: 600px) {
+        .data-table tr { padding: 10px; }
+        .data-table td { flex-direction: column; align-items: flex-start; padding: 8px 0; }
+        .data-table td::before { display: block; margin-bottom: 4px; }
     }
 </style>
 

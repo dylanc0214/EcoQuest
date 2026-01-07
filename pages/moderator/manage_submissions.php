@@ -10,12 +10,9 @@ $user_role = $user_role ?? 'guest';
 $conn = $conn ?? null;
 
 // Allow both moderators and admins to access this page
-if (!$is_logged_in || !in_array($user_role, ['moderator', 'admin']) || !isset($_SESSION['moderator_id'])) {
-    // Note: Admins can also be moderators, but for simplicity we check moderator_id
-    // A better check might be just role, but we need moderator_id for reviews.
-    // Let's stick to the role check.
-     header('Location: ../../index.php?error=unauthorized');
-     exit;
+if (!$is_logged_in || !in_array($user_role, ['moderator', 'admin'])) {
+    header('Location: ../../index.php?error=unauthorized');
+    exit;
 }
 
 // =======================================================
@@ -167,5 +164,157 @@ if (!$conn) {
         </section>
     </div>
 </main>
+
+<style>
+    /* Submission Filter Navigation - Desktop */
+    .submission-filter-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+        align-items: center;
+    }
+
+    .submission-filter-nav .btn-filter {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+        background-color: #f0f0f0;
+        color: #333;
+        border: none;
+        cursor: pointer;
+    }
+
+    .submission-filter-nav .btn-filter:hover {
+        background-color: #e0e0e0;
+    }
+
+    .submission-filter-nav .btn-filter.active {
+        background-color: #1D4C43;
+        color: white;
+    }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        .page-content {
+            padding: 20px 10px;
+        }
+
+        .dashboard-header {
+            margin-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .submission-filter-nav {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .submission-filter-nav a {
+            width: 100%;
+            text-align: center;
+        }
+
+        .admin-data-table {
+            font-size: 0.9rem;
+        }
+
+        .admin-data-table thead {
+            display: none;
+        }
+
+        .admin-data-table tbody,
+        .admin-data-table tr,
+        .admin-data-table td {
+            display: block;
+            width: 100%;
+        }
+
+        .admin-data-table tr {
+            margin-bottom: 20px;
+            border: 1px solid #DCDCDC;
+            border-radius: 12px;
+            padding: 12px;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .admin-data-table td {
+            padding: 10px 0 10px 0;
+            text-align: left;
+            position: relative;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-data-table td:last-child {
+            border-bottom: none;
+            margin-top: 8px;
+        }
+
+        .admin-data-table td::before {
+            content: attr(data-label);
+            font-weight: 700;
+            color: #4A5568;
+            font-size: 0.8rem;
+            min-width: 80px;
+            text-transform: uppercase;
+        }
+
+        .admin-data-table td:last-child::before {
+            display: none;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .dashboard-header h1 {
+            font-size: 1.3rem;
+        }
+
+        .admin-data-table tr {
+            padding: 10px;
+        }
+
+        .admin-data-table td {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 8px 0;
+        }
+
+        .admin-data-table td::before {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .btn {
+            font-size: 0.85rem;
+            padding: 8px 10px;
+        }
+    }
+</style>
 
 <?php require_once '../../includes/footer.php'; ?>

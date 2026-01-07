@@ -110,7 +110,7 @@ if ($conn) {
                                         Date <i class="fas fa-sort"></i>
                                     </a>
                                 </th>
-                                <th style="width: 20%;">Name</th>
+                                <th style="width: 20%;">Student</th>
                                 <th style="width: 25%;">Title</th>
                                 <th style="width: 35%;">Description</th>
                                 <th style="width: 5%; text-align: center;">Action</th>
@@ -119,27 +119,25 @@ if ($conn) {
                         <tbody>
                             <?php foreach ($feedbacks as $fb): ?>
                                 <tr>
-                                    <td><?php echo date('d/m/Y', strtotime($fb['Date_time'])); ?></td>
-                                    <td>
-                                        <i class="fas fa-user-circle user-icon"></i> 
-                                        <a href="javascript:void(0)" 
-                                           onclick='openStudentModal(<?php echo json_encode($fb); ?>)' 
-                                           style="color: inherit; text-decoration: underline;">
+                                    <td data-label="Date"><?php echo date('d/m/Y', strtotime($fb['Date_time'])); ?></td>
+                                    <td data-label="Student">
+                                        <i class="fas fa-user-circle user-icon"></i>
+                                        <a href="javascript:void(0)" onclick='openStudentModal(<?php echo json_encode($fb); ?>)'>
                                             <strong><?php echo htmlspecialchars($fb['Username']); ?></strong>
                                         </a>
                                     </td>
-                                    <td style="font-weight: 600; color: var(--color-primary);">
+                                    <td data-label="Title" style="font-weight: 600; color: var(--color-primary);">
                                         <?php echo htmlspecialchars($fb['Title']); ?>
                                     </td>
-                                    <td>
-                                        <div style="max-height: 80px; overflow-y: auto;  color: #444;">
+                                    <td data-label="Description">
+                                        <div style="max-height: 120px; overflow-y: auto;">
                                             <?php echo htmlspecialchars($fb['Description']); ?>
                                         </div>
                                     </td>
-                                    <td style="text-align: center;">
+                                    <td data-label="Action">
                                         <form method="POST" onsubmit="return confirm('Delete this feedback?');">
                                             <input type="hidden" name="delete_id" value="<?php echo $fb['Student_feedback_id']; ?>">
-                                            <button type="submit" class="btn-action-icon btn-action-delete" title="Delete">
+                                            <button type="submit" class="btn-action-icon btn-action-delete">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>
@@ -237,3 +235,57 @@ if ($conn) {
 </script>
 
 <?php require_once '../../includes/footer.php'; ?>
+
+<style>
+    /* ... existing styles ... */
+
+    @media screen and (max-width: 768px) {
+        /* Hide traditional table headers */
+        .admin-data-table thead {
+            display: none;
+        }
+
+        /* Force table elements to stack */
+        .admin-data-table,
+        .admin-data-table tbody,
+        .admin-data-table tr,
+        .admin-data-table td {
+            display: block;
+            width: 100%;
+        }
+
+        .admin-data-table tr {
+            margin-bottom: 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #fff;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .admin-data-table td {
+            text-align: left;
+            padding: 8px 10px;
+            border: none;
+            position: relative;
+        }
+
+        /* Add labels using data-attributes or manual labels */
+        .admin-data-table td::before {
+            content: attr(data-label);
+            font-weight: bold;
+            display: block;
+            color: #888;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        /* Adjust the delete button for mobile */
+        .admin-data-table td:last-child {
+            border-top: 1px solid #eee;
+            margin-top: 10px;
+            text-align: right;
+        }
+    }
+</style>

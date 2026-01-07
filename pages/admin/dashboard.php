@@ -180,3 +180,73 @@ if (!$conn) {
 </main>
 
 <?php require_once '../../includes/footer.php'; ?>
+
+<style>
+/* --- Admin Dashboard Mobile Optimization --- */
+@media (max-width: 768px) {
+    /* 1. Header and Subtitle adjustment */
+    .dashboard-header { text-align: center; padding-bottom: 20px; }
+    .page-title { font-size: 1.5rem; }
+
+    /* 2. Stat Cards: Stack them in a single column */
+    .stat-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    .stat-card {
+        padding: 15px;
+        justify-content: center;
+        text-align: center;
+        flex-direction: column; /* Icon above text */
+    }
+    .stat-card .icon { margin-right: 0; margin-bottom: 10px; font-size: 2rem; }
+
+    /* 3. Table Transformation: Change Rows into Cards */
+    .admin-data-table thead { display: none; } /* Hide headers */
+
+    .admin-data-table, .admin-data-table tbody,
+    .admin-data-table tr, .admin-data-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-data-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        padding: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        background: #fff;
+    }
+
+    .admin-data-table td {
+        text-align: right;
+        padding: 10px 15px;
+        position: relative;
+        padding-left: 45%; /* Space for the label */
+        border-bottom: 1px dashed #f0f0f0;
+    }
+
+    .admin-data-table td:last-child { border-bottom: none; text-align: center; padding-left: 15px; }
+
+    .admin-data-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        width: 40%;
+        text-align: left;
+        font-weight: 700;
+        color: var(--color-primary);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+
+    /* 4. Quick Actions: Stack buttons full-width */
+    .admin-actions {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    .action-card { padding: 20px; }
+    .btn-secondary { width: 100%; }
+}
+</style>

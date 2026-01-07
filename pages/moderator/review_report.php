@@ -214,6 +214,88 @@ if (!$report) {
         opacity: 0.9;
         box-shadow: inset 0 3px 5px rgba(0,0,0,0.2);
     }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        .page-content {
+            padding: 20px 10px;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .report-summary {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .summary-card {
+            padding: 15px;
+        }
+
+        .report-details {
+            padding: 15px;
+        }
+
+        .detail-item {
+            margin-bottom: 15px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .status-dropdown select {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-complete,
+        .btn-back {
+            width: 100%;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .btn-status {
+            width: 100%;
+            display: block;
+            margin-bottom: 8px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .page-title {
+            font-size: 1.3rem;
+        }
+
+        .summary-card h3 {
+            font-size: 1rem;
+        }
+
+        .detail-item {
+            font-size: 0.9rem;
+        }
+
+        .status-dropdown select {
+            font-size: 0.9rem;
+        }
+
+        .btn-complete,
+        .btn-back {
+            font-size: 0.9rem;
+            padding: 10px;
+        }
+    }
 </style>
 
 <?php require_once '../../includes/footer.php'; ?>

@@ -1,7 +1,7 @@
 <?php
 // pages/redeem.php
 session_start();
-include("../config/db.php");
+include("../../config/db.php");
 
 // 1. Authorization: Make sure the user is a logged-in student.
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'student' || !isset($_SESSION['student_id'])) {

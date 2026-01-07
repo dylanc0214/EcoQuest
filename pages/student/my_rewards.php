@@ -2,8 +2,8 @@
 // pages/my_rewards.php
 session_start();
 
-include("../config/db.php");
-include("../includes/header.php");
+include("../../config/db.php");
+include("../../includes/header.php");
 
 // Authorization: Only logged-in students can see this page.
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'student' || !isset($_SESSION['student_id'])) {
@@ -82,4 +82,4 @@ if (isset($conn) && !$conn->connect_error) {
     </div>
 </main>
 
-<?php include("../includes/footer.php"); ?>
+<?php include("../../includes/footer.php"); ?>

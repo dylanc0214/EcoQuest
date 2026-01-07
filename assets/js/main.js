@@ -123,7 +123,7 @@ if (navToggle) {
 
     async function fetchNotifications() {
         const basePath = window.location.pathname.includes('/Group7_EcoQuest/') ? '/Group7_EcoQuest/' : '/';
-        const url = `${basePath}pages/notification_handler.php?action=fetch`;
+        const url = `${basePath}pages/notification_handler.php`;
 
         try {
             const res = await fetch(url);

@@ -8,7 +8,7 @@ include("../includes/header.php");
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['user_role'] === 'admin') header("Location: admin/dashboard.php");
     elseif ($_SESSION['user_role'] === 'moderator') header("Location: moderator/dashboard.php");
-    else header("Location: dashboard.php");
+    else header("Location: student/dashboard.php");
     exit();
 }
 
@@ -31,12 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // --- NEW LOGIN LOGIC: Query only the User table ---
             $sql = "SELECT User_id, Username, Email, Role, Password_hash FROM User WHERE Username = ? OR Email = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ss", $identifier, $identifier);
-            $stmt->execute();
-            $result = $stmt->get_result();
+            $result = $conn->execute_query($sql, [$identifier, $identifier]);
             $user = $result->fetch_assoc();
-            $stmt->close();
 
             // Verify password
             if ($user && password_verify($password, $user['Password_hash'])) {
@@ -56,8 +52,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $role_data = $stmt_role->get_result()->fetch_assoc();
                     $_SESSION['student_id'] = $role_data['Student_id']; // CRITICAL
                     $stmt_role->close();
-                    header("Location: dashboard.php");
-                    exit();
+
+                    $ban_stmt = $conn->prepare("SELECT Student_id, Ban_time FROM student WHERE User_id = ?");
+                    $ban_stmt->bind_param("i", $user['User_id']);
+                    $ban_stmt->execute();
+                    $s_check = $ban_stmt->get_result()->fetch_assoc();
+                    $ban_stmt->close();
+                        
+                    if ($s_check) {
+                        $_SESSION['student_id'] = $s_check['Student_id'];
+                            
+                        // Check if ban is active
+                        if (!empty($s_check['Ban_time']) && $s_check['Ban_time'] !== '0000-00-00 00:00:00') {
+                            $ban_expiry = new DateTime($s_check['Ban_time'], new DateTimeZone('UTC')); // Assume Ban_time is UTC
+                            $now = new DateTime('now', new DateTimeZone('UTC')); // Compare with current UTC time
+                                
+                            if ($ban_expiry > $now) {
+                                $_SESSION['ban_time'] = $s_check['Ban_time'];
+                                $login_error = 'Your account is locked until ' . $s_check['Ban_time'] . '. Please contact support for more information.';
+                                unset($_SESSION['user_id']);
+                                unset($_SESSION['username']);
+                                unset($_SESSION['user_role']);
+                                unset($_SESSION['student_id']);
+                            } else {
+                                // Ban expired, allow login
+                                header("Location: student/dashboard.php");
+                                exit();
+                            }
+                        } else {
+                            // Not banned, allow login
+                            header("Location: student/dashboard.php");
+                            exit();
+                        }
+                    }
 
                 } elseif ($user['Role'] === 'moderator') {
                     $stmt_role = $conn->prepare("SELECT Moderator_id FROM Moderator WHERE User_id = ?");
@@ -216,14 +243,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label for="username" class="input-label">Username or Email</label>
                         <div class="input-wrapper">
                             <span class="input-icon">👤</span>
-                            <input type="text" id="identifier" name="identifier" class="input-modern" placeholder="TP123456 or TP123456@mail.apu.edu.my" required autocomplete="username">
+                            <input type="text" id="identifier" name="identifier" class="input-modern" placeholder="TP123456 or TP123456@mail.apu.edu.my" autocomplete="username">
                         </div>
                     </div>
                     <div class="input-group">
                         <label for="password" class="input-label">Password</label>
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
-                            <input type="password" id="password" name="password" class="input-modern" placeholder="Your secret eco-password" required autocomplete="current-password">
+                            <input type="password" id="password" name="password" class="input-modern" placeholder="Your secret eco-password" autocomplete="current-password">
                             <button type="button" class="password-toggle" onclick="togglePassword(event,'password')">🙈</button>
                         </div>
                     </div>
@@ -246,7 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label for="username" class="input-label">Username</label>
                         <div class="input-wrapper">
                             <span class="input-icon">👤</span>
-                            <input type="text" id="username" name="username" class="input-modern" placeholder="e.g., TP123456" required autocomplete="username">
+                            <input type="text" id="username" name="username" class="input-modern" placeholder="e.g., TP123456" autocomplete="username">
                         </div>
                     </div>
     
@@ -254,7 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label for="email" class="input-label">Email</label>
                         <div class="input-wrapper">
                             <span class="input-icon">📧</span>
-                            <input type="email" id="email" name="email" class="input-modern" placeholder="Your APU email address" required autocomplete="email">
+                            <input type="email" id="email" name="email" class="input-modern" placeholder="Your APU email address" autocomplete="email">
                         </div>
                     </div>
     
@@ -262,7 +289,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label for="reg_password" class="input-label">Password</label>
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
-                            <input type="password" id="reg_password" name="reg_password" class="input-modern" placeholder="Create a password (min 8 characters)" required minlength="6" autocomplete="new-password">
+                            <input type="password" id="reg_password" name="reg_password" class="input-modern" placeholder="Create a password (min 8 characters)" minlength="6" autocomplete="new-password">
                             <button type="button" class="password-toggle" onclick="togglePassword(event,'reg_password')">🙈</button>
                         </div>
                     </div>
@@ -271,7 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label for="confirm_password" class="input-label">Confirm Password</label>
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
-                            <input type="password" id="confirm_password" name="confirm_password" class="input-modern" placeholder="Confirm your password" required minlength="6" autocomplete="new-password">
+                            <input type="password" id="confirm_password" name="confirm_password" class="input-modern" placeholder="Confirm your password" minlength="6" autocomplete="new-password">
                             <button type="button" class="password-toggle" onclick="togglePassword(event,'confirm_password')">🙈</button>
                         </div>
                     </div>

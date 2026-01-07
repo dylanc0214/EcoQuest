@@ -234,4 +234,92 @@ if ($conn) {
         <?php endif; ?>
     </div>
 </main>
+
+<style>
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        .page-content {
+            padding: 20px 10px;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .submission-details {
+            padding: 15px;
+        }
+
+        .submission-meta {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .meta-item {
+            width: 100%;
+        }
+
+        .submission-image {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .review-form {
+            padding: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .form-group textarea,
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-lg {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            display: block;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .page-title {
+            font-size: 1.3rem;
+        }
+
+        .submission-info {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-lg {
+            font-size: 0.9rem;
+            padding: 10px;
+        }
+    }
+</style>
+
 <?php require_once '../../includes/footer.php'; ?>

@@ -3,94 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-    <body>
-    <footer>
-        <div class="footer-content" style="text-align: center;padding: 25px; background-color: #1D4C43; color: #FAFAF0; font-size: 0.9rem;">
-            <img src="<?php echo isset($base_path) ? $base_path : '../'; ?>assets/images/logo.PNG" alt="EcoQuest Logo" class="logo">
-            
-            <div class="footer-link" style="margin: 2% 0 3% 8%;">
-                <?php
-                // Define style once to keep it clean ✨
-                $s = 'color: white; text-decoration: none; font-size: 18px; margin-right: 5%; display: inline-block; margin-bottom: 10px;';
-                
-                // Ensure base_path is set (fallback to root if needed)
-                $bp = isset($base_path) ? $base_path : '/Group7_EcoQuest/';
-                
-                // Ensure user_role is set
-                $role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : 'guest';
+    <title>EcoQuest</title>
 
-                // --- GUEST ---
-                if ($role == 'guest') {
-                    echo "<a href='{$bp}pages/about.php' style='$s'>About</a>";
-                    echo "<a href='{$bp}pages/leaderboard.php' style='$s'>Leaderboard</a>";
-                    echo "<a href='{$bp}pages/rewards.php' style='$s'>Rewards</a>";
-                
-                // --- STUDENT ---
-                } elseif ($role == 'student') {
-                    echo "<a href='{$bp}pages/dashboard.php' style='$s'>Dashboard</a>";
-                    echo "<a href='{$bp}pages/quests.php' style='$s'>Quests</a>";
-                    echo "<a href='{$bp}pages/leaderboard.php' style='$s'>Leaderboard</a>";
-                    echo "<a href='{$bp}pages/rewards.php' style='$s'>Rewards</a>";
-                    echo "<a href='{$bp}pages/my_rewards.php' style='$s'>Claimed</a>";
-                    echo "<a href='{$bp}pages/achievements.php' style='$s'>Achievements</a>";
-                    echo "<a href='{$bp}pages/validate.php' style='$s'>Submissions</a>";
-                    echo "<a href='{$bp}pages/forum.php' style='$s'>Forum</a>";
-                    echo "<a href='{$bp}pages/feedback.php' style='$s'>Feedback</a>";
+    <style>
+        /* ===== FOOTER STYLES ===== */
+        .site-footer{
+            background:#1D4C43;
+            color:#FAFAF0;
+            padding:30px 15px;
+            text-align:center;
+            margin-top:40px;
+        }
 
-                // --- MODERATOR ---
-                } elseif ($role == 'moderator') {
-                    echo "<a href='{$bp}pages/moderator/dashboard.php' style='$s'>Dashboard</a>";
-                    echo "<a href='{$bp}pages/moderator/manage_submissions.php' style='$s'>Submissions</a>";
-                    echo "<a href='{$bp}pages/moderator/manage_reports.php' style='$s'>Reports</a>";
-                    echo "<a href='{$bp}pages/moderator/manage_users.php' style='$s'>Users</a>";
-                    echo "<a href='{$bp}pages/moderator/manage_quests.php' style='$s'>Quests</a>";
-                    echo "<a href='{$bp}pages/moderator/manage_rewards.php' style='$s'>Rewards</a>";
-                    echo "<a href='{$bp}pages/forum.php' style='$s'>Forum</a>";
+        .footer-logo{
+            max-width:120px;
+            margin-bottom:20px;
+        }
 
-                // --- ADMIN ---
-                } elseif ($role == 'admin') {
-                    echo "<a href='{$bp}pages/admin/dashboard.php' style='$s'>Dashboard</a>";
-                    echo "<a href='{$bp}pages/admin/manage_submissions.php' style='$s'>Validate</a>";
-                    echo "<a href='{$bp}pages/admin/manage_users.php' style='$s'>Users</a>";
-                    echo "<a href='{$bp}pages/admin/moderation_records.php' style='$s'>Mod Log</a>";
-                    echo "<a href='{$bp}pages/admin/manage_quests.php' style='$s'>Quests</a>";
-                    echo "<a href='{$bp}pages/admin/manage_badges.php' style='$s'>Badges</a>";
-                    echo "<a href='{$bp}pages/admin/manage_rewards.php' style='$s'>Rewards</a>";
-                    echo "<a href='{$bp}pages/forum.php' style='$s'>Forum</a>";
-                    echo "<a href='{$bp}pages/admin/view_feedback.php' style='$s'>Feedback</a>";
-                }
-                ?>
-            </div>
+        .footer-links{
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:center;
+            gap:15px;
+            margin-bottom:20px;
+        }
 
-            <div class="footer-copyright" style="font-size: 15px;">
-                <p>&copy; <?php echo date("Y"); ?> EcoQuest. A project for APU's Responsive Web Design & Development.<br> APU Community: Go Green. Earn Rewards. Plant Trees.</p>
-            </div>
-        </div>
-    </footer>
+        .footer-links a{
+            color:white;
+            text-decoration:none;
+            font-size:16px;
+        }
 
-    <?php
-    // Chat Toggle Logic
-    if (isset($role) && ($role === 'student' || $role === 'guest')):
-    ?>
+        .footer-copy{
+            font-size:14px;
+            line-height:1.5;
+        }
 
-    <button class="chat-toggle-button" id="faq-toggle-button">
-        <i class="fas fa-question"></i>
-    </button>
+        /* MOBILE */
+        @media (max-width:768px){
+            .footer-links{
+                flex-direction:column;
+                gap:10px;
+            }
+        }
+    </style>
+</head>
 
-    <div class="chat-popup" id="faq-popup">
-        <div class="chat-header">
-            <h3>Frequently Asked Questions (FAQ)</h3>
-            <button class="chat-close-btn" id="faq-close-btn">&times;</button>
-        </div>
-        
-        <div class="chat-messages" id="faq-list">
-        </div>
+<body>
+
+<footer class="site-footer">
+
+    <img src="<?php echo isset($base_path) ? $base_path : '../'; ?>assets/images/logo.PNG"
+         alt="EcoQuest Logo"
+         class="footer-logo">
+
+    <div class="footer-links">
+        <?php
+        $bp   = isset($base_path) ? $base_path : '/Group7_EcoQuest/';
+        $role = $_SESSION['user_role'] ?? 'guest';
+
+        if ($role === 'guest') {
+            echo "<a href='{$bp}pages/about.php'>About</a>";
+            echo "<a href='{$bp}pages/leaderboard.php'>Leaderboard</a>";
+            echo "<a href='{$bp}pages/rewards.php'>Rewards</a>";
+
+        } elseif ($role === 'student') {
+            echo "<a href='{$bp}pages/student/dashboard.php'>Dashboard</a>";
+            echo "<a href='{$bp}pages/quests.php'>Quests</a>";
+            echo "<a href='{$bp}pages/leaderboard.php'>Leaderboard</a>";
+            echo "<a href='{$bp}pages/rewards.php'>Rewards</a>";
+            echo "<a href='{$bp}pages/student/my_rewards.php'>Claimed</a>";
+            echo "<a href='{$bp}pages/student/achievements.php'>Achievements</a>";
+            echo "<a href='{$bp}pages/student/validate.php'>Submissions</a>";
+            echo "<a href='{$bp}pages/forum.php'>Forum</a>";
+            echo "<a href='{$bp}pages/student/feedback.php'>Feedback</a>";
+
+        } elseif ($role === 'moderator') {
+            echo "<a href='{$bp}pages/moderator/dashboard.php'>Dashboard</a>";
+            echo "<a href='{$bp}pages/moderator/manage_submissions.php'>Submissions</a>";
+            echo "<a href='{$bp}pages/moderator/manage_reports.php'>Reports</a>";
+            echo "<a href='{$bp}pages/moderator/manage_users.php'>Users</a>";
+            echo "<a href='{$bp}pages/moderator/manage_quests.php'>Quests</a>";
+            echo "<a href='{$bp}pages/moderator/manage_rewards.php'>Rewards</a>";
+            echo "<a href='{$bp}pages/forum.php'>Forum</a>";
+
+        } elseif ($role === 'admin') {
+            echo "<a href='{$bp}pages/admin/dashboard.php'>Dashboard</a>";
+            echo "<a href='{$bp}pages/admin/manage_submissions.php'>Validate</a>";
+            echo "<a href='{$bp}pages/admin/manage_users.php'>Users</a>";
+            echo "<a href='{$bp}pages/admin/moderation_records.php'>Mod Log</a>";
+            echo "<a href='{$bp}pages/admin/manage_quests.php'>Quests</a>";
+            echo "<a href='{$bp}pages/admin/manage_badges.php'>Badges</a>";
+            echo "<a href='{$bp}pages/admin/manage_rewards.php'>Rewards</a>";
+            echo "<a href='{$bp}pages/forum.php'>Forum</a>";
+            echo "<a href='{$bp}pages/admin/view_feedback.php'>Feedback</a>";
+        }
+        ?>
     </div>
-    <?php
-    endif; 
-    ?>
 
-    <script src="<?php echo isset($base_path) ? $base_path : '../'; ?>assets/js/main.js"></script>
+    <p class="footer-copy">
+        © <?php echo date("Y"); ?> EcoQuest.<br>
+        A project for APU Responsive Web Design & Development.<br>
+        APU Community: Go Green. Earn Rewards. Plant Trees.
+    </p>
+
+</footer>
+
+<?php
+// FAQ Chat (Student & Guest only)
+if ($role === 'student' || $role === 'guest'):
+?>
+
+<button class="chat-toggle-button" id="faq-toggle-button">
+    <i class="fas fa-question"></i>
+</button>
+
+<div class="chat-popup" id="faq-popup">
+    <div class="chat-header">
+        <h3>Frequently Asked Questions</h3>
+        <button class="chat-close-btn" id="faq-close-btn">&times;</button>
+    </div>
+    <div class="chat-messages" id="faq-list"></div>
+</div>
+
+<?php endif; ?>
+
+<script src="<?php echo isset($base_path) ? $base_path : '../'; ?>assets/js/main.js"></script>
+
 </body>
 </html>

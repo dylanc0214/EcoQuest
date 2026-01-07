@@ -53,7 +53,7 @@ try {
                 'title' => 'New Quest Submission 📥',
                 'message' => "<strong>{$row['Username']}</strong> submitted proof for <em>{$row['Title']}</em>.",
                 'time' => time_elapsed_string($row['Submission_date']),
-                'link' => ($user_role === 'admin' ? '../pages/admin/' : '../pages/moderator/') . "review_submission.php?id=" . $row['Student_quest_submission_id'],
+                'link' => ($user_role === 'admin' ? '/Group7_EcoQuest/pages/admin/' : '/Group7_EcoQuest/pages/moderator/') . "review_submission.php?id=" . $row['Student_quest_submission_id'],
                 'sort_time' => strtotime($row['Submission_date'])
             ];
         }
@@ -64,7 +64,7 @@ try {
             SELECT r.Post_report_id, r.Report_time, r.Reason, u.Username 
             FROM post_report r
             JOIN user u ON r.Reported_by = u.User_id
-            WHERE r.Status = 'Pending'
+            WHERE LOWER(r.Status) = 'pending'
         ";
         $res_rep_p = $conn->query($sql_rep_p);
         if (!$res_rep_p) throw new Exception("SQL Error (Post Reports): " . $conn->error);
@@ -75,7 +75,7 @@ try {
                 'title' => 'Post Reported 🚩',
                 'message' => "<strong>{$row['Username']}</strong> reported a post. Reason: {$row['Reason']}",
                 'time' => time_elapsed_string($row['Report_time']),
-                'link' => '../pages/moderator/review_report.php?type=post&id=' . $row['Post_report_id'],
+                'link' => '/Group7_EcoQuest/pages/moderator/review_report.php?type=post&id=' . $row['Post_report_id'],
                 'sort_time' => strtotime($row['Report_time'])
             ];
         }
@@ -85,9 +85,10 @@ try {
             SELECT r.Comment_report_id, r.Report_time, r.Reason, u.Username 
             FROM comment_report r
             JOIN user u ON r.Reported_by = u.User_id
-            WHERE r.Status = 'Pending'
+            WHERE LOWER(r.Status) = 'pending'
         ";
         $res_rep_c = $conn->query($sql_rep_c);
+        if (!$res_rep_c) throw new Exception("SQL Error (Comment Reports): " . $conn->error);
         
         while ($row = $res_rep_c->fetch_assoc()) {
             $notifications[] = [
@@ -95,7 +96,7 @@ try {
                 'title' => 'Comment Reported 🚩',
                 'message' => "<strong>{$row['Username']}</strong> reported a comment. Reason: {$row['Reason']}",
                 'time' => time_elapsed_string($row['Report_time']),
-                'link' => '../pages/moderator/review_report.php?type=comment&id=' . $row['Comment_report_id'],
+                'link' => '/Group7_EcoQuest/pages/moderator/review_report.php?type=comment&id=' . $row['Comment_report_id'],
                 'sort_time' => strtotime($row['Report_time'])
             ];
         }
@@ -110,6 +111,7 @@ try {
                 WHERE f.Date_time > DATE_SUB(NOW(), INTERVAL 3 DAY)
             ";
             $res_feed = $conn->query($sql_feed);
+            if (!$res_feed) throw new Exception("SQL Error (Feedback): " . $conn->error);
             
             while ($row = $res_feed->fetch_assoc()) {
                 $notifications[] = [
@@ -117,7 +119,7 @@ try {
                     'title' => 'New Student Feedback 💬',
                     'message' => "<strong>{$row['Username']}</strong>: " . substr($row['Title'], 0, 30) . "...",
                     'time' => time_elapsed_string($row['Date_time']),
-                    'link' => '../pages/admin/view_feedback.php',
+                    'link' => '/Group7_EcoQuest/pages/admin/view_feedback.php',
                     'sort_time' => strtotime($row['Date_time'])
                 ];
             }
@@ -162,7 +164,7 @@ try {
                 'title' => "Update: $status $icon",
                 'message' => $msg,
                 'time' => time_elapsed_string($row['Review_date']),
-                'link' => '../pages/validate.php'
+                'link' => '/Group7_EcoQuest/pages/student/validate.php'
             ];
             
             // "Fake" unread for 24 hours

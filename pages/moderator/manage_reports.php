@@ -29,31 +29,36 @@ if ($conn) {
             FROM Comment_report r JOIN User u ON r.Reported_by = u.User_id
         ";
 
-        $query = "";
-        if ($type_filter === 'post') $query = $sql_post;
-        elseif ($type_filter === 'comment') $query = $sql_comment;
-        else $query = "($sql_post) UNION ALL ($sql_comment)";
+        if ($type_filter === 'post') {
+            $query = $sql_post;
+        } elseif ($type_filter === 'comment') {
+            $query = $sql_comment;
+        } else {
+            $query = "($sql_post) UNION ALL ($sql_comment)";
+        }
 
         if (!$show_completed) {
-            $query = "SELECT * FROM ($query) as combined_table WHERE Status != 'Completed'";
+            $query = "SELECT * FROM ($query) AS combined WHERE Status != 'Completed'";
         }
 
         $query .= " ORDER BY Report_time DESC";
         $result = $conn->query($query);
         if ($result) $reports = $result->fetch_all(MYSQLI_ASSOC);
     } catch (Exception $e) {
-        $error_message = "Error loading reports: " . $e->getMessage();
+        $error_message = "Error loading reports.";
     }
 }
 ?>
 
 <main class="page-content admin-page">
     <div class="container">
+
         <header class="dashboard-header">
             <h1 class="page-title">Manage Reports</h1>
             <p class="subtitle">Review and process student community reports</p>
         </header>
 
+        <!-- Control Bar -->
         <div class="report-controls-bar">
             <div class="report-tabs">
                 <a href="?type=post&show_completed=<?php echo $show_completed; ?>" class="tab-btn <?php echo $type_filter === 'post' ? 'active' : ''; ?>">Post</a>
@@ -64,20 +69,23 @@ if ($conn) {
             <div class="report-toggle-container">
                 <span class="toggle-text">Show Completed</span>
                 <label class="switch-wrapper">
-                    <input type="checkbox" onchange="window.location.href='?type=<?php echo $type_filter; ?>&show_completed=' + (this.checked ? '1' : '0')" <?php echo $show_completed ? 'checked' : ''; ?>>
-                    <span class="slider round"></span>
+                    <input type="checkbox"
+                        onchange="window.location.href='?type=<?php echo $type_filter; ?>&show_completed=' + (this.checked ? '1' : '0')"
+                        <?php echo $show_completed ? 'checked' : ''; ?>>
+                    <span class="slider"></span>
                 </label>
             </div>
         </div>
 
+        <!-- Reports -->
         <section class="admin-data-section">
             <h3 class="section-title"><?php echo ucfirst($type_filter); ?> Reports</h3>
-            
+
             <?php if (empty($reports)): ?>
-                <div class="empty-state"><p>No reports found matching your criteria.</p></div>
+                <div class="empty-state">No reports found.</div>
             <?php else: ?>
                 <div class="table-responsive">
-                    <table class="admin-data-table">
+                    <table class="admin-data-table data-table">
                         <thead>
                             <tr>
                                 <th>Datetime</th>
@@ -85,26 +93,33 @@ if ($conn) {
                                 <th>Type</th>
                                 <th>Reason</th>
                                 <th>Status</th>
-                                <th style="text-align: right;">Action</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($reports as $r): ?>
-                                <tr>
-                                    <td><?php echo date('d M Y, h:i A', strtotime($r['Report_time'])); ?></td>
-                                    <td><strong><?php echo htmlspecialchars($r['reporter_name']); ?></strong></td>
-                                    <td><span class="badge badge-<?php echo strtolower($r['type']); ?>"><?php echo $r['type']; ?></span></td>
-                                    <td><?php echo htmlspecialchars($r['Reason']); ?></td>
-                                    <td>
-                                        <span class="status-badge status-<?php echo strtolower($r['Status']); ?>">
-                                            <?php echo htmlspecialchars($r['Status']); ?>
-                                        </span>
-                                    </td>
-                                    <td style="text-align: right;">
-                                        <a href="review_report.php?type=<?php echo strtolower($r['type']); ?>&id=<?php echo $r['id']; ?>" class="btn-review">Review Now</a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
+                        <?php foreach ($reports as $r): ?>
+                            <tr>
+                                <td data-label="Datetime"><?php echo date('d M Y, h:i A', strtotime($r['Report_time'])); ?></td>
+                                <td data-label="Student"><strong><?php echo htmlspecialchars($r['reporter_name']); ?></strong></td>
+                                <td data-label="Type">
+                                    <span class="badge badge-<?php echo strtolower($r['type']); ?>">
+                                        <?php echo $r['type']; ?>
+                                    </span>
+                                </td>
+                                <td data-label="Reason"><?php echo htmlspecialchars($r['Reason']); ?></td>
+                                <td data-label="Status">
+                                    <span class="status-badge status-<?php echo strtolower($r['Status']); ?>">
+                                        <?php echo htmlspecialchars($r['Status']); ?>
+                                    </span>
+                                </td>
+                                <td data-label="Action">
+                                    <a class="btn-review"
+                                       href="review_report.php?type=<?php echo strtolower($r['type']); ?>&id=<?php echo $r['id']; ?>">
+                                        Review Now
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
@@ -114,95 +129,193 @@ if ($conn) {
 </main>
 
 <style>
-    /* Main Control Bar */
+/* ===== GLOBAL SAFETY ===== */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.container {
+    width: 100%;
+    padding: 0 12px;
+}
+
+/* ===== CONTROL BAR ===== */
+.report-controls-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.report-tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: #f2f2f2;
+    color: #555;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.tab-btn.active {
+    background: #1D4C43;
+    color: #fff;
+}
+
+/* Toggle */
+.report-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.switch-wrapper {
+    position: relative;
+    width: 44px;
+    height: 22px;
+}
+
+.switch-wrapper input {
+    opacity: 0;
+}
+
+.slider {
+    position: absolute;
+    inset: 0;
+    background: #ccc;
+    border-radius: 22px;
+}
+
+.slider:before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 2px;
+    bottom: 2px;
+    background: white;
+    border-radius: 50%;
+    transition: .3s;
+}
+
+input:checked + .slider {
+    background: #1D4C43;
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+/* ===== TABLE ===== */
+.admin-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-data-table th,
+.admin-data-table td {
+    padding: 12px;
+    text-align: left;
+}
+
+.badge-post {
+    background: #e0f2f1;
+    color: #00695c;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.badge-comment {
+    background: #fff3e0;
+    color: #ef6c00;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.btn-review {
+    display: inline-block;
+    padding: 8px 12px;
+    background: #71B48D;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+/* ===== MOBILE CARD VIEW ===== */
+@media (max-width: 768px) {
+
     .report-controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .report-tabs {
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        flex: 1;
+        text-align: center;
+    }
+
+    .admin-data-table thead {
+        display: none;
+    }
+
+    .admin-data-table,
+    .admin-data-table tbody,
+    .admin-data-table tr,
+    .admin-data-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-data-table tr {
+        margin-bottom: 16px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 12px;
+        background: #fff;
+    }
+
+    .admin-data-table td {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        background: #fff;
-        padding: 15px 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        margin-bottom: 25px;
-        /* Ensure the bar itself has enough height to center items */
-        min-height: 60px; 
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
     }
 
-    /* Tabs */
-    .report-tabs { display: flex; gap: 10px; align-items: center; }
-    .tab-btn {
-        padding: 8px 20px;
-        border-radius: 20px;
-        text-decoration: none;
+    .admin-data-table td:last-child {
+        border-bottom: none;
+    }
+
+    .admin-data-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 0.75rem;
         color: #555;
-        font-weight: 600;
-        background: #f4f4f4;
-        transition: 0.3s;
-        display: inline-block;
-        line-height: normal; /* Fix vertical alignment */
-    }
-    .tab-btn.active, .tab-btn:hover { background: #1D4C43; color: #fff; }
-    
-    /* === FORCE FIX FOR TOGGLE ALIGNMENT === */
-    .report-toggle-container { 
-        display: flex; 
-        flex-direction: row;
-        align-items: center; /* Critical for vertical centering */
-        justify-content: flex-end;
-        gap: 15px; 
-        height: 40px; /* Fixed height to force alignment */
-    }
-    
-    .toggle-text {
-        font-weight: 600;
-        color: #555;
-        font-size: 0.95rem;
-        margin: 0; 
-        padding: 0;
-        display: inline-block;
-        line-height: 40px; /* Match container height to force center */
     }
 
-    /* Wrapper for the switch to kill external margins */
-    .switch-wrapper { 
-        position: relative; 
-        display: inline-block; 
-        width: 46px; 
-        height: 24px; 
-        margin: 0 !important; /* Force remove margins */
-        padding: 0 !important;
-        vertical-align: middle;
+    .btn-review {
+        width: 100%;
+        text-align: center;
+        margin-top: 6px;
     }
-    
-    .switch-wrapper input { opacity: 0; width: 0; height: 0; }
-    
-    .slider { 
-        position: absolute; 
-        cursor: pointer; 
-        top: 0; left: 0; right: 0; bottom: 0; 
-        background-color: #ccc; 
-        transition: .4s; 
-        border-radius: 34px;
-    }
-    
-    .slider:before { 
-        position: absolute; 
-        content: ""; 
-        height: 18px; width: 18px; 
-        left: 3px; bottom: 3px; 
-        background-color: white; 
-        transition: .4s; 
-        border-radius: 50%;
-    }
-    
-    input:checked + .slider { background-color: #1D4C43; }
-    input:checked + .slider:before { transform: translateX(22px); }
-
-    /* Table Badges & Buttons */
-    .badge-post { background: #e0f2f1; color: #00695c; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
-    .badge-comment { background: #fff3e0; color: #ef6c00; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
-    .btn-review { background: #71B48D; color: white; padding: 6px 12px; text-decoration: none; border-radius: 6px; font-size: 0.9rem; font-weight: 600; }
-    .btn-review:hover { background: #1D4C43; }
+}
 </style>
 
 <?php require_once '../../includes/footer.php'; ?>

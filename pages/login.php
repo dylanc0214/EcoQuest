@@ -7,7 +7,7 @@ include("../includes/header.php");
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['user_role'] === 'admin') header("Location: admin/dashboard.php");
     elseif ($_SESSION['user_role'] === 'moderator') header("Location: moderator/dashboard.php");
-    else header("Location: dashboard.php");
+    else header("Location: student/dashboard.php");
     exit();
 }
 
@@ -22,14 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Updated function to return status codes
         function attempt_login($conn, $identifier, $password, $role) {
-            $table_name = $role . 's'; // students, moderators, admins (Note: your DB uses singular 'student'/'admin' usually, but let's stick to your logic if your tables are named that way. Assuming your login worked before.)
-            // Based on your SQL dump, tables are singular: 'student', 'admin', 'moderator'.
-            // Your previous code had: $table_name = $role . 's'; -> This might have been a bug in your previous code if tables are singular.
-            // I will fix it to use specific table checks based on your SQL dump.
-            
-            // However, your SQL dump shows 'user' table holds password.
-            // Let's use the 'user' table for auth, then check role.
-            
             $sql = "SELECT User_id, Username, Role, Password_hash FROM user WHERE Username = ? OR Email = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ss", $identifier, $identifier);
@@ -45,12 +37,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     // --- 🛑 BAN CHECK FOR STUDENTS ---
                     if ($role === 'student') {
-                        $s_check = $conn->query("SELECT Student_id, Ban_time FROM student WHERE User_id = " . $user['User_id'])->fetch_assoc();
-                        if ($s_check && $s_check['Ban_time'] && new DateTime($s_check['Ban_time']) > new DateTime()) {
-                            return 'banned';
+                        $ban_stmt = $conn->prepare("SELECT Student_id, Ban_time FROM student WHERE User_id = ?");
+                        $ban_stmt->bind_param("i", $user['User_id']);
+                        $ban_stmt->execute();
+                        $s_check = $ban_stmt->get_result()->fetch_assoc();
+                        $ban_stmt->close();
+                        
+                        if ($s_check) {
+                            $_SESSION['student_id'] = $s_check['Student_id'];
+                            
+                            // Check if ban is active
+                            if (!empty($s_check['Ban_time']) && $s_check['Ban_time'] !== '0000-00-00 00:00:00') {
+                                $ban_expiry = new DateTime($s_check['Ban_time'], new DateTimeZone('UTC')); // Assume Ban_time is UTC
+                                $now = new DateTime('now', new DateTimeZone('UTC')); // Compare with current UTC time
+                                
+                                if ($ban_expiry > $now) {
+                                    $_SESSION['ban_time'] = $s_check['Ban_time'];
+                                    return 'banned';
+                                }
+                            }
                         }
-                        // Set Student ID for session
-                        $_SESSION['student_id'] = $s_check['Student_id'];
+                    }
+                    
+                    // --- 🛑 BAN CHECK FOR STUDENTS ---
+                    if ($role === 'student') {
+                        $ban_stmt = $conn->prepare("SELECT Student_id, Ban_time FROM student WHERE User_id = ?");
+                        $ban_stmt->bind_param("i", $user['User_id']);
+                        $ban_stmt->execute();
+                        $s_check = $ban_stmt->get_result()->fetch_assoc();
+                        $ban_stmt->close();
+                        
+                        if ($s_check) {
+                            $_SESSION['student_id'] = $s_check['Student_id'];
+                            
+                            // Check if ban is active
+                            if (!empty($s_check['Ban_time']) && $s_check['Ban_time'] !== '0000-00-00 00:00:00') {
+                                $ban_expiry = new DateTime($s_check['Ban_time'], new DateTimeZone('UTC'));
+                                $now = new DateTime('now', new DateTimeZone('UTC'));
+                                
+                                if ($ban_expiry > $now) {
+                                    $_SESSION['ban_time'] = $s_check['Ban_time'];
+                                    return 'banned';
+                                }
+                            }
+                        }
+                    }
+                    
+                    // --- SET ADMIN_ID AND MODERATOR_ID FOR ADMINS AND MODERATORS ---
+                    if ($role === 'admin') {
+                        $admin_stmt = $conn->prepare("SELECT Admin_id FROM admin WHERE User_id = ?");
+                        $admin_stmt->bind_param("i", $user['User_id']);
+                        $admin_stmt->execute();
+                        $admin_check = $admin_stmt->get_result()->fetch_assoc();
+                        $admin_stmt->close();
+                        
+                        if ($admin_check) {
+                            $_SESSION['admin_id'] = $admin_check['Admin_id'];
+                        }
+                    } elseif ($role === 'moderator') {
+                        $mod_stmt = $conn->prepare("SELECT Moderator_id FROM moderator WHERE User_id = ?");
+                        $mod_stmt->bind_param("i", $user['User_id']);
+                        $mod_stmt->execute();
+                        $mod_check = $mod_stmt->get_result()->fetch_assoc();
+                        $mod_stmt->close();
+                        
+                        if ($mod_check) {
+                            $_SESSION['moderator_id'] = $mod_check['Moderator_id'];
+                        }
                     }
                     
                     $_SESSION['user_id'] = $user['User_id'];
@@ -79,10 +132,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Try Student
         if ($status === 'fail') {
             $status = attempt_login($conn, $identifier, $password, 'student');
+            // DEBUG
+            error_log("Student login attempt for '$identifier': status = '$status'");
+            if (isset($_SESSION['ban_time'])) {
+                error_log("Ban time in session: " . $_SESSION['ban_time']);
+            }
+            // END DEBUG
+            
             if ($status === 'success') {
-                header("Location: dashboard.php"); exit();
+                header("Location: student/dashboard.php"); exit();
             } elseif ($status === 'banned') {
-                $login_error = "🚫 Access Denied: Your account has been suspended.";
+                $ban_time = isset($_SESSION['ban_time']) ? $_SESSION['ban_time'] : null;
+                if ($ban_time) {
+                    $ban_dt = new DateTime($ban_time, new DateTimeZone('UTC'));
+                    $formatted_time = $ban_dt->format('h:i A m/d/Y');
+                } else {
+                    $formatted_time = 'Unknown';
+                }
+                $login_error = "🚫 Your account is locked until " . $formatted_time . ". Please contact support.";
+                unset($_SESSION['ban_time']); // Clear the session variable
             } else {
                 $login_error = 'Invalid username/email or password.';
             }
