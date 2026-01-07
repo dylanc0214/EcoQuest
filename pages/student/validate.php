@@ -155,9 +155,14 @@ function get_status_class($status) {
                     Go back to the <a href="../quests.php">Quests Page</a> and click "Submit Proof" on an active mission.
                 </div>
             <?php else: ?>
+<<<<<<< HEAD
                 <form action="validate.php" method="POST" enctype="multipart/form-data" class="auth-form">
                     <input type="hidden" name="quest_id" value="<?php echo $quest_id; ?>">
 
+=======
+                <form action="student/validate.php" method="POST" enctype="multipart/form-data" class="auth-form">
+                    <h3><i class="fas fa-tasks"></i> Select Quest to Complete</h3>
+>>>>>>> 07a7ade937d69ab4af363a759e8bf017d76254d1
                     <div class="form-group">
                         <label>Mission to Complete</label>
                         <div class="static-display" style="padding: 12px; background: #f0fdf4; border: 1px solid #71B48D; border-radius: 8px; font-weight: bold; color: #1D4C43;">

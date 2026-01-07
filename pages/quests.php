@@ -135,7 +135,11 @@ if (!$is_db_connected) {
                             <?php if ($quest['display_status'] === 'Available'): ?>
                                 <a href="quest_detail.php?id=<?php echo $quest['Quest_id']; ?>" class="btn-primary" style="margin-left: auto;">Start Quest</a>
                             <?php elseif ($quest['display_status'] === 'In Progress'): ?>
+<<<<<<< HEAD
                                 <a href="student/validate.php?quest_id=<?php echo $quest['Quest_id']; ?>" class="btn-primary" style="margin-left: auto; background-color: var(--color-accent);">Submit Proof</a>
+=======
+                                <a href="student/validate.php" class="btn-primary" style="margin-left: auto; background-color: var(--color-accent);">Submit Proof</a>
+>>>>>>> 07a7ade937d69ab4af363a759e8bf017d76254d1
                             <?php elseif ($quest['display_status'] === 'Pending Review'): ?>
                                 <span class="btn-disabled" style="margin-left: auto; cursor: default;">Waiting...</span>
                             <?php else: ?>

@@ -178,12 +178,12 @@ if (!$is_db_connected) {
                     <p class="action-status warning-status">
                         Aiyo! You have <span class="count"><?php echo $user_metrics['pending_submissions']; ?></span> submissions waiting for Moderator review. Patience is key!
                     </p>
-                    <a href="validate.php" class="btn-primary">View Submission Status</a>
+                    <a href="student/validate.php" class="btn-primary">View Submission Status</a>
                 <?php else: ?>
                     <p class="action-status success-status">
                         All your submitted proofs have been reviewed! Clean slate!
                     </p>
-                    <a href="validate.php" class="btn-secondary">Check Completed Proofs</a>
+                    <a href="student/validate.php" class="btn-secondary">Check Completed Proofs</a>
                 <?php endif; ?>
             </div>
             <div class="action-card activity-card">
