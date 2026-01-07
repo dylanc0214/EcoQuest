@@ -14,8 +14,8 @@ $message = [];
 $submission_history = [];
 $is_db_connected = isset($conn) && !$conn->connect_error;
 
-// FIXED: Capture quest_id from either GET (initial load) or POST (form submission) to prevent "No quest identified" error
-$quest_id = filter_input(INPUT_GET, 'quest_id', FILTER_VALIDATE_INT) ?: filter_input(INPUT_POST, 'quest_id', FILTER_VALIDATE_INT);
+// FIXED: Capture quest_id from POST if form submitted, otherwise from GET
+$quest_id = filter_input(INPUT_POST, 'quest_id', FILTER_VALIDATE_INT) ?: filter_input(INPUT_GET, 'quest_id', FILTER_VALIDATE_INT);
 $quest_title = "Selected Mission";
 
 if (!$is_db_connected) {
@@ -41,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $is_db_connected) {
     $file_destination = null;
     $has_error = false;
 
+    // Validate Quest ID presence
     if (!$quest_id) {
         $message = ['type' => 'error', 'text' => 'Aiyo! No quest identified. Please try again from the Quest page.'];
         $has_error = true;
@@ -57,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $is_db_connected) {
         $file_name = uniqid('proof_', true) . '.' . $file_extension;
         $target_file = $target_dir . $file_name;
 
-        // Validation (REMOVED Size limitation as requested)
+        // Validation (20MB limitation removed)
         if (!in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov'])) {
             $message = ['type' => 'error', 'text' => 'Only JPG, PNG, GIF, MP4, MOV files are allowed.'];
             $has_error = true;
@@ -66,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $is_db_connected) {
         if (!$has_error && move_uploaded_file($_FILES["proof_media"]["tmp_name"], $target_file)) {
             $file_destination = 'uploads/activities/' . $file_name; 
         } elseif (!$has_error) {
-            $message = ['type' => 'error', 'text' => 'Aiyo! Failed to upload file. Check server permissions.'];
+            $message = ['type' => 'error', 'text' => 'Aiyo! Failed to upload file. Check server configuration.'];
             $has_error = true;
         }
     } else if (!$has_error) {
@@ -74,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $is_db_connected) {
          $has_error = true;
     }
 
+    // --- Database Insertion ---
     if (!$has_error) {
         try {
             $sql_insert = "
@@ -85,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $is_db_connected) {
             if ($stmt = $conn->prepare($sql_insert)) {
                 $stmt->bind_param("iis", $student_id, $quest_id, $file_destination);
                 if ($stmt->execute()) {
+                    // Update Quest_Progress to pending
                     $conn->query("UPDATE Quest_Progress SET Status = 'pending' WHERE Student_id = $student_id AND Quest_id = $quest_id");
                     $message = ['type' => 'success', 'text' => 'Proof submitted! Your mission is now pending review.'];
                 } else {
@@ -197,7 +200,7 @@ function get_status_class($status) {
         <?php endif; ?>
 
         <section class="submission-history" style="max-width: 800px; margin: 60px auto;">
-            <h2 style="text-align:center; font-size: 1.8rem; color: var(--color-primary);"><i class="fas fa-history"></i> My Submission History</h2>
+            <h2 style="text-align:center; font-size: 1.8rem; color: var(--color-primary);"><i class="fas fa-history"></i> My Evidence Log</h2>
             
             <?php if (empty($submission_history)): ?>
                 <div class="message info-message" style="text-align: center;">You haven't submitted any proof yet. Let's get to work!</div>

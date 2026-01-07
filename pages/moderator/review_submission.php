@@ -183,12 +183,8 @@ if ($conn) {
                     <div class="user-proof">
                         <h4>Submitted Proof:</h4>
                         <?php if (!empty($submission['Image'])): 
-                            // 修正路径逻辑：
-                            // 1. 去除数据库路径开头的斜杠
+                            // Fix path logic: Move up two levels to reach uploads folder
                             $clean_db_path = ltrim($submission['Image'], '/');
-                            
-                            // 2. 尝试从根目录访问（如果uploads在网站根目录）
-                            // 如果你的网站运行在子目录下，请使用 "../../" 
                             $media_path = '../../' . $clean_db_path;
                         ?>
                             <div class="proof-box" style="margin-top: 15px; text-align: center;">
@@ -197,8 +193,7 @@ if ($conn) {
                                      alt="Submitted Proof" 
                                      class="proof-image"
                                      style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #ddd;"
-                                     onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=File+Not+Found+at+Path';">
-                                <p style="font-size: 11px; color: #888; margin-top: 5px;">Debug Path: <?php echo htmlspecialchars($media_path); ?></p>
+                                     onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=File+Not+Found';">
                             </div>
                          <?php else: ?>
                             <div class="proof-box"><p>No media (image/video) was submitted.</p></div>

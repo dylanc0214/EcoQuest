@@ -99,7 +99,6 @@ if ($is_db_connected && $quest_id) {
         }
 
         if ($quest) {
-            // Check submission table for current period (Weekly Reset logic)
             $sql_status_sub = "
                 SELECT s.Status FROM Student_Quest_Submissions s
                 JOIN Quest_Calendar qc ON s.Quest_id = qc.Quest_id
@@ -191,7 +190,6 @@ if ($is_db_connected && $quest_id) {
                         <div class="status-box active-box">
                             <h2>Submit Proof Now</h2>
                             <p>You have started this quest! Once you finish the mission, head to the submission page.</p>
-<<<<<<< HEAD
                             <a href="student/validate.php?quest_id=<?php echo $quest_id; ?>" class="btn-primary">Submit Quest Proof</a>
                         </div>
 
@@ -203,9 +201,6 @@ if ($is_db_connected && $quest_id) {
                                 <input type="hidden" name="action" value="start_quest">
                                 <button type="submit" class="btn-primary">Start Quest! 🚀</button>
                             </form>
-=======
-                            <a href="student/validate.php" class="btn-primary">Submit Quest Proof</a>
->>>>>>> 07a7ade937d69ab4af363a759e8bf017d76254d1
                         </div>
                     <?php endif; ?>
                 </div>
