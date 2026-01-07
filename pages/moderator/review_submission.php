@@ -17,10 +17,8 @@ if (!$is_logged_in || !in_array($user_role, $allowed_roles)) {
 }
 
 // Get the correct reviewer ID (Admin_id or Moderator_id)
-// The ERD links 'reviewer_id' to 'Moderator' table.
-$reviewer_id = $_SESSION['moderator_id'] ?? null; // Get Moderator_id
+$reviewer_id = $_SESSION['moderator_id'] ?? null; 
 if ($user_role === 'admin' && $reviewer_id === null) {
-     // Admin is reviewing but isn't a moderator, ERD says this must be NULL.
     $reviewer_id = null;
 }
 
@@ -34,7 +32,7 @@ if (!$submission_id) {
 }
 
 // =======================================================
-// 2. FORM SUBMISSION (APPROVAL/REJECTION) - UPDATED
+// 2. FORM SUBMISSION (APPROVAL/REJECTION)
 // =======================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $conn) {
     $action = $_POST['action'] ?? '';
@@ -45,12 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $conn) {
 
         $conn->begin_transaction();
         try {
-            // 1. Get student_id and quest points for the submission
             $sql_get_info = "
                 SELECT s.Student_id, q.Points_award, q.Quest_id, ach.Exp_point, ach.Achievement_id
                 FROM Student_Quest_Submissions s
                 JOIN Quest q ON s.Quest_id = q.Quest_id
-                LEFT JOIN Achievement ach ON q.Quest_id = ach.Achievement_id -- ERD Link
+                LEFT JOIN Achievement ach ON q.Quest_id = ach.Achievement_id
                 WHERE s.Student_quest_submission_id = ? AND s.Status = 'pending'";
             $stmt_info = $conn->prepare($sql_get_info);
             $stmt_info->bind_param('i', $submission_id);
@@ -68,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $conn) {
             $exp_to_award = $submission_info['Exp_point'] ?? 0;
             $achievement_id = $submission_info['Achievement_id'] ?? null;
 
-            // 2. Update the Student_Quest_Submissions record
             $sql_update = "
                 UPDATE Student_Quest_Submissions
                 SET Status = ?, Review_date = NOW(), Moderator_id = ?, Review_feedback = ?
@@ -78,15 +74,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $conn) {
             $stmt_update->execute();
             $stmt_update->close();
             
-            // 3. Update the Quest_Progress table
             $sql_progress = "UPDATE Quest_Progress SET Status = ? WHERE Student_id = ? AND Quest_id = ?";
             $stmt_progress = $conn->prepare($sql_progress);
             $stmt_progress->bind_param('sii', $new_status, $student_id_to_update, $quest_id);
             $stmt_progress->execute();
             $stmt_progress->close();
 
-
-            // 4. If approved, award points AND exp to the student
             if ($action === 'approve') {
                 $sql_award_points = "UPDATE Student SET Total_point = Total_point + ?, Total_Exp_Point = Total_Exp_Point + ? WHERE Student_id = ?";
                 $stmt_points = $conn->prepare($sql_award_points);
@@ -94,7 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $conn) {
                 $stmt_points->execute();
                 $stmt_points->close();
                 
-                // 5. If approved AND there was an achievement, log it
                 if ($achievement_id) {
                     $sql_log_ach = "INSERT INTO Student_Achievement (Achievement_id, Student_id, Status) VALUES (?, ?, 'Completed')
                                     ON DUPLICATE KEY UPDATE Status = 'Completed'";
@@ -121,13 +113,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $conn) {
 }
 
 // =======================================================
-// 3. FETCH SUBMISSION DETAILS FOR DISPLAY - UPDATED
+// 3. FETCH SUBMISSION DETAILS FOR DISPLAY
 // =======================================================
 $submission = null;
 $error_fetching = null;
 
 if ($conn) {
-    // This query now joins with 'students' to get the username
     $query = "
         SELECT
             s.Student_quest_submission_id AS id, s.Status, s.Image, s.Submission_date, s.Review_feedback,
@@ -191,15 +182,26 @@ if ($conn) {
                     </div>
                     <div class="user-proof">
                         <h4>Submitted Proof:</h4>
-                        <?php if (!empty($submission['Image'])):
-                            $media_path = '../../' . htmlspecialchars($submission['Image']);
+                        <?php if (!empty($submission['Image'])): 
+                            // 修正路径逻辑：
+                            // 1. 去除数据库路径开头的斜杠
+                            $clean_db_path = ltrim($submission['Image'], '/');
+                            
+                            // 2. 尝试从根目录访问（如果uploads在网站根目录）
+                            // 如果你的网站运行在子目录下，请使用 "../../" 
+                            $media_path = '../../' . $clean_db_path;
                         ?>
-                            <div class="proof-box" style="margin-top: 15px;">
-                                <p class="proof-text-label"><i class="fas fa-image"></i> Media:</p>
-                                <img src="<?php echo $media_path; ?>" alt="Submitted Proof" class="proof-image">
+                            <div class="proof-box" style="margin-top: 15px; text-align: center;">
+                                <p class="proof-text-label"><i class="fas fa-image"></i> Media Preview:</p>
+                                <img src="<?php echo htmlspecialchars($media_path); ?>" 
+                                     alt="Submitted Proof" 
+                                     class="proof-image"
+                                     style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #ddd;"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=File+Not+Found+at+Path';">
+                                <p style="font-size: 11px; color: #888; margin-top: 5px;">Debug Path: <?php echo htmlspecialchars($media_path); ?></p>
                             </div>
                          <?php else: ?>
-                             <div class="proof-box"><p>No media (image/video) was submitted.</p></div>
+                            <div class="proof-box"><p>No media (image/video) was submitted.</p></div>
                         <?php endif; ?>
                         
                          <?php if (!empty($submission['Review_feedback']) && $submission['Status'] !== 'pending'): ?>
@@ -236,89 +238,21 @@ if ($conn) {
 </main>
 
 <style>
-    /* Mobile Responsive Styles */
-    @media (max-width: 768px) {
-        .page-content {
-            padding: 20px 10px;
-        }
-
-        .page-title {
-            font-size: 1.5rem;
-        }
-
-        .submission-details {
-            padding: 15px;
-        }
-
-        .submission-meta {
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .meta-item {
-            width: 100%;
-        }
-
-        .submission-image {
-            width: 100%;
-            max-width: 100%;
-        }
-
-        .review-form {
-            padding: 15px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        .form-group textarea,
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-        }
-
-        .action-buttons {
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-lg {
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
-        }
-
-        .btn-secondary {
-            width: 100%;
-            display: block;
-            text-align: center;
-        }
+    /* Desktop Styles (Default) */
+    .proof-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        display: block;
+        margin: 0 auto;
     }
 
-    @media (max-width: 600px) {
-        .page-title {
-            font-size: 1.3rem;
-        }
-
-        .submission-info {
-            grid-template-columns: 1fr;
-        }
-
-        .btn-lg {
-            font-size: 0.9rem;
-            padding: 10px;
-        }
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        .page-content { padding: 20px 10px; }
+        .page-title { font-size: 1.5rem; }
+        .action-buttons { flex-direction: column; gap: 10px; margin-top: 20px; }
+        .btn-lg { width: 100%; padding: 12px; font-size: 1rem; }
     }
 </style>
 

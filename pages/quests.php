@@ -17,7 +17,7 @@ $is_db_connected = isset($conn) && !$conn->connect_error;
 if (!$is_db_connected) {
     $db_error = 'Warning: Database connection failed. Cannot load quest list.';
 } else {
-    // --- 5. 获取任务列表（终极修复：进度和提交都必须符合当前周） ---
+    // --- 5. 获取任务列表（终极修复：逻辑去重与时间绑定） ---
     $sql = "
         SELECT
             q.Quest_id,
@@ -27,9 +27,9 @@ if (!$is_db_connected) {
             qc.Category_Name,
             
             CASE
-                -- 1. 优先检查本周提交记录
+                -- 1. 优先检查本周提交记录 (pending/completed/rejected)
                 WHEN s.Status IS NOT NULL THEN s.Status
-                -- 2. 检查进度：如果该任务已经在本周之前提交过（通过子查询判断），则忽略旧进度
+                -- 2. 检查进度：排除掉那些已经在本周之前提交过的任务进度
                 WHEN p.Status IS NOT NULL AND NOT EXISTS (
                     SELECT 1 FROM Student_Quest_Submissions old_s 
                     WHERE old_s.Quest_id = q.Quest_id 
@@ -48,7 +48,7 @@ if (!$is_db_connected) {
             ON q.Quest_id = p.Quest_id 
             AND p.Student_id = ?
             
-        -- 核心逻辑：只关联本周的提交记录
+        -- 严格关联本周提交记录，实现每周重置
         LEFT JOIN Student_Quest_Submissions s
             ON q.Quest_id = s.Quest_id 
             AND s.Student_id = ?
@@ -135,7 +135,7 @@ if (!$is_db_connected) {
                             <?php if ($quest['display_status'] === 'Available'): ?>
                                 <a href="quest_detail.php?id=<?php echo $quest['Quest_id']; ?>" class="btn-primary" style="margin-left: auto;">Start Quest</a>
                             <?php elseif ($quest['display_status'] === 'In Progress'): ?>
-                                <a href="validate.php" class="btn-primary" style="margin-left: auto; background-color: var(--color-accent);">Submit Proof</a>
+                                <a href="student/validate.php?quest_id=<?php echo $quest['Quest_id']; ?>" class="btn-primary" style="margin-left: auto; background-color: var(--color-accent);">Submit Proof</a>
                             <?php elseif ($quest['display_status'] === 'Pending Review'): ?>
                                 <span class="btn-disabled" style="margin-left: auto; cursor: default;">Waiting...</span>
                             <?php else: ?>

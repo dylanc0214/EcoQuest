@@ -99,6 +99,7 @@ if ($is_db_connected && $quest_id) {
         }
 
         if ($quest) {
+            // Check submission table for current period (Weekly Reset logic)
             $sql_status_sub = "
                 SELECT s.Status FROM Student_Quest_Submissions s
                 JOIN Quest_Calendar qc ON s.Quest_id = qc.Quest_id
@@ -179,30 +180,28 @@ if ($is_db_connected && $quest_id) {
                             <a href="quests.php" class="btn-secondary">Back to Quests</a>
                         </div>
 
-                    <?php elseif ($user_quest_status === 'New' || $user_quest_status === 'rejected'): ?>
+                    <?php elseif ($user_quest_status === 'rejected'): ?>
                         <div class="status-box new-box">
-                            <?php if ($user_quest_status === 'rejected'): ?>
-                                <h2 style="color: var(--color-error);">Status: Rejected 🚫</h2>
-                                <p>Your last submission was rejected. Press 'Start Over' to clear it and try again.</p>
-                                <form method="POST">
-                                    <input type="hidden" name="action" value="start_quest">
-                                    <button type="submit" class="btn-primary" style="background-color: var(--color-error);">Start Over</button>
-                                </form>
-                            <?php else: ?>
-                                <h2>Ready to Commit?</h2>
-                                <p>Press 'Start Quest' to accept this mission. You can submit your proof after starting.</p>
-                                <form method="POST">
-                                    <input type="hidden" name="action" value="start_quest">
-                                    <button type="submit" class="btn-primary">Start Quest! 🚀</button>
-                                </form>
-                            <?php endif; ?>
+                            <h2 style="color: var(--color-error);">Status: Rejected 🚫</h2>
+                            <p>Your last submission was rejected. You can try again by uploading a new proof.</p>
+                            <a href="student/validate.php?quest_id=<?php echo $quest_id; ?>" class="btn-primary" style="background-color: var(--color-error); text-decoration: none; display: inline-block;">Try Again</a>
                         </div>
 
                     <?php elseif ($user_quest_status === 'active'): ?>
                         <div class="status-box active-box">
                             <h2>Submit Proof Now</h2>
                             <p>You have started this quest! Once you finish the mission, head to the submission page.</p>
-                            <a href="student/validate.php" class="btn-primary">Submit Quest Proof</a>
+                            <a href="student/validate.php?quest_id=<?php echo $quest_id; ?>" class="btn-primary">Submit Quest Proof</a>
+                        </div>
+
+                    <?php else: // New Status ?>
+                        <div class="status-box new-box">
+                            <h2>Ready to Commit?</h2>
+                            <p>Press 'Start Quest' to accept this mission. You can submit your proof after starting.</p>
+                            <form method="POST">
+                                <input type="hidden" name="action" value="start_quest">
+                                <button type="submit" class="btn-primary">Start Quest! 🚀</button>
+                            </form>
                         </div>
                     <?php endif; ?>
                 </div>
