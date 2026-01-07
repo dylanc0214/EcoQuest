@@ -14,7 +14,7 @@ $message = [];
 $submission_history = [];
 $is_db_connected = isset($conn) && !$conn->connect_error;
 
-// FIXED: Capture quest_id from either GET (initial load) or POST (form submission)
+// FIXED: Capture quest_id from either GET (initial load) or POST (form submission) to prevent "No quest identified" error
 $quest_id = filter_input(INPUT_GET, 'quest_id', FILTER_VALIDATE_INT) ?: filter_input(INPUT_POST, 'quest_id', FILTER_VALIDATE_INT);
 $quest_title = "Selected Mission";
 
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $is_db_connected) {
         $file_name = uniqid('proof_', true) . '.' . $file_extension;
         $target_file = $target_dir . $file_name;
 
-        // Validation (20MB limitation removed as requested)
+        // Validation (REMOVED Size limitation as requested)
         if (!in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov'])) {
             $message = ['type' => 'error', 'text' => 'Only JPG, PNG, GIF, MP4, MOV files are allowed.'];
             $has_error = true;
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $is_db_connected) {
         if (!$has_error && move_uploaded_file($_FILES["proof_media"]["tmp_name"], $target_file)) {
             $file_destination = 'uploads/activities/' . $file_name; 
         } elseif (!$has_error) {
-            $message = ['type' => 'error', 'text' => 'Aiyo! Failed to upload file. Check server configuration.'];
+            $message = ['type' => 'error', 'text' => 'Aiyo! Failed to upload file. Check server permissions.'];
             $has_error = true;
         }
     } else if (!$has_error) {
@@ -155,14 +155,9 @@ function get_status_class($status) {
                     Go back to the <a href="../quests.php">Quests Page</a> and click "Submit Proof" on an active mission.
                 </div>
             <?php else: ?>
-<<<<<<< HEAD
                 <form action="validate.php" method="POST" enctype="multipart/form-data" class="auth-form">
                     <input type="hidden" name="quest_id" value="<?php echo $quest_id; ?>">
 
-=======
-                <form action="student/validate.php" method="POST" enctype="multipart/form-data" class="auth-form">
-                    <h3><i class="fas fa-tasks"></i> Select Quest to Complete</h3>
->>>>>>> 07a7ade937d69ab4af363a759e8bf017d76254d1
                     <div class="form-group">
                         <label>Mission to Complete</label>
                         <div class="static-display" style="padding: 12px; background: #f0fdf4; border: 1px solid #71B48D; border-radius: 8px; font-weight: bold; color: #1D4C43;">
@@ -193,7 +188,7 @@ function get_status_class($status) {
 
                     <div class="form-actions" style="text-align:center; margin-top: 30px;">
                         <button type="submit" class="btn-primary" style="padding: 15px 40px; font-size: 1.1rem; border-radius: 50px; box-shadow: 0 4px 15px rgba(113, 180, 141, 0.3);">
-                            Confirm Submission <i class="fas fa-paper-plane"></i>
+                            Confirm Submission! <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
                 </form>
@@ -202,7 +197,7 @@ function get_status_class($status) {
         <?php endif; ?>
 
         <section class="submission-history" style="max-width: 800px; margin: 60px auto;">
-            <h2 style="text-align:center; font-size: 1.8rem; color: var(--color-primary);"><i class="fas fa-history"></i> My Evidence Log</h2>
+            <h2 style="text-align:center; font-size: 1.8rem; color: var(--color-primary);"><i class="fas fa-history"></i> My Submission History</h2>
             
             <?php if (empty($submission_history)): ?>
                 <div class="message info-message" style="text-align: center;">You haven't submitted any proof yet. Let's get to work!</div>
