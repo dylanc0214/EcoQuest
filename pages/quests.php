@@ -3,7 +3,7 @@
 include("../config/db.php");
 include("../includes/header.php");
 
-// 2. 检查用户是否登录
+// 2. Check if the user is logged in
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['student_id'])) {
     header("Location: sign_up.php");
     exit();
@@ -17,7 +17,7 @@ $is_db_connected = isset($conn) && !$conn->connect_error;
 if (!$is_db_connected) {
     $db_error = 'Warning: Database connection failed. Cannot load quest list.';
 } else {
-    // --- 5. 获取任务列表（终极修复：逻辑去重与时间绑定） ---
+    // --- 5. Retrieve Quest List (Final Fix: Progress and Submissions must match the current week) ---
     $sql = "
         SELECT
             q.Quest_id,
@@ -27,9 +27,9 @@ if (!$is_db_connected) {
             qc.Category_Name,
             
             CASE
-                -- 1. 优先检查本周提交记录 (pending/completed/rejected)
+                -- 1. Prioritize checking submissions for the current week (pending/completed/rejected)
                 WHEN s.Status IS NOT NULL THEN s.Status
-                -- 2. 检查进度：排除掉那些已经在本周之前提交过的任务进度
+                -- 2. Check progress: If the quest was submitted before the current week (determined via subquery), ignore the old progress
                 WHEN p.Status IS NOT NULL AND NOT EXISTS (
                     SELECT 1 FROM Student_Quest_Submissions old_s 
                     WHERE old_s.Quest_id = q.Quest_id 
@@ -43,12 +43,12 @@ if (!$is_db_connected) {
         JOIN Quest q ON qc_cal.Quest_id = q.Quest_id
         LEFT JOIN Quest_Categories qc ON q.CategoryID = qc.CategoryID
         
-        -- 关联进度表
+        -- Link to progress table
         LEFT JOIN Quest_Progress p 
             ON q.Quest_id = p.Quest_id 
             AND p.Student_id = ?
             
-        -- 严格关联本周提交记录，实现每周重置
+        -- Core Logic: Link only to submission records for the current week
         LEFT JOIN Student_Quest_Submissions s
             ON q.Quest_id = s.Quest_id 
             AND s.Student_id = ?
@@ -62,7 +62,7 @@ if (!$is_db_connected) {
             FIELD(user_quest_status, 'Available', 'active', 'pending', 'completed', 'rejected'), q.Points_award DESC";
 
     if ($stmt = $conn->prepare($sql)) {
-        // 注意：现在有三个参数位置需要绑定 student_id
+        // Note: There are now three parameter placeholders requiring the student_id
         $stmt->bind_param("iii", $student_id, $student_id, $student_id);
 
         if ($stmt->execute()) {
@@ -101,7 +101,7 @@ if (!$is_db_connected) {
 <main class="quests-page">
     <div class="container">
         <h1 class="page-title">Ready for the Next Challenge? 🚀</h1>
-        <p class="page-subtitle">Pick a quest, submit your proof, and start earning points for real impact. Cepat, don't miss out!</p>
+        <p class="page-subtitle">Pick a quest, submit your proof, and start earning points for real impact. Hurry, don't miss out!</p>
 
         <?php if ($db_error): ?>
             <div class="message error-message"><?php echo htmlspecialchars($db_error); ?></div>
@@ -111,8 +111,8 @@ if (!$is_db_connected) {
             <?php if (empty($quests) && !$db_error): ?>
                 <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
                     <i class="fas fa-search large-icon" style="font-size: 3rem; color: #71B48D;"></i>
-                    <h3>Aiyo, no active quests right now!</h3>
-                    <p>(No quests are scheduled for this current time.)</p>
+                    <h3>Oh no, no active quests right now!</h3>
+                    <p>(No quests are scheduled for the current time.)</p>
                 </div>
             <?php else: ?>
                 <?php foreach ($quests as $quest):
