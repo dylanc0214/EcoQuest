@@ -17,9 +17,8 @@ $current_student_id = $_SESSION['student_id'] ?? null;
 if (!$is_db_connected) {
     $db_error = 'Error: Database connection failed. Cannot load data.';
 } else {
-    // 1. FETCH USER POINTS (if logged in as student) - FIXED
+    // 1. FETCH USER POINTS
     if ($is_student) {
-        // Fetches from the 'Student' table using 'Student_id'
         $stmt = $conn->prepare("SELECT Total_point FROM Student WHERE Student_id = ?");
         if ($stmt) {
             $stmt->bind_param("i", $current_student_id);
@@ -37,7 +36,7 @@ if (!$is_db_connected) {
         }
     }
     
-    // 2. FETCH ALL REWARDS (Updated column names)
+    // 2. FETCH ALL REWARDS
     $sql = "SELECT Reward_id, Reward_name, Points_cost, Stock, Image_url, Description 
             FROM Reward 
             WHERE Is_active = 1
@@ -81,11 +80,23 @@ if (!$is_db_connected) {
                 <?php
                 $can_redeem = $is_student && ($user_points >= $reward['Points_cost']) && ($reward['Stock'] > 0 || $reward['Stock'] == -1);
                 $is_out_of_stock = $reward['Stock'] == 0;
-                $image_url = !empty($reward['Image_url']) ? htmlspecialchars($reward['Image_url']) : 'https://placehold.co/400x250/2C3E50/FAFAF0?text=Reward';
+
+                // FIXED PATH LOGIC
+                if (!empty($reward['Image_url'])) {
+                    // Replace '../../' with '../' to correctly point to the root assets folder from the pages/ folder
+                    $image_url = str_replace('../../', '../', $reward['Image_url']);
+                    $image_url = htmlspecialchars($image_url);
+                } else {
+                    $image_url = 'https://placehold.co/400x250/2C3E50/FAFAF0?text=Reward';
+                }
                 ?>
                 <div class="reward-card <?php echo $is_out_of_stock ? 'out-of-stock' : ''; ?>">
                     <div class="reward-image-container">
-                        <img src="<?php echo $image_url; ?>" alt="<?php echo htmlspecialchars($reward['Reward_name']); ?>" class="reward-image">
+                        <img src="<?php echo $image_url; ?>" 
+                             alt="<?php echo htmlspecialchars($reward['Reward_name']); ?>" 
+                             class="reward-image" 
+                             onerror="this.src='https://placehold.co/400x250/2C3E50/FAFAF0?text=Image+Not+Found'">
+                        
                         <?php if ($is_out_of_stock): ?>
                             <span class="stock-overlay">SOLD OUT</span>
                         <?php endif; ?>
@@ -113,6 +124,27 @@ if (!$is_db_connected) {
         </div>
     </div>
 </main>
+
+<style>
+/* Ensuring images cover the area correctly like in image_b0e4c6.png */
+.reward-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    display: block;
+}
+.reward-image-container {
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    position: relative;
+    background-color: #f0f0f0;
+}
+.reward-cost {
+    font-weight: bold;
+    color: #F39C12; 
+}
+</style>
 
 <?php include("../includes/footer.php"); ?>
 </body>
