@@ -51,15 +51,24 @@ $user_role = $_SESSION['user_role'] ?? 'guest';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_post'])) {
     $post_id_to_delete = filter_input(INPUT_POST, 'post_id', FILTER_VALIDATE_INT);
     if ($post_id_to_delete && isset($conn)) {
-        // Get post author ID
-        $stmt_check = $conn->prepare("SELECT User_id FROM Post WHERE Post_id = ?");
+        // Get post author ID and role
+        $stmt_check = $conn->prepare("SELECT p.User_id, u.Role FROM Post p JOIN User u ON p.User_id = u.User_id WHERE p.Post_id = ?");
         $stmt_check->bind_param("i", $post_id_to_delete);
         $stmt_check->execute();
         $post_check = $stmt_check->get_result()->fetch_assoc();
         $stmt_check->close();
         
-        // Check if user is the post author or is admin/moderator
-        if ($post_check && ($post_check['User_id'] == $user_id || in_array($user_role, ['admin', 'moderator']))) {
+        // Final Authorization check for safety
+        $can_delete = false;
+        if ($user_role === 'admin') {
+            $can_delete = true;
+        } elseif ($user_role === 'moderator' && in_array($post_check['Role'], ['student', 'moderator'])) {
+            $can_delete = true;
+        } elseif ($user_role === 'student' && $post_check['User_id'] == $user_id) {
+            $can_delete = true;
+        }
+
+        if ($post_check && $can_delete) {
             $conn->begin_transaction();
             try {
                 // Delete associated data first due to foreign key constraints
@@ -154,43 +163,40 @@ if (isset($conn) && !$conn->connect_error) {
         <div class="post-list">
             <?php foreach ($posts as $post): ?>
                 <div class="post-card">
-                    <?php 
-                    // Show menu if: 
-                    // 1. Student who is NOT the post author AND post author is not admin/moderator (to report)
-                    // 2. Student who IS the post author (to delete own post)
-                    // 3. Admin/Moderator viewing ONLY student posts (not other admin/moderator)
-                    $show_menu = false;
-                    
-                    if ($user_role === 'student') {
-                        // Student can: delete own post OR report others' posts (not admin/moderator)
-                        $show_menu = ($post['User_id'] == $user_id) || ($post['User_id'] != $user_id && !in_array($post['Role'], ['admin', 'moderator']));
-                    } elseif (in_array($user_role, ['admin', 'moderator'])) {
-                        // Admin/Moderator can view and delete ONLY if post is from student
-                        $show_menu = ($post['Role'] === 'student');
-                    }
-                    ?>
-                    <?php if ($show_menu): ?>
-                        <div class="post-menu-container">
+                    <div class="post-menu-container">
+                        <?php 
+                        // logic for 3 dots visibility according to your role rules
+                        $show_dots = false;
+                        if ($user_role === 'admin') {
+                            $show_dots = true; // Admin sees on ALL posts
+                        } elseif ($user_role === 'moderator' && in_array($post['Role'], ['student', 'moderator'])) {
+                            $show_dots = true; // Mod sees on Student and Mod posts
+                        } elseif ($user_role === 'student' && $post['Role'] === 'student') {
+                            $show_dots = true; // Student sees ONLY on student posts
+                        }
+
+                        if ($show_dots): ?>
                             <button class="post-menu-btn" onclick="togglePostMenu(this)">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                             <div class="post-menu-dropdown">
-                                <?php if ($post['User_id'] == $user_id): ?>
-                                    <!-- Post owner can delete their own post -->
-                                    <form method="POST" style="display: inline;">
-                                        <input type="hidden" name="post_id" value="<?php echo $post['Post_id']; ?>">
-                                        <button type="submit" name="delete_post" class="delete-menu-item" onclick="return confirm('Delete this post?');">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </form>
-                                <?php elseif ($user_role === 'student'): ?>
-                                    <a href="#" onclick="openReportModal('post', <?php echo $post['Post_id']; ?>); return false;">
-                                        <i class="fas fa-flag"></i> Report
-                                    </a>
-                                <?php elseif (in_array($user_role, ['admin', 'moderator'])): ?>
+                                <?php if ($post['student_id']): ?>
                                     <a href="view_student.php?student_id=<?php echo $post['student_id']; ?>">
                                         <i class="fas fa-user"></i> View Profile
                                     </a>
+                                <?php endif; ?>
+
+                                <?php 
+                                $can_delete_this_item = false;
+                                if ($user_role === 'admin') {
+                                    $can_delete_this_item = true;
+                                } elseif ($user_role === 'moderator' && in_array($post['Role'], ['student', 'moderator'])) {
+                                    $can_delete_this_item = true;
+                                } elseif ($user_role === 'student' && $post['User_id'] == $user_id) {
+                                    $can_delete_this_item = true; // ONLY student owner
+                                }
+
+                                if ($can_delete_this_item): ?>
                                     <form method="POST" style="display: inline;">
                                         <input type="hidden" name="post_id" value="<?php echo $post['Post_id']; ?>">
                                         <button type="submit" name="delete_post" class="delete-menu-item" onclick="return confirm('Delete this post?');">
@@ -198,9 +204,15 @@ if (isset($conn) && !$conn->connect_error) {
                                         </button>
                                     </form>
                                 <?php endif; ?>
+
+                                <?php if ($post['User_id'] != $user_id && $user_role === 'student' && $post['Role'] === 'student'): ?>
+                                    <a href="#" onclick="openReportModal('post', <?php echo $post['Post_id']; ?>); return false;">
+                                        <i class="fas fa-flag"></i> Report
+                                    </a>
+                                <?php endif; ?>
                             </div>
-                        </div>
-                    <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
 
                     <div class="post-header">
                         <span class="post-author"><i class="fas fa-user-circle"></i> <?php echo htmlspecialchars($post['Username']); ?></span>
@@ -260,7 +272,6 @@ if (isset($conn) && !$conn->connect_error) {
 
 <style>
     .post-card { position: relative; }
-    
     .post-menu-container { position: absolute; top: 15px; right: 15px; z-index: 20; }
     .post-menu-btn { 
         background: none; 
@@ -272,7 +283,6 @@ if (isset($conn) && !$conn->connect_error) {
         transition: color 0.3s;
     }
     .post-menu-btn:hover { color: #333; }
-    
     .post-menu-dropdown {
         display: none;
         position: absolute;
@@ -286,11 +296,8 @@ if (isset($conn) && !$conn->connect_error) {
         margin-top: 8px;
         z-index: 100;
     }
-    
     .post-menu-dropdown.active { display: block; }
-    
-    .post-menu-dropdown a,
-    .post-menu-dropdown button {
+    .post-menu-dropdown a, .post-menu-dropdown button {
         display: block;
         width: 100%;
         padding: 12px 16px;
@@ -303,29 +310,13 @@ if (isset($conn) && !$conn->connect_error) {
         transition: background-color 0.2s;
         font-size: 0.95rem;
     }
-    
-    .post-menu-dropdown a:hover,
-    .post-menu-dropdown button:hover {
-        background-color: #f5f5f5;
-    }
-    
-    .post-menu-dropdown a:first-child,
-    .post-menu-dropdown button:first-child {
-        border-radius: 8px 8px 0 0;
-    }
-    
-    .post-menu-dropdown a:last-child,
-    .post-menu-dropdown button:last-child {
-        border-radius: 0 0 8px 8px;
-    }
-    
+    .post-menu-dropdown a:hover, .post-menu-dropdown button:hover { background-color: #f5f5f5; }
+    .post-menu-dropdown a:first-child, .post-menu-dropdown button:first-child { border-radius: 8px 8px 0 0; }
+    .post-menu-dropdown a:last-child, .post-menu-dropdown button:last-child { border-radius: 0 0 8px 8px; }
     .delete-menu-item { color: #E53E3E !important; }
     .delete-menu-item:hover { background-color: #ffe0e0 !important; }
-    
     .post-menu-dropdown i { margin-right: 10px; width: 16px; }
-    
     .post-date { margin-right: 35px; }
-    
     .post-stat.like-btn { 
         color: #555; 
         transition: all 0.2s ease; 
@@ -337,9 +328,7 @@ if (isset($conn) && !$conn->connect_error) {
     .post-stat.like-btn.liked { color: #ff4d4d !important; }
     .post-stat.like-btn.liked i { color: #ff4d4d !important; }
     .post-stat.like-btn:active i { transform: scale(1.4); }
-
     .post-stat { background: transparent !important; border: none !important; color: #555; }
-
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); animation: fadeIn 0.3s; }
     .modal-content { background-color: #fefefe; margin: 10% auto; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
     .close-modal { position: absolute; top: 10px; right: 20px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
@@ -352,7 +341,6 @@ if (isset($conn) && !$conn->connect_error) {
 </style>
 
 <script>
-    // Close menu when clicking outside
     document.addEventListener('click', function(event) {
         if (!event.target.closest('.post-menu-container')) {
             document.querySelectorAll('.post-menu-dropdown.active').forEach(menu => {
@@ -363,7 +351,11 @@ if (isset($conn) && !$conn->connect_error) {
 
     function togglePostMenu(button) {
         const menu = button.nextElementSibling;
-        menu.classList.toggle('active');
+        const isActive = menu.classList.contains('active');
+        document.querySelectorAll('.post-menu-dropdown.active').forEach(m => m.classList.remove('active'));
+        if (!isActive) {
+            menu.classList.add('active');
+        }
         event.stopPropagation();
     }
 

@@ -16,7 +16,6 @@ $student_id = isset($_GET['student_id']) ? intval($_GET['student_id']) : 0;
 $error_message = null;
 $success_message = null;
 $student = null;
-$student_achievements = [];
 $student_badges = [];
 
 if (!$conn) {
@@ -92,19 +91,6 @@ if (!$conn) {
         }
 
         if ($student) {
-            // Achievements
-            $sqlAch = "SELECT a.Title, a.Description, a.Exp_point
-                       FROM Student_Achievement sa
-                       JOIN Achievement a ON sa.Achievement_id = a.Achievement_id
-                       WHERE sa.Student_id = ? AND sa.Status = 'Completed'";
-            if ($s2 = $conn->prepare($sqlAch)) {
-                $s2->bind_param('i', $student_id);
-                $s2->execute();
-                $r2 = $s2->get_result();
-                while ($row = $r2->fetch_assoc()) $student_achievements[] = $row;
-                $s2->close();
-            }
-
             // Badges
             $sqlBadge = "SELECT b.Badge_Name, b.Badge_image, b.Require_Exp_Points
                          FROM Student_Badge sb
@@ -150,7 +136,6 @@ if ($student) {
 
         <?php if ($student): ?>
             <div class="profile-card-simple" style="position: relative;">
-                <!-- 3-Dot Menu -->
                 <div class="moderation-menu-container">
                     <button class="moderation-menu-btn" onclick="toggleModerationMenu(this)">
                         <i class="fas fa-ellipsis-v"></i>
@@ -209,7 +194,6 @@ if ($student) {
                             <span class="profile-role-simple">Student</span>
                         </div>
 
-                        <!-- Moderation Status (Red Text) -->
                         <?php if ($ban_active || $mute_post_active || $mute_comment_active): ?>
                             <div class="moderation-status">
                                 <?php if ($ban_active): ?>
@@ -231,12 +215,12 @@ if ($student) {
                         <?php endif; ?>
 
                         <div class="points-highlight">
-                            <h4><i class="fas fa-star"></i> Total Points</h4>
+                            <h4>Total Points</h4>
                             <p class="points-value-large"><?php echo number_format($student['Total_point']); ?></p>
                             <p class="points-label">PTS</p>
                         </div>
                         <div class="points-highlight" style="border-color:#f6ad55;">
-                            <h4><i class="fas fa-medal"></i> Total EXP</h4>
+                            <h4>Total EXP</h4>
                             <p class="points-value-large" style="color:#f6ad55"><?php echo number_format($student['Total_Exp_Point']); ?></p>
                             <p class="points-label">EXP</p>
                         </div>
@@ -268,22 +252,6 @@ if ($student) {
                                 <div class="badge-item" title="<?php echo htmlspecialchars($b['Badge_Name']); ?>">
                                     <i class="<?php echo htmlspecialchars($b['Badge_image'] ?? 'fas fa-shield-alt'); ?> badge-icon"></i>
                                     <span class="badge-name"><?php echo htmlspecialchars($b['Badge_Name']); ?></span>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <div class="badges-section" style="border-top:1px dashed #eee;margin-top:15px;padding-top:15px;">
-                    <h3 class="badges-title">Achievements</h3>
-                    <?php if (empty($student_achievements)): ?>
-                        <p class="no-badges-msg">No achievements yet.</p>
-                    <?php else: ?>
-                        <div class="badges-container">
-                            <?php foreach ($student_achievements as $ach): ?>
-                                <div class="badge-item" title="<?php echo htmlspecialchars($ach['Description']); ?> (+<?php echo $ach['Exp_point']; ?> EXP)">
-                                    <i class="fas fa-star badge-icon"></i>
-                                    <span class="badge-name"><?php echo htmlspecialchars($ach['Title']); ?></span>
                                 </div>
                             <?php endforeach; ?>
                         </div>

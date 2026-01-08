@@ -59,7 +59,11 @@ if (!$is_db_connected) {
         <p class="page-subtitle">Spend your hard-earned points on these cool rewards. Better be fast, limited stock only!</p>
 
         <?php if ($db_error): ?>
-            <div class="message error-error"><?php echo $db_error; ?></div>
+            <div class="message error-message"><?php echo $db_error; ?></div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['success'])): ?>
+            <div class="message success-message">Redemption successful! Check your email for details.</div>
         <?php endif; ?>
 
         <?php if ($is_student): ?>
@@ -81,9 +85,9 @@ if (!$is_db_connected) {
                 $can_redeem = $is_student && ($user_points >= $reward['Points_cost']) && ($reward['Stock'] > 0 || $reward['Stock'] == -1);
                 $is_out_of_stock = $reward['Stock'] == 0;
 
-                // FIXED PATH LOGIC
+                // FIXED PATH LOGIC for Reward Images
                 if (!empty($reward['Image_url'])) {
-                    // Replace '../../' with '../' to correctly point to the root assets folder from the pages/ folder
+                    // Points to root/assets/ from pages/rewards.php
                     $image_url = str_replace('../../', '../', $reward['Image_url']);
                     $image_url = htmlspecialchars($image_url);
                 } else {
@@ -110,7 +114,7 @@ if (!$is_db_connected) {
                                 <?php if ($is_out_of_stock): ?>
                                     <button class="btn-redeem btn-disabled" disabled>Out of Stock</button>
                                 <?php elseif ($can_redeem): ?>
-                                    <a href="redeem.php?id=<?php echo $reward['Reward_id']; ?>" class="btn-redeem btn-submit">Redeem Now</a>
+                                    <a href="student/redeem.php?id=<?php echo $reward['Reward_id']; ?>" class="btn-redeem btn-submit">Redeem Now</a>
                                 <?php else: ?>
                                     <button class="btn-redeem btn-disabled" disabled>Need <?php echo number_format($reward['Points_cost'] - $user_points); ?> PTS More</button>
                                 <?php endif; ?>
@@ -126,7 +130,6 @@ if (!$is_db_connected) {
 </main>
 
 <style>
-/* Ensuring images cover the area correctly like in image_b0e4c6.png */
 .reward-image {
     width: 100%;
     height: 100%;
@@ -144,8 +147,8 @@ if (!$is_db_connected) {
     font-weight: bold;
     color: #F39C12; 
 }
+.error-message { color: #e74c3c; background: #fadbd8; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center; }
+.success-message { color: #27ae60; background: #d4efdf; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center; }
 </style>
 
 <?php include("../includes/footer.php"); ?>
-</body>
-</html>

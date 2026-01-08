@@ -15,19 +15,17 @@ $current_user_id = $_SESSION['user_id'];
 $current_user_role = $_SESSION['user_role'];
 $db_error = '';
 $user_data = null;
-$user_achievements = []; // For student achievements
 $user_badges = []; // For student badges
 
 if (!isset($conn) || $conn->connect_error) {
     $db_error = 'Error: Database connection failed.';
 } else {
     try {
-        // --- UPDATED: Fetch user data based on their role ---
+        // --- Fetch user data based on their role ---
         $sql = '';
 
         switch ($current_user_role) {
             case 'student':
-                // FIXED: Removed s.Bio and s.Profile_Pic_URL from this query
                 $sql = "SELECT 
                             u.User_id, u.Username, u.Email, u.Role, u.Created_at,
                             s.Student_id, s.Total_point, s.Total_Exp_Point
@@ -70,26 +68,9 @@ if (!isset($conn) || $conn->connect_error) {
             $stmt->close();
         }
 
-        // --- Fetch achievements & badges ONLY if the user is a student ---
+        // --- Fetch badges ONLY if the user is a student ---
         if ($current_user_role === 'student' && $user_data) {
             $current_student_id = $_SESSION['student_id'];
-            
-            // Get Achievements (from Achievement table)
-            $sql_achievements = "
-                SELECT a.Title, a.Description, a.Exp_point
-                FROM Student_Achievement sa
-                JOIN Achievement a ON sa.Achievement_id = a.Achievement_id
-                WHERE sa.Student_id = ? AND sa.Status = 'Completed'"; // Assuming 'Completed' status
-            
-            if ($stmt_ach = $conn->prepare($sql_achievements)) {
-                $stmt_ach->bind_param("i", $current_student_id);
-                $stmt_ach->execute();
-                $result_ach = $stmt_ach->get_result();
-                while ($row = $result_ach->fetch_assoc()) {
-                    $user_achievements[] = $row;
-                }
-                $stmt_ach->close();
-            }
 
             // Get Badges (from Badge table)
             $sql_badges = "
@@ -144,7 +125,7 @@ if (!isset($conn) || $conn->connect_error) {
                         </div>
                         <?php if ($current_user_role === 'student'): ?>
                             <div class="points-highlight">
-                                <h4><i class="fas fa-star"></i> Total Points (Leaderboard)</h4>
+                                <h4>Total Points (Leaderboard)</h4>
                                 <p class="points-value-large"><?php echo number_format($user_data['Total_point']); ?></p>
                                 <p class="points-label">PTS</p>
                             </div>
@@ -186,23 +167,6 @@ if (!isset($conn) || $conn->connect_error) {
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
-                </div>
-                
-                <div class="badges-section" style="border-top: 1px dashed #eee; margin-top: 15px; padding-top: 15px;">
-                    <h3 class="badges-title">My Achievements (from Quests)</h3>
-                     <?php if (empty($user_achievements)): ?>
-                        <p class="no-badges-msg">You haven't earned any achievements yet. Complete some quests!</p>
-                    <?php else: ?>
-                        <div class="badges-container">
-                            <?php foreach ($user_achievements as $ach): ?>
-                                <div class="badge-item" style="border-color: var(--color-accent);" title="<?php echo htmlspecialchars($ach['Description']); ?> (+<?php echo $ach['Exp_point']; ?> EXP)">
-                                    <i class="fas fa-star badge-icon" style="color: var(--color-accent);"></i>
-                                    <span class="badge-name"><?php echo htmlspecialchars($ach['Title']); ?></span>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                    <a href="achievements.php" class="btn-secondary" style="margin-top: 15px;">View All Achievements</a>
                 </div>
                 <?php endif; ?>
 

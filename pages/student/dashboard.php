@@ -146,7 +146,7 @@ if (!$is_db_connected) {
             <div class="current-rank">
                 <span class="rank-label">Your Global Rank:</span>
                 <span class="rank-number"><?php echo htmlspecialchars($user_metrics['global_rank']); ?></span>
-                <a href="leaderboard.php" class="btn-leaderboard">See Full Leaderboard &raquo;</a>
+                <a href="../leaderboard.php" class="btn-leaderboard">See Full Leaderboard &raquo;</a>
             </div>
         </div>
 
@@ -155,19 +155,19 @@ if (!$is_db_connected) {
                 <div class="icon">💰</div>
                 <h3>Total Points</h3>
                 <p class="metric-value"><?php echo number_format($user_metrics['total_points']); ?> PTS</p>
-                <a href="rewards.php" class="metric-link">Spend Your Points &raquo;</a>
+                <a href="../rewards.php" class="metric-link">Spend Your Points &raquo;</a>
             </div>
             <div class="metric-card completed-card">
                 <div class="icon">✅</div>
                 <h3>Quests Completed</h3>
                 <p class="metric-value"><?php echo $user_metrics['quests_completed']; ?></p>
-                <a href="quests.php" class="metric-link">Find New Quests &raquo;</a>
+                <a href="../quests.php" class="metric-link">Find New Quests &raquo;</a>
             </div>
             <div class="metric-card rewards-card">
                 <div class="icon">🎁</div>
                 <h3>Rewards Redeemed</h3>
                 <p class="metric-value"><?php echo $user_metrics['rewards_redeemed']; ?></p>
-                <a href="my_rewards.php" class="metric-link">View Redemption History &raquo;</a>
+                <a href="../my_rewards.php" class="metric-link">View Redemption History &raquo;</a>
             </div>
         </section>
 
@@ -178,7 +178,7 @@ if (!$is_db_connected) {
                     <p class="action-status warning-status">
                         Aiyo! You have <span class="count"><?php echo $user_metrics['pending_submissions']; ?></span> submissions waiting for Moderator review. Patience is key!
                     </p>
-                    <a href="student/validate.php" class="btn-primary">View Submission Status</a>
+                    <a href="../student/validate.php" class="btn-primary">View Submission Status</a>
                 <?php else: ?>
                     <p class="action-status success-status">
                         All your submitted proofs have been reviewed! Clean slate!

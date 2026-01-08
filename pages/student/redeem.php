@@ -14,7 +14,7 @@ $reward_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
 // 2. Validation: Check for valid reward ID and DB connection.
 if (!$reward_id || !isset($conn) || $conn->connect_error) {
-    header("Location: rewards.php?error=invalid_request");
+    header("Location: student/rewards.php?error=invalid_request");
     exit();
 }
 
@@ -65,13 +65,13 @@ try {
 
     // 8. If all steps succeed, commit the changes.
     $conn->commit();
-    header("Location: rewards.php?status=redeemed_successfully");
+    header("Location: ../rewards.php?status=redeemed_successfully");
     exit();
 
 } catch (Exception $e) {
     // 9. If any step fails, cancel everything.
     $conn->rollback();
-    header("Location: rewards.php?error=" . urlencode($e->getMessage()));
+    header("Location: student/rewards.php?error=" . urlencode($e->getMessage()));
     exit();
 }
 ?>
