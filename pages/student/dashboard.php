@@ -146,7 +146,7 @@ if (!$is_db_connected) {
             <div class="current-rank">
                 <span class="rank-label">Your Global Rank:</span>
                 <span class="rank-number"><?php echo htmlspecialchars($user_metrics['global_rank']); ?></span>
-                <a href="leaderboard.php" class="btn-leaderboard">See Full Leaderboard &raquo;</a>
+                <a href="<?php echo $base_path; ?>pages/leaderboard.php" class="btn-leaderboard">See Full Leaderboard &raquo;</a>
             </div>
         </div>
 
