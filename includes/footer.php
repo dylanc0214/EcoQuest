@@ -12,7 +12,6 @@
             color:#FAFAF0;
             padding:30px 15px;
             text-align:center;
-            margin-top:40px;
         }
 
         .footer-logo{

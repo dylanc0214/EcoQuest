@@ -151,7 +151,7 @@ html, body {
 /* ===== PAGE ===== */
 .moderation-logs-page {
     padding: 30px 10px;
-    background: #f5f7fa;
+    background: transparent;
 }
 
 .logs-title {

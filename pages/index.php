@@ -142,7 +142,7 @@ ini_set('display_errors', 1);
             <div class="cta-content">
                 <h2>Ready to Start Your Journey?</h2>
                 <p>Join hundreds of students making a real difference in campus sustainability. Sign up today and start earning rewards!</p>
-                <a href="sign_up.php?action=register" class="cta-btn">Join the movement →</a>
+                <a href="<?php echo $base_path; ?>pages/sign_up.php?action=register" class="cta-btn">Join the movement →</a>
             </div>
             <div class="cta-img-content">
                 <img src="../assets/images/cta-section.jpeg" alt="register picture">

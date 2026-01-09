@@ -20,7 +20,7 @@ if (!$is_logged_in || !in_array($user_role, $allowed_roles)) {
 // The ERD links 'reviewer_id' to 'Moderator' table. This is a flaw, as Admins can also review.
 // We will store the MODERATOR_ID if they are a moderator, or NULL if an Admin is reviewing.
 // This matches the ERD's foreign key constraint.
-$reviewer_id = $_SESSION['moderator_id'] ?? null; 
+$reviewer_id = $_SESSION['moderator_id'] ?? null;
 
 $submission_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 $message = null;
@@ -37,7 +37,7 @@ if (!$submission_id) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $conn) {
     $action = $_POST['action'] ?? '';
     $review_comment = trim($_POST['review_comment'] ?? '');
-    
+
     // We must use the $reviewer_id (which is the Moderator_id) set from the session
     // If an Admin is reviewing, the ERD says this must be NULL.
     if ($user_role === 'admin') {
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $conn) {
             $stmt_update->bind_param('sisi', $new_status, $reviewer_id, $review_comment, $submission_id);
             $stmt_update->execute();
             $stmt_update->close();
-            
+
             // 3. Update the Quest_Progress table
             $sql_progress = "UPDATE Quest_Progress SET Status = ? WHERE Student_id = ? AND Quest_id = ?";
             $stmt_progress = $conn->prepare($sql_progress);
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $conn) {
                 $stmt_points->bind_param('iii', $points_to_award, $exp_to_award, $student_id_to_update);
                 $stmt_points->execute();
                 $stmt_points->close();
-                
+
                 // 5. If approved AND there was an achievement, log it
                 if ($achievement_id) {
                     $sql_log_ach = "INSERT INTO Student_Achievement (Achievement_id, Student_id, Status) VALUES (?, ?, 'Completed')
@@ -205,7 +205,7 @@ if ($conn) {
                         <?php else: ?>
                              <div class="proof-box"><p>No media (image/video) was submitted.</p></div>
                         <?php endif; ?>
-                        
+
                          <?php if (!empty($submission['Review_feedback']) && $submission['Status'] !== 'pending'): ?>
                             <div class="proof-box" style="margin-top: 15px; border-color: var(--color-accent);">
                                 <p class="proof-text-label"><i class="fas fa-comment-dots"></i> Previous Review Comment:</p>

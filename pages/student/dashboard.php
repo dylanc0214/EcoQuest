@@ -146,7 +146,11 @@ if (!$is_db_connected) {
             <div class="current-rank">
                 <span class="rank-label">Your Global Rank:</span>
                 <span class="rank-number"><?php echo htmlspecialchars($user_metrics['global_rank']); ?></span>
+<<<<<<< HEAD
                 <a href="../leaderboard.php" class="btn-leaderboard">See Full Leaderboard &raquo;</a>
+=======
+                <a href="<?php echo $base_path; ?>pages/leaderboard.php" class="btn-leaderboard">See Full Leaderboard &raquo;</a>
+>>>>>>> b29e19fdabbe73a6c323d7d9d82111f3fc01cd3e
             </div>
         </div>
 
@@ -155,19 +159,31 @@ if (!$is_db_connected) {
                 <div class="icon">💰</div>
                 <h3>Total Points</h3>
                 <p class="metric-value"><?php echo number_format($user_metrics['total_points']); ?> PTS</p>
+<<<<<<< HEAD
                 <a href="../rewards.php" class="metric-link">Spend Your Points &raquo;</a>
+=======
+                <a href="<?php echo $base_path; ?>pages/rewards.php" class="metric-link">Spend Your Points &raquo;</a>
+>>>>>>> b29e19fdabbe73a6c323d7d9d82111f3fc01cd3e
             </div>
             <div class="metric-card completed-card">
                 <div class="icon">✅</div>
                 <h3>Quests Completed</h3>
                 <p class="metric-value"><?php echo $user_metrics['quests_completed']; ?></p>
+<<<<<<< HEAD
                 <a href="../quests.php" class="metric-link">Find New Quests &raquo;</a>
+=======
+                <a href="<?php echo $base_path; ?>pages/quests.php" class="metric-link">Find New Quests &raquo;</a>
+>>>>>>> b29e19fdabbe73a6c323d7d9d82111f3fc01cd3e
             </div>
             <div class="metric-card rewards-card">
                 <div class="icon">🎁</div>
                 <h3>Rewards Redeemed</h3>
                 <p class="metric-value"><?php echo $user_metrics['rewards_redeemed']; ?></p>
+<<<<<<< HEAD
                 <a href="../my_rewards.php" class="metric-link">View Redemption History &raquo;</a>
+=======
+                <a href="<?php echo $base_path; ?>pages/student/my_rewards.php" class="metric-link">View Redemption History &raquo;</a>
+>>>>>>> b29e19fdabbe73a6c323d7d9d82111f3fc01cd3e
             </div>
         </section>
 
@@ -178,12 +194,16 @@ if (!$is_db_connected) {
                     <p class="action-status warning-status">
                         Aiyo! You have <span class="count"><?php echo $user_metrics['pending_submissions']; ?></span> submissions waiting for Moderator review. Patience is key!
                     </p>
+<<<<<<< HEAD
                     <a href="../student/validate.php" class="btn-primary">View Submission Status</a>
+=======
+                    <a href="<?php echo $base_path; ?>pages/student/validate.php" class="btn-primary">View Submission Status</a>
+>>>>>>> b29e19fdabbe73a6c323d7d9d82111f3fc01cd3e
                 <?php else: ?>
                     <p class="action-status success-status">
                         All your submitted proofs have been reviewed! Clean slate!
                     </p>
-                    <a href="student/validate.php" class="btn-secondary">Check Completed Proofs</a>
+                    <a href="<?php echo $base_path; ?>pages/student/validate.php" class="btn-secondary">Check Completed Proofs</a>
                 <?php endif; ?>
             </div>
             <div class="action-card activity-card">
