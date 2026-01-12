@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Jan 06, 2026 at 11:31 AM
+-- Generation Time: Jan 07, 2026 at 02:43 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.3.14
 
@@ -118,9 +118,7 @@ CREATE TABLE IF NOT EXISTS `comment` (
 --
 
 INSERT INTO `comment` (`Comment_id`, `User_id`, `Post_id`, `Comment`, `Created_at`) VALUES
-(1, 1, 2, 'Hope everyone will like it.', '2025-12-11 06:42:39'),
-(4, 3, 6, 'test', '2026-01-05 13:32:51'),
-(5, 4, 8, 'asd', '2026-01-06 05:17:56');
+(1, 1, 2, 'Hope everyone will like it.', '2025-12-11 06:42:39');
 
 -- --------------------------------------------------------
 
@@ -146,8 +144,7 @@ CREATE TABLE IF NOT EXISTS `comment_report` (
 --
 
 INSERT INTO `comment_report` (`Comment_report_id`, `Comment_id`, `Reason`, `Report_time`, `Status`, `Reported_by`) VALUES
-(1, 1, 'Violent Content', '2026-01-05 13:06:10', 'Completed', 1),
-(2, 5, 'Spam', '2026-01-06 06:25:46', 'Pending', 1);
+(1, 1, 'Violent Content', '2026-01-05 13:06:10', 'Completed', 1);
 
 -- --------------------------------------------------------
 
@@ -186,7 +183,7 @@ CREATE TABLE IF NOT EXISTS `post` (
   `Created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`Post_id`),
   KEY `Post_fk_Student_id` (`User_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `post`
@@ -195,10 +192,7 @@ CREATE TABLE IF NOT EXISTS `post` (
 INSERT INTO `post` (`Post_id`, `User_id`, `Image`, `Title`, `Content`, `Created_at`) VALUES
 (2, 1, NULL, 'Recycling', 'I Love Doing Recycle', '2025-11-14 17:23:22'),
 (3, 2, 'uploads/forum/post_695a43564219f3.32796086.png', 'I plant a tree.', 'I don\'t believe i made it!', '2026-01-04 10:39:18'),
-(6, 3, NULL, 'test', 'test', '2026-01-05 13:32:39'),
-(7, 4, NULL, '67', '67', '2026-01-05 15:08:48'),
-(8, 4, NULL, 'test mute', 'a', '2026-01-06 05:17:34'),
-(9, 3, NULL, 'te', 't', '2026-01-06 05:37:02');
+(10, 3, 'uploads/forum/post_695e3ed1301241.33331592.png', 'test', 'test', '2026-01-07 11:09:05');
 
 -- --------------------------------------------------------
 
@@ -221,8 +215,7 @@ CREATE TABLE IF NOT EXISTS `post_likes` (
 --
 
 INSERT INTO `post_likes` (`Like_id`, `User_id`, `Post_id`) VALUES
-(7, 1, 2),
-(12, 4, 8);
+(7, 1, 2);
 
 -- --------------------------------------------------------
 
@@ -272,7 +265,7 @@ CREATE TABLE IF NOT EXISTS `quest` (
   PRIMARY KEY (`Quest_id`),
   KEY `Quest_fk_Created_by` (`Created_by`),
   KEY `fk_quest_category` (`CategoryID`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `quest`
@@ -283,7 +276,8 @@ INSERT INTO `quest` (`Quest_id`, `Title`, `Description`, `Points_award`, `Proof_
 (2, 'Power Down Detective', 'Conduct a 2-day audit of electricity wastage in a common area (like the classroom, library, or common hall) by identifying and documenting lights or devices left on when not in use.', 200, 'Image', 'Use a template to record at least 5 specific instances of wastage (Text Proof: time, location, device, estimated duration of waste). Submit one Image Proof of a &#39;Wasted Energy&#39; moment (e.g., a light on in an empty room) before taking action to turn it off.', 1, 1, '2025-11-10 04:15:02', 2),
 (3, 'The Leak Hunter', 'Identify and report a leaking tap, hose, or running toilet at school or home, then track the progress of its repair or fix it yourself (if minor/safe).', 180, 'Image', 'Identify and report a leaking tap, hose, or running toilet at school or home, then track the progress of its repair or fix it yourself (if minor/safe).', 1, 1, '2025-11-10 04:15:39', 3),
 (4, 'Local Ride Challenge', 'Swap out a motorized trip (car/bus/motorcycle) for a sustainable transport method (walking, cycling, public transport) for a set journey, and calculate the estimated CO2 saving.', 250, 'Image', 'Submit an Image Proof of you using the sustainable transport (e.g., locking your bike, standing on the bus). Submit a Text Proof detailing the original journey distance/mode and the estimated CO2 saved (use a simple online calculator for estimation, state the number in kg).', 1, 1, '2025-11-10 04:16:08', 4),
-(5, 'Trash to Treasure Transformation', 'Transform a piece of discarded material (cardboard, old clothes, plastic bottles) into a useful or decorative item.', 220, 'Image', 'Submit a &#39;Before&#39; Image of the waste material. Submit a final &#39;Product Image&#39; of your upcycled creation, alongside a &#39;Description Text&#39; (min 70 words) explaining what you made and how it is useful.', 1, 1, '2025-11-10 04:16:51', 6);
+(5, 'Trash to Treasure Transformation', 'Transform a piece of discarded material (cardboard, old clothes, plastic bottles) into a useful or decorative item.', 220, 'Image', 'Submit a &#39;Before&#39; Image of the waste material. Submit a final &#39;Product Image&#39; of your upcycled creation, alongside a &#39;Description Text&#39; (min 70 words) explaining what you made and how it is useful.', 1, 1, '2025-11-10 04:16:51', 6),
+(12, 'test', 'test', 500, 'Image', 'test', 1, 1, '2026-01-07 08:06:15', 2);
 
 -- --------------------------------------------------------
 
@@ -299,7 +293,18 @@ CREATE TABLE IF NOT EXISTS `quest_calendar` (
   `End_date` date NOT NULL,
   PRIMARY KEY (`Calendar_id`),
   KEY `Quest_id` (`Quest_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `quest_calendar`
+--
+
+INSERT INTO `quest_calendar` (`Calendar_id`, `Quest_id`, `Start_date`, `End_date`) VALUES
+(1, 12, '2026-01-04', '2026-01-10'),
+(2, 5, '2026-01-04', '2026-01-10'),
+(3, 4, '2026-01-04', '2026-01-10'),
+(4, 3, '2026-01-04', '2026-01-10'),
+(5, 1, '2026-01-04', '2026-01-10');
 
 -- --------------------------------------------------------
 
@@ -342,16 +347,15 @@ CREATE TABLE IF NOT EXISTS `quest_progress` (
   PRIMARY KEY (`Quest_Progress_id`),
   KEY `QuestProgress_fk_Quest_id` (`Quest_id`),
   KEY `QuestProgress_fk_Student_id` (`Student_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `quest_progress`
 --
 
 INSERT INTO `quest_progress` (`Quest_Progress_id`, `Quest_id`, `Status`, `Completed_at`, `Student_id`) VALUES
-(2, 4, 'completed', NULL, 1),
-(3, 5, 'pending', NULL, 1),
-(4, 2, 'active', NULL, 1);
+(1, 1, 'pending', NULL, 1),
+(2, 3, 'pending', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -394,7 +398,7 @@ CREATE TABLE IF NOT EXISTS `reward` (
   `Image_url` varchar(255) DEFAULT NULL,
   `Is_active` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`Reward_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `reward`
@@ -407,7 +411,7 @@ INSERT INTO `reward` (`Reward_id`, `Reward_name`, `Description`, `Points_cost`, 
 (4, 'Powerbank', 'A high-quality mini power bank to keep your devices charged, essential for any IT student or quest winner. Named after your pet, lah!', 550, 17, NULL, 1),
 (5, 'Retreat Day', 'A voucher for a \"No Homework Pass\" for one subject or a \"Uniform Exemption Day\" (wear casual clothes). A day off is priceless!', 700, 11, NULL, 1),
 (6, 'Master of Sustainability Badge', 'An exclusive physical badge/medal awarded at the next school assembly, plus a mention on the school&#39;s social media/newsletter. Flex on your friends.', 1000, 5, NULL, 1),
-(11, 'tree', 'tree', 5000, 10, '../../assets/uploads/rewards/reward_1767498877_846.webp', 1);
+(12, 'tree', 'Plant a tree', 10000, 10, '../../assets/uploads/rewards/reward_1767770281_142.webp', 1);
 
 -- --------------------------------------------------------
 
@@ -434,7 +438,7 @@ CREATE TABLE IF NOT EXISTS `student` (
 --
 
 INSERT INTO `student` (`Student_id`, `User_id`, `Ban_time`, `Mute_comment`, `Mute_post`, `Total_Exp_Point`, `Total_point`, `Quest_Progress_id`) VALUES
-(1, 1, NULL, NULL, NULL, 0, 0, NULL),
+(1, 1, NULL, NULL, NULL, 0, 1180, NULL),
 (2, 4, '2026-01-01 05:06:47', '2026-01-01 05:59:04', '2026-01-07 05:16:28', 0, 0, NULL);
 
 -- --------------------------------------------------------
@@ -452,7 +456,7 @@ CREATE TABLE IF NOT EXISTS `student_achievement` (
   PRIMARY KEY (`Student_Achievement_id`),
   KEY `StudentAchievement_fk_Achievement_id` (`Achievement_id`),
   KEY `StudentAchievement_fk_Student_id` (`Student_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `student_achievement`
@@ -460,7 +464,8 @@ CREATE TABLE IF NOT EXISTS `student_achievement` (
 
 INSERT INTO `student_achievement` (`Student_Achievement_id`, `Achievement_id`, `Student_id`, `Status`) VALUES
 (1, 1, 1, 'Unlocked'),
-(2, 4, 1, 'Unlocked');
+(2, 4, 1, 'Unlocked'),
+(3, 3, 1, 'Completed');
 
 -- --------------------------------------------------------
 
@@ -492,6 +497,7 @@ CREATE TABLE IF NOT EXISTS `student_feedback` (
   `Title` varchar(255) DEFAULT NULL,
   `Description` text,
   `Date_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `Status` varchar(255) NOT NULL,
   PRIMARY KEY (`Student_feedback_id`),
   KEY `Feedback_fk_Student_id` (`Student_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -500,9 +506,8 @@ CREATE TABLE IF NOT EXISTS `student_feedback` (
 -- Dumping data for table `student_feedback`
 --
 
-INSERT INTO `student_feedback` (`Student_feedback_id`, `Student_id`, `Title`, `Description`, `Date_time`) VALUES
-(1, 1, 'test', 'test123', '2026-01-04 03:55:35'),
-(2, 1, 'test', 'testttt', '2026-01-06 05:12:51');
+INSERT INTO `student_feedback` (`Student_feedback_id`, `Student_id`, `Title`, `Description`, `Date_time`, `Status`) VALUES
+(2, 1, 'test', 'testttt', '2026-01-06 05:12:51', 'Done');
 
 -- --------------------------------------------------------
 
@@ -553,15 +558,15 @@ CREATE TABLE IF NOT EXISTS `student_quest_submissions` (
   KEY `Submission_fk_Student_id` (`Student_id`),
   KEY `Submission_fk_Quest_id` (`Quest_id`),
   KEY `Submission_fk_Moderator_id` (`Moderator_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `student_quest_submissions`
 --
 
 INSERT INTO `student_quest_submissions` (`Student_quest_submission_id`, `Student_id`, `Quest_id`, `Image`, `Submission_date`, `Status`, `Moderator_id`, `Review_date`, `Review_feedback`) VALUES
-(3, 1, 4, 'uploads/activities/proof_691ab23db7bc56.77390705_website-export-1763324521010.png', '2025-11-17 13:27:25', 'completed', NULL, '2025-11-17 13:33:16', 'Good'),
-(4, 1, 5, 'uploads/activities/proof_691eaefcef9359.86533957_Screenshot 2025-11-17 191945.png', '2025-11-20 14:02:36', 'pending', NULL, NULL, NULL);
+(1, 1, 1, 'uploads/activities/proof_695e4f82d93c37.64943853.png', '2026-01-07 20:20:18', 'pending', NULL, NULL, NULL),
+(2, 1, 3, 'uploads/activities/proof_695e4f96910336.62120782.png', '2026-01-07 20:20:38', 'pending', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
