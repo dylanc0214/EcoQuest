@@ -1,10 +1,10 @@
 <?php
 // config/db.php
 
-$servername = "localhost";
+$servername = "flow-forge-mysql";
 $username = "root";
-$password = ""; // *** CRITICAL: Should be empty for default WAMP/XAMPP unless you set one! ***
-$dbname = "ecoquest"; // *** CRITICAL: Replace with your ACTUAL database name! ***
+$password = "flowforge_root_pass";
+$dbname = "ecoquest";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -20,4 +20,3 @@ if ($conn->connect_error) {
 $conn->set_charset("utf8mb4");
 
 // NOTE: If the connection is successful, the variable $conn is now available for use.
-?>
