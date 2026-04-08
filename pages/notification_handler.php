@@ -1,6 +1,6 @@
 <?php
 // pages/notification_handler.php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 // 1. Clean Output Buffer (Prevents whitespace errors)
 ob_start(); 
@@ -9,7 +9,7 @@ ob_start();
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
-include("../config/db.php");
+require_once(__DIR__ . "/../config/db.php");
 
 // 3. Set Header
 header('Content-Type: application/json');

@@ -1,9 +1,9 @@
 <?php
 // pages/dashboard.php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 // --- DB Connection and Dependencies ---
-include("../../config/db.php"); // Provides $conn (MySQLi object)
+require_once(__DIR__ . "/../../config/db.php");
 include("../../includes/header.php");
 
 // Check if user is logged in and is a student
@@ -19,8 +19,8 @@ $db_error = '';
 $is_db_connected = isset($conn) && !$conn->connect_error;
 
 // Get the correct IDs from the session
-$username = $_SESSION['username'] ?? 'Student Buddy'; // Get Username from User table session
-$student_id = $_SESSION['student_id']; // Get Student_id from session
+$username = $_SESSION['username'] ?? 'student Buddy'; // Get Username from User table session
+$student_id = $_SESSION['student_id']; // Get student_id from session
 
 $user_metrics = [
     'total_points' => 0,
@@ -34,9 +34,9 @@ $recent_activity = [];
 if (!$is_db_connected) {
     $db_error = 'Warning: Database connection failed. Data displayed may be incomplete or default.';
 } else {
-    // --- 1. FETCH PRIMARY USER METRICS (from Student table) ---
+    // --- 1. FETCH PRIMARY USER METRICS (from student table) ---
     try {
-        $sql_user = "SELECT Total_point FROM Student WHERE Student_id = ?";
+        $sql_user = "SELECT Total_point FROM student WHERE student_id = ?";
         if ($stmt_user = $conn->prepare($sql_user)) {
             $stmt_user->bind_param("i", $student_id);
             $stmt_user->execute();
@@ -48,8 +48,8 @@ if (!$is_db_connected) {
             $stmt_user->close();
         }
 
-        // --- 2. CALCULATE GLOBAL RANK (from Student table) ---
-        $sql_rank = "SELECT COUNT(*) + 1 AS global_rank FROM Student WHERE Total_point > ?";
+        // --- 2. CALCULATE GLOBAL RANK (from student table) ---
+        $sql_rank = "SELECT COUNT(*) + 1 AS global_rank FROM student WHERE Total_point > ?";
         if ($stmt_rank = $conn->prepare($sql_rank)) {
             $stmt_rank->bind_param("i", $user_metrics['total_points']);
             $stmt_rank->execute();
@@ -61,8 +61,8 @@ if (!$is_db_connected) {
             $stmt_rank->close();
         }
         
-        // --- 3. COUNT TOTAL COMPLETED QUESTS (from Student_Quest_Submissions) ---
-        $sql_completed = "SELECT COUNT(*) AS completed_count FROM Student_Quest_Submissions WHERE Student_id = ? AND Status = 'completed'";
+        // --- 3. COUNT TOTAL COMPLETED questS (from student_quest_submissions) ---
+        $sql_completed = "SELECT COUNT(*) AS completed_count FROM student_quest_submissions WHERE student_id = ? AND Status = 'completed'";
         if ($stmt_completed = $conn->prepare($sql_completed)) {
             $stmt_completed->bind_param("i", $student_id);
             $stmt_completed->execute();
@@ -73,8 +73,8 @@ if (!$is_db_connected) {
             $stmt_completed->close();
         }
 
-        // --- 4. COUNT PENDING SUBMISSIONS (from Student_Quest_Submissions) ---
-        $sql_pending = "SELECT COUNT(*) AS pending_count FROM Student_Quest_Submissions WHERE Student_id = ? AND Status = 'pending'";
+        // --- 4. COUNT PENDING SUBMISSIONS (from student_quest_submissions) ---
+        $sql_pending = "SELECT COUNT(*) AS pending_count FROM student_quest_submissions WHERE student_id = ? AND Status = 'pending'";
         if ($stmt_pending = $conn->prepare($sql_pending)) {
             $stmt_pending->bind_param("i", $student_id);
             $stmt_pending->execute();
@@ -86,8 +86,8 @@ if (!$is_db_connected) {
             $stmt_pending->close();
         }
         
-        // --- 5. COUNT REWARDS REDEEMED (from Redemption_History) ---
-        $sql_rewards = "SELECT COUNT(*) AS rewards_count FROM Redemption_History WHERE Student_id = ?";
+        // --- 5. COUNT REWARDS REDEEMED (from redemption_history) ---
+        $sql_rewards = "SELECT COUNT(*) AS rewards_count FROM redemption_history WHERE student_id = ?";
         if ($stmt_rewards = $conn->prepare($sql_rewards)) {
             $stmt_rewards->bind_param("i", $student_id);
             $stmt_rewards->execute();
@@ -98,16 +98,16 @@ if (!$is_db_connected) {
             $stmt_rewards->close();
         }
 
-        // --- 6. FETCH RECENT APPROVED ACTIVITY (from Student_Quest_Submissions) ---
+        // --- 6. FETCH RECENT APPROVED ACTIVITY (from student_quest_submissions) ---
         $sql_activity = "
             SELECT 
                 q.Title AS quest_name, 
                 q.Points_award AS points_earned,
                 s.Review_date 
-            FROM Student_Quest_Submissions s
-            INNER JOIN Quest q ON s.Quest_id = q.Quest_id 
+            FROM student_quest_submissions s
+            INNER JOIN quest q ON s.quest_id = q.quest_id 
             WHERE 
-                s.Student_id = ? 
+                s.student_id = ? 
                 AND s.Status = 'completed' 
             ORDER BY 
                 s.Review_date DESC 
@@ -159,9 +159,9 @@ if (!$is_db_connected) {
             </div>
             <div class="metric-card completed-card">
                 <div class="icon">✅</div>
-                <h3>Quests Completed</h3>
+                <h3>quests Completed</h3>
                 <p class="metric-value"><?php echo $user_metrics['quests_completed']; ?></p>
-                <a href="<?php echo $base_path; ?>pages/quests.php" class="metric-link">Find New Quests &raquo;</a>
+                <a href="<?php echo $base_path; ?>pages/quests.php" class="metric-link">Find New quests &raquo;</a>
             </div>
             <div class="metric-card rewards-card">
                 <div class="icon">🎁</div>

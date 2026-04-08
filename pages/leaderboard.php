@@ -1,8 +1,8 @@
 <?php
 // pages/leaderboard.php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
-include("../config/db.php");
+require_once(__DIR__ . "/../config/db.php");
 include("../includes/header.php");
 
 // Get the current logged-in student ID
@@ -23,8 +23,8 @@ if (!isset($conn) || $conn->connect_error) {
                 u.Username, 
                 s.Total_point,
                 u.Role
-            FROM Student s
-            JOIN User u ON s.User_id = u.User_id
+            FROM student s
+            JOIN user u ON s.User_id = u.User_id
             ORDER BY s.Total_point DESC";
 
     if ($result = $conn->query($sql)) {

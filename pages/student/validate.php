@@ -24,7 +24,7 @@ if (!$is_db_connected) {
 
 // Fetch the specific quest title for display
 if ($is_db_connected && $quest_id) {
-    $stmt_title = $conn->prepare("SELECT Title FROM Quest WHERE Quest_id = ?");
+    $stmt_title = $conn->prepare("SELECT Title FROM quest WHERE Quest_id = ?");
     $stmt_title->bind_param("i", $quest_id);
     $stmt_title->execute();
     $res_title = $stmt_title->get_result();
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $is_db_connected) {
     if (!$has_error) {
         try {
             $sql_insert = "
-                INSERT INTO Student_Quest_Submissions 
+                INSERT INTO student_quest_submissions 
                     (Student_id, Quest_id, Image, Submission_date, Status)
                 VALUES (?, ?, ?, NOW(), 'pending')
             ";
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $is_db_connected) {
                 $stmt->bind_param("iis", $student_id, $quest_id, $file_destination);
                 if ($stmt->execute()) {
                     // Update Quest_Progress to pending
-                    $conn->query("UPDATE Quest_Progress SET Status = 'pending' WHERE Student_id = $student_id AND Quest_id = $quest_id");
+                    $conn->query("UPDATE quest_progress SET Status = 'pending' WHERE Student_id = $student_id AND Quest_id = $quest_id");
                     $message = ['type' => 'success', 'text' => 'Proof submitted! Your mission is now pending review.'];
                 } else {
                     throw new Exception("Update failed: " . $stmt->error);
@@ -108,8 +108,8 @@ if ($is_db_connected) {
     $sql_history = "
         SELECT s.Student_quest_submission_id, s.Status, s.Submission_date, s.Review_date, s.Review_feedback,
                q.Title AS quest_title, q.Points_award
-        FROM Student_Quest_Submissions s
-        JOIN Quest q ON s.Quest_id = q.Quest_id
+        FROM student_quest_submissions s
+        JOIN quest q ON s.Quest_id = q.Quest_id
         WHERE s.Student_id = ?
         ORDER BY s.Submission_date DESC";
 

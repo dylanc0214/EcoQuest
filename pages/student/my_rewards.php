@@ -1,8 +1,8 @@
 <?php
 // pages/my_rewards.php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
-include("../../config/db.php");
+require_once(__DIR__ . "/../../config/db.php");
 include("../../includes/header.php");
 
 // Authorization: Only logged-in students can see this page.
@@ -23,8 +23,8 @@ if (isset($conn) && !$conn->connect_error) {
             r.Description,
             rd.Points_used,
             rd.Redemption_date
-        FROM Redemption_History rd
-        JOIN Reward r ON rd.Reward_id = r.Reward_id
+        FROM redemption_history rd
+        JOIN reward r ON rd.Reward_id = r.Reward_id
         WHERE rd.Student_id = ?
         ORDER BY rd.Redemption_date DESC
     ";

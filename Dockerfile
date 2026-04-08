@@ -9,8 +9,14 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Install PHP mysqli extension
+RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
+
 # Set working directory
 WORKDIR /var/www/html
+
+# Copy custom PHP configuration
+COPY php.ini /usr/local/etc/php/php.ini
 
 # Copy application files
 COPY . .
@@ -19,8 +25,8 @@ COPY . .
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html
 
-# Configure Apache to serve from the root
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html|g' /etc/apache2/sites-available/000-default.conf
+# Configure Apache
+RUN sed -i 's|AllowOverride None|AllowOverride All|g' /etc/apache2/apache2.conf
 
 # Expose port 80
 EXPOSE 80

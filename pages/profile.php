@@ -1,8 +1,8 @@
 <?php
 // pages/profile.php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
-include("../config/db.php");
+require_once(__DIR__ . "/../config/db.php");
 include("../includes/header.php");
 
 // Check if user is logged in

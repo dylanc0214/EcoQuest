@@ -1,7 +1,7 @@
 <?php
 // pages/post_detail.php
-session_start();
-include("../config/db.php");
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once(__DIR__ . "/../config/db.php");
 
 // --- 1. INITIAL DATA & AJAX LIKE LOGIC (MUST BE AT TOP) ---
 $user_id = $_SESSION['user_id'] ?? null;

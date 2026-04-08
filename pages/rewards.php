@@ -1,8 +1,8 @@
 <?php
 // pages/rewards.php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
-include("../config/db.php"); 
+require_once(__DIR__ . "/../config/db.php");
 include("../includes/header.php");
 
 $db_error = '';
@@ -19,7 +19,7 @@ if (!$is_db_connected) {
 } else {
     // 1. FETCH USER POINTS
     if ($is_student) {
-        $stmt = $conn->prepare("SELECT Total_point FROM Student WHERE Student_id = ?");
+        $stmt = $conn->prepare("SELECT Total_point FROM student WHERE Student_id = ?");
         if ($stmt) {
             $stmt->bind_param("i", $current_student_id);
             if ($stmt->execute()) {
@@ -38,7 +38,7 @@ if (!$is_db_connected) {
     
     // 2. FETCH ALL REWARDS
     $sql = "SELECT Reward_id, Reward_name, Points_cost, Stock, Image_url, Description 
-            FROM Reward 
+            FROM reward 
             WHERE Is_active = 1
             ORDER BY Points_cost ASC";
     

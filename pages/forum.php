@@ -1,7 +1,7 @@
 <?php
 // pages/forum.php
-session_start();
-include("../config/db.php");
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once(__DIR__ . "/../config/db.php");
 
 // --- 1. HANDLE LIKE TOGGLE (AJAX) - MUST BE AT THE VERY TOP FOR CLEAN JSON RESPONSE ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_like'])) {

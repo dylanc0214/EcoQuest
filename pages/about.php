@@ -1,6 +1,6 @@
 <?php
 // pages/about.php
-session_start();
+// session handled by header.php
 
 include("../includes/header.php");
 

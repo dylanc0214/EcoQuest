@@ -1,6 +1,6 @@
 <?php
 // pages/quests.php
-include("../config/db.php");
+require_once(__DIR__ . "/../config/db.php");
 include("../includes/header.php");
 
 // 2. Check if the user is logged in
@@ -31,7 +31,7 @@ if (!$is_db_connected) {
                 WHEN s.Status IS NOT NULL THEN s.Status
                 -- 2. Check progress: If the quest was submitted before the current week (determined via subquery), ignore the old progress
                 WHEN p.Status IS NOT NULL AND NOT EXISTS (
-                    SELECT 1 FROM Student_Quest_Submissions old_s 
+                    SELECT 1 FROM student_quest_submissions old_s 
                     WHERE old_s.Quest_id = q.Quest_id 
                     AND old_s.Student_id = ? 
                     AND old_s.Submission_date < qc_cal.Start_Date
@@ -39,17 +39,17 @@ if (!$is_db_connected) {
                 ELSE 'Available'
             END AS user_quest_status
             
-        FROM Quest_Calendar qc_cal
-        JOIN Quest q ON qc_cal.Quest_id = q.Quest_id
-        LEFT JOIN Quest_Categories qc ON q.CategoryID = qc.CategoryID
+        FROM quest_calendar qc_cal
+        JOIN quest q ON qc_cal.Quest_id = q.Quest_id
+        LEFT JOIN quest_categories qc ON q.CategoryID = qc.CategoryID
         
         -- Link to progress table
-        LEFT JOIN Quest_Progress p 
+        LEFT JOIN quest_progress p 
             ON q.Quest_id = p.Quest_id 
             AND p.Student_id = ?
             
         -- Core Logic: Link only to submission records for the current week
-        LEFT JOIN Student_Quest_Submissions s
+        LEFT JOIN student_quest_submissions s
             ON q.Quest_id = s.Quest_id 
             AND s.Student_id = ?
             AND s.Submission_date BETWEEN qc_cal.Start_Date AND qc_cal.End_Date

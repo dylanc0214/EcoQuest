@@ -4,7 +4,7 @@ $user_role = $is_logged_in ? $_SESSION['user_role'] : 'guest';
 $app_title = "EcoQuest";
 
 // Define the base path for your project
-$base_path = '/Group7_EcoQuest/'; // Update this if your project folder is different
+$base_path = '/'; // Update this if your project folder is different
 ?>
 
 <nav class="main-nav">

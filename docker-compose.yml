@@ -1,0 +1,10 @@
+services:
+  ecoquest-app:
+    build: .
+    container_name: ecoquest-prod
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - /var/www/EcoQuest:/var/www/html/
+      - ./php.ini:/usr/local/etc/php/php.ini

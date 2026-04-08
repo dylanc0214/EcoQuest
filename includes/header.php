@@ -10,7 +10,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // 2. Database Connection
 // This path is relative to this file's directory.
 require_once __DIR__ . '/../config/db.php';
-$base_path = '/Group7_EcoQuest/';
+$base_path = '/';
 
 // 3. User Authentication Check
 $is_logged_in = isset($_SESSION['user_id']);
@@ -33,7 +33,7 @@ $app_title = "EcoQuest";
     // Check if the current script is in an 'admin' or 'moderator' subfolder
     if (strpos($_SERVER['REQUEST_URI'], '/admin/') !== false || strpos($_SERVER['REQUEST_URI'], '/moderator/') !== false) : 
     ?>
-        <link rel="stylesheet" href="../../assets/css/style.css">
+        <link rel="stylesheet" href="/assets/css/style.css">
     <?php endif; ?>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">

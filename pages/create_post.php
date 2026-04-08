@@ -1,7 +1,7 @@
 <?php
 // pages/create_post.php
-session_start();
-include("../config/db.php");
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once(__DIR__ . "/../config/db.php");
 
 // --- 1. AUTHORIZATION CHECK (MUST BE BEFORE HEADER.PHP) ---
 if (!isset($_SESSION['user_id'])) {

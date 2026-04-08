@@ -1,9 +1,9 @@
 <?php
 // pages/quest_detail.php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 // --- DB Connection and Dependencies ---
-include("../config/db.php");
+require_once(__DIR__ . "/../config/db.php");
 
 // Check if user is logged in and is a student
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['student_id'])) {

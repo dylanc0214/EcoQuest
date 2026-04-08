@@ -1,7 +1,7 @@
 <?php
 // pages/redeem.php
-session_start();
-include("../../config/db.php");
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once(__DIR__ . "/../../config/db.php");
 
 // 1. Authorization: Make sure the user is a logged-in student.
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'student' || !isset($_SESSION['student_id'])) {
@@ -23,14 +23,14 @@ $conn->begin_transaction();
 
 try {
     // 4. Get User's Points from the 'Student' table and lock the row.
-    $stmt_user = $conn->prepare("SELECT Total_point FROM Student WHERE Student_id = ? FOR UPDATE");
+    $stmt_user = $conn->prepare("SELECT Total_point FROM student WHERE Student_id = ? FOR UPDATE");
     $stmt_user->bind_param("i", $student_id);
     $stmt_user->execute();
     $user = $stmt_user->get_result()->fetch_assoc();
     $stmt_user->close();
 
     // 5. Get Reward Details and lock the row.
-    $stmt_reward = $conn->prepare("SELECT Points_cost, Stock FROM Reward WHERE Reward_id = ? FOR UPDATE");
+    $stmt_reward = $conn->prepare("SELECT Points_cost, Stock FROM reward WHERE Reward_id = ? FOR UPDATE");
     $stmt_reward->bind_param("i", $reward_id);
     $stmt_reward->execute();
     $reward = $stmt_reward->get_result()->fetch_assoc();
@@ -44,21 +44,21 @@ try {
     // 7. Execute the Redemption.
     // a. Subtract points from the student in the 'Student' table.
     $new_points = $user['Total_point'] - $reward['Points_cost'];
-    $stmt_update_user = $conn->prepare("UPDATE Student SET Total_point = ? WHERE Student_id = ?");
+    $stmt_update_user = $conn->prepare("UPDATE student SET Total_point = ? WHERE Student_id = ?");
     $stmt_update_user->bind_param("ii", $new_points, $student_id);
     $stmt_update_user->execute();
     $stmt_update_user->close();
 
     // b. Decrement stock (if it's not unlimited).
     if ($reward['Stock'] != -1) {
-        $stmt_update_reward = $conn->prepare("UPDATE Reward SET Stock = Stock - 1 WHERE Reward_id = ?");
+        $stmt_update_reward = $conn->prepare("UPDATE reward SET Stock = Stock - 1 WHERE Reward_id = ?");
         $stmt_update_reward->bind_param("i", $reward_id);
         $stmt_update_reward->execute();
         $stmt_update_reward->close();
     }
     
     // c. Log the transaction in the 'Redemption_History' table.
-    $stmt_log = $conn->prepare("INSERT INTO Redemption_History (Student_id, Reward_id, Points_used, Redemption_date) VALUES (?, ?, ?, NOW())");
+    $stmt_log = $conn->prepare("INSERT INTO redemption_history (Student_id, Reward_id, Points_used, Redemption_date) VALUES (?, ?, ?, NOW())");
     $stmt_log->bind_param("iii", $student_id, $reward_id, $reward['Points_cost']);
     $stmt_log->execute();
     $stmt_log->close();

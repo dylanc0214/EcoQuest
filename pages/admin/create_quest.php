@@ -79,8 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// --- 逻辑处理完毕后，再引入头部 HTML ---
-require_once '../../includes/header.php'; 
+// --- 逻辑处理完毕后，头部 HTML 已在上方引入 ---
+// (header.php already included above via require_once)
 ?>
 
 <main class="admin-page">
